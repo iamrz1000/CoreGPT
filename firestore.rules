@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'umarhani2000@gmail.com' ||
+        request.auth.token.email == 'faqruddin00000@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User profile document
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if (isOwner(userId) || isAdmin()) && isValidId(userId);
+      allow delete: if isAdmin();
+
+      // Conversations subcollection
+      match /conversations/{conversationId} {
+        allow read, write: if (isOwner(userId) || isAdmin()) && isValidId(conversationId);
+
+        // Messages subcollection
+        match /messages/{messageId} {
+          allow read, write: if (isOwner(userId) || isAdmin()) && isValidId(messageId);
+        }
+      }
+
+      // Generated Images subcollection
+      match /images/{imageId} {
+        allow read, write: if (isOwner(userId) || isAdmin()) && isValidId(imageId);
+      }
+
+      // Generated Videos subcollection
+      match /videos/{videoId} {
+        allow read, write: if (isOwner(userId) || isAdmin()) && isValidId(videoId);
+      }
+    }
+  }
+}

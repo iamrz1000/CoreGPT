@@ -1,0 +1,305 @@
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  ArrowUp,
+  Square,
+  Paperclip,
+  Mic,
+  MicOff,
+  Globe,
+  X,
+  FileText,
+  AlertCircle,
+  Plus,
+} from 'lucide-react';
+
+interface AttachedFile {
+  name: string;
+  content: string;
+  size: number;
+}
+
+interface ChatInputProps {
+  onSendMessage: (text: string, file?: AttachedFile) => void;
+  isStreaming: boolean;
+  onStopGeneration: () => void;
+  disabled?: boolean;
+  selectedLanguage?: string;
+  selectedModel?: string;
+  onSelectModel?: (model: string) => void;
+  useSearchGrounding?: boolean;
+  onToggleSearchGrounding?: () => void;
+  useMapsGrounding?: boolean;
+  onToggleMapsGrounding?: () => void;
+}
+
+export const ChatInput: React.FC<ChatInputProps> = ({
+  onSendMessage,
+  isStreaming,
+  onStopGeneration,
+  disabled = false,
+  selectedLanguage = 'auto',
+  useSearchGrounding = false,
+  onToggleSearchGrounding,
+}) => {
+  const [text, setText] = useState('');
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        200
+      )}px`;
+    }
+  }, [text]);
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (isStreaming) {
+      onStopGeneration();
+      return;
+    }
+    if ((!text.trim() && !attachedFile) || disabled) return;
+
+    onSendMessage(text.trim(), attachedFile || undefined);
+    setText('');
+    setAttachedFile(null);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setAttachedFile({
+        name: file.name,
+        content,
+        size: file.size,
+      });
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const toggleSpeechRecognition = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setVoiceError('Speech recognition is not supported in this browser.');
+      setTimeout(() => setVoiceError(null), 4000);
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      const langMap: Record<string, string> = {
+        English: 'en-US',
+        Hindi: 'hi-IN',
+        Urdu: 'ur-PK',
+        Marathi: 'mr-IN',
+        Arabic: 'ar-SA',
+        Spanish: 'es-ES',
+        French: 'fr-FR',
+        German: 'de-DE',
+        Chinese: 'zh-CN',
+        Japanese: 'ja-JP',
+      };
+      recognition.lang = langMap[selectedLanguage] || 'en-US';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      };
+
+      recognition.onerror = () => {
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
+      setIsRecording(true);
+      setVoiceError(null);
+    } catch {
+      setVoiceError('Microphone access denied or unavailable.');
+      setIsRecording(false);
+    }
+  };
+
+  const hasContent = Boolean(text.trim() || attachedFile);
+
+  return (
+    <div className="w-full max-w-3xl mx-auto px-4 pb-4 select-none">
+      {voiceError && (
+        <div className="mb-2 p-2 rounded-xl bg-zinc-100 dark:bg-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5" />
+          <span>{voiceError}</span>
+        </div>
+      )}
+
+      {/* Attached file chip */}
+      {attachedFile && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-[#2f2f2f] border border-zinc-200 dark:border-white/10 text-xs text-zinc-800 dark:text-zinc-200">
+          <FileText className="w-3.5 h-3.5" />
+          <span className="font-medium truncate max-w-[200px]">{attachedFile.name}</span>
+          <span className="text-[10px] text-zinc-400 font-mono">
+            ({Math.round(attachedFile.size / 1024)} KB)
+          </span>
+          <button
+            onClick={() => setAttachedFile(null)}
+            className="p-0.5 rounded hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-700 dark:hover:text-white"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
+      {/* ChatGPT-Style Capsule Input Box */}
+      <div className="relative flex flex-col w-full rounded-[26px] bg-[#f4f4f4] dark:bg-[#2f2f2f] border border-black/5 dark:border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.03)] dark:shadow-[0_0_20px_rgba(0,0,0,0.25)] transition-all">
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={
+            isRecording
+              ? 'Listening...'
+              : 'Message CoreGPT...'
+          }
+          rows={1}
+          disabled={disabled}
+          className="w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-sm text-[#0d0d0d] dark:text-[#ececec] placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none min-h-[44px] max-h-[200px]"
+        />
+
+        {/* Bottom controls inside the pill */}
+        <div className="flex items-center justify-between px-3 pb-2.5 pt-0.5">
+          {/* Left tools */}
+          <div className="flex items-center gap-1">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept=".txt,.md,.json,.js,.ts,.tsx,.py,.html,.css,.csv"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-1.5 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-colors"
+              title="Attach text or source file"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+
+            {/* Real-time search toggle */}
+            {onToggleSearchGrounding && (
+              <button
+                type="button"
+                onClick={onToggleSearchGrounding}
+                className={`py-1 px-2.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+                  useSearchGrounding
+                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10'
+                }`}
+                title={useSearchGrounding ? 'Web Search Active' : 'Search web with CoreGPT'}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span className="text-[11px]">Search</span>
+              </button>
+            )}
+
+            {/* Dictation */}
+            <button
+              type="button"
+              onClick={toggleSpeechRecognition}
+              className={`p-1.5 rounded-full transition-colors ${
+                isRecording
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10'
+              }`}
+              title={isRecording ? 'Stop speech' : 'Dictate'}
+            >
+              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {/* Right tool: Circular Send / Stop button */}
+          <div>
+            {isStreaming ? (
+              <button
+                type="button"
+                onClick={onStopGeneration}
+                className="w-8 h-8 rounded-full bg-black text-white dark:bg-white dark:text-black hover:opacity-85 transition-all flex items-center justify-center"
+                title="Stop generation"
+              >
+                <Square className="w-3 h-3 fill-current" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleSubmit()}
+                disabled={!hasContent || disabled}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  hasContent
+                    ? 'bg-black text-white dark:bg-white dark:text-black hover:opacity-85 cursor-pointer shadow-xs'
+                    : 'bg-black/10 text-black/30 dark:bg-white/10 dark:text-white/30 cursor-not-allowed'
+                }`}
+                title="Send message"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Attribution Disclaimer */}
+      <p className="text-[11px] text-center text-zinc-400 dark:text-zinc-500 mt-2 select-none">
+        CoreGPT can make mistakes. Verify important info. · Founder: Umar Hani · Developer: Ahmadraza
+      </p>
+    </div>
+  );
+};

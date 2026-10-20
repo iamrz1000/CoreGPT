@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoreGPT</title>
+    <meta name="description" content="CoreGPT is a high-performance conversational AI platform with multi-model intelligence, real-time knowledge synthesis, voice duplex, and creative media generation." />
+    <meta property="og:title" content="CoreGPT" />
+    <meta property="og:description" content="CoreGPT is a high-performance conversational AI platform with multi-model intelligence, real-time knowledge synthesis, voice duplex, and creative media generation." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="/coregpt-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        // Ensure window.fetch is writable and configurable with a setter so browser extensions
+        // (such as Urban VPN, translators, or network interceptors) do not throw
+        // "TypeError: Cannot set property fetch of #<Window> which has only a getter"
+        try {
+          var _nativeFetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function () {
+              return _nativeFetch;
+            },
+            set: function (newFetch) {
+              _nativeFetch = newFetch;
+            },
+            configurable: true,
+            enumerable: true,
+          });
+        } catch (err) {
+          // Fallback if property is non-configurable
+        }
+
+        // Suppress unhandled errors originating from external browser extensions
+        window.addEventListener('error', function (event) {
+          var file = (event && event.filename) || '';
+          if (
+            file.indexOf('chrome-extension://') !== -1 ||
+            file.indexOf('moz-extension://') !== -1 ||
+            file.indexOf('safari-extension://') !== -1
+          ) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            return true;
+          }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (event) {
+          var stack = (event && event.reason && event.reason.stack) || '';
+          if (
+            stack.indexOf('chrome-extension://') !== -1 ||
+            stack.indexOf('moz-extension://') !== -1 ||
+            stack.indexOf('safari-extension://') !== -1
+          ) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

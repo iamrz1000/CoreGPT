@@ -1,0 +1,28 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueG" x1="20" y1="20" x2="105" y2="105" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="35%" stop-color="#2563eb" />
+      <stop offset="70%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="silverG" x1="15" y1="30" x2="95" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#f1f5f9" />
+      <stop offset="75%" stop-color="#cbd5e1" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+    <linearGradient id="starG" x1="50" y1="50" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e0f2fe" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="#080a10" />
+  <rect width="120" height="120" rx="28" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1.5" />
+  <path d="M 60 16 C 78 16 95 28 100 46 C 104 62 94 78 80 88 C 66 98 48 94 40 82 C 34 72 38 60 48 54 C 58 48 72 52 76 62 C 80 72 74 80 66 82" stroke="url(#blueG)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 60 104 C 42 104 25 92 20 74 C 16 58 26 42 40 32 C 54 22 72 26 80 38 C 86 48 82 60 72 66 C 62 72 48 68 44 58 C 40 48 46 40 54 38" stroke="url(#silverG)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 38 28 C 48 18 72 18 82 28 C 96 42 98 66 84 84 C 74 96 46 96 36 84 C 22 70 24 46 38 28 Z" stroke="url(#blueG)" stroke-width="6" stroke-linecap="round" opacity="0.4" />
+  <path d="M 60 46 Q 60 60 46 60 Q 60 60 60 74 Q 60 60 74 60 Q 60 60 60 46 Z" fill="url(#starG)" />
+  <circle cx="60" cy="60" r="1.5" fill="#ffffff" />
+</svg>

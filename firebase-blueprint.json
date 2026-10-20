@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data stored in Firestore",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 1024 },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Chat conversation thread",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 256 },
+        "model": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["userId", "title"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Message within a conversation",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["user", "assistant", "system"] },
+        "content": { "type": "string", "maxLength": 50000 },
+        "model": { "type": "string", "maxLength": 64 },
+        "imageUrl": { "type": "string", "maxLength": 2048 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["conversationId", "userId", "role", "content"]
+    },
+    "GeneratedImage": {
+      "title": "GeneratedImage",
+      "description": "AI generated or edited image asset",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "prompt": { "type": "string", "maxLength": 4000 },
+        "aspectRatio": { "type": "string", "maxLength": 16 },
+        "imageUrl": { "type": "string", "maxLength": 100000 },
+        "model": { "type": "string", "maxLength": 64 },
+        "isEdited": { "type": "string", "maxLength": 16 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["userId", "prompt", "imageUrl"]
+    },
+    "GeneratedVideo": {
+      "title": "GeneratedVideo",
+      "description": "AI generated Veo video asset",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "prompt": { "type": "string", "maxLength": 4000 },
+        "aspectRatio": { "type": "string", "maxLength": 16 },
+        "videoUrl": { "type": "string", "maxLength": 100000 },
+        "model": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["userId", "prompt", "videoUrl"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Public user profile"
+    },
+    "/users/{userId}/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "User conversations"
+    },
+    "/users/{userId}/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Conversation messages"
+    },
+    "/users/{userId}/images/{imageId}": {
+      "schema": { "$ref": "#/entities/GeneratedImage" },
+      "description": "User generated and edited images"
+    },
+    "/users/{userId}/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/GeneratedVideo" },
+      "description": "User generated Veo videos"
+    }
+  }
+}
