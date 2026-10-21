@@ -35,7 +35,7 @@ chatRouter.post('/conversations', (req: AuthenticatedRequest, res: Response) => 
     const conv = db.createConversation(
       userId,
       title?.trim() || 'New Chat',
-      model || 'gemini-3.8-flash',
+      model || 'gemini-3.1-flash-lite',
       systemPrompt
     );
     return res.status(201).json({ conversation: conv });

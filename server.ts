@@ -38,7 +38,7 @@ app.use(cookieParser());
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'NextGen AI Assistant',
+    service: 'CoreGPT',
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
     timestamp: new Date().toISOString(),
   });

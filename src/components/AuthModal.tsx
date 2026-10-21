@@ -39,6 +39,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [resetToken, setResetToken] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  // Hidden keyboard shortcut: Ctrl+Shift+A or Meta+Shift+A reveals administrative portal
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setIsAdminUnlocked((prev) => {
+          const next = !prev;
+          if (next) setTab('admin');
+          else if (tab === 'admin') setTab('login');
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [tab]);
+
+  // Secret 5-tap gesture on the brand logo
+  const handleLogoTap = () => {
+    setLogoClicks((prev) => {
+      const next = prev + 1;
+      if (next >= 5) {
+        setIsAdminUnlocked(true);
+        setTab('admin');
+        return 0;
+      }
+      return next;
+    });
+  };
 
   // Google SSO state
   const [googleEmail, setGoogleEmail] = useState('');
@@ -204,7 +236,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         <div className="p-6 pb-4 border-b border-zinc-100 dark:border-white/[0.06]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CoreGptLogo size={40} />
+              <div
+                onClick={handleLogoTap}
+                className="cursor-pointer select-none transition-transform active:scale-95"
+                title="CoreGPT"
+                role="button"
+                tabIndex={0}
+              >
+                <CoreGptLogo size={40} />
+              </div>
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
                   CoreGPT
@@ -226,7 +266,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
           </div>
 
           {/* Navigation Tabs (ChatGPT Monochrome Style) */}
-          {(tab === 'login' || tab === 'signup' || tab === 'admin') && (
+          {(tab === 'login' || tab === 'signup' || (isAdminUnlocked && tab === 'admin')) && (
             <div className="flex border-b border-zinc-200 dark:border-white/[0.08] mt-5">
               <button
                 type="button"
@@ -250,18 +290,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
               >
                 Create Account
               </button>
-              <button
-                type="button"
-                onClick={() => { setTab('admin'); setError(null); setSuccessMsg(null); }}
-                className={`flex-1 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer flex items-center justify-center gap-1 ${
-                  tab === 'admin'
-                    ? 'border-zinc-900 text-zinc-900 dark:border-white dark:text-white font-bold'
-                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />
-                <span>Admin Sign In</span>
-              </button>
+              {isAdminUnlocked && (
+                <button
+                  type="button"
+                  onClick={() => { setTab('admin'); setError(null); setSuccessMsg(null); }}
+                  className={`flex-1 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-px cursor-pointer flex items-center justify-center gap-1 ${
+                    tab === 'admin'
+                      ? 'border-zinc-900 text-zinc-900 dark:border-white dark:text-white font-bold'
+                      : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />
+                  <span>Admin Portal</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -326,7 +368,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@example.com"
+                      placeholder="name@example.com"
                       className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all"
                     />
                   </div>
@@ -468,13 +510,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
                     />
                     Remember me
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => { setTab('admin'); setError(null); }}
-                    className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white underline cursor-pointer"
-                  >
-                    Admin Sign-In
-                  </button>
                 </div>
 
                 <button

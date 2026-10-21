@@ -202,7 +202,7 @@ class DatabaseService {
       default_image_daily_quota: '5',
       image_generation_enabled: 'true',
       voice_features_enabled: 'true',
-      default_model: 'gemini-3.8-flash',
+      default_model: 'gemini-3.1-flash-lite',
       default_language: 'auto',
       experimental_mode_enabled: 'true',
     };
@@ -409,7 +409,7 @@ class DatabaseService {
   createConversation(
     userId: string,
     title = 'New Chat',
-    model = 'gemini-3.8-flash',
+    model = 'gemini-3.1-flash-lite',
     systemPrompt?: string
   ): Conversation {
     const now = new Date().toISOString();

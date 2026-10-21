@@ -1,6 +1,6 @@
 {
-  "name": "NextGen AI Assistant",
-  "description": "NextGen AI Assistant is an intelligent, ChatGPT-inspired conversational AI platform featuring multi-model reasoning, multilingual speech & voice, image generation, persistent history, and full role-based administration.",
+  "name": "CoreGPT",
+  "description": "CoreGPT is a high-performance conversational AI platform with multi-model intelligence, real-time knowledge synthesis, voice duplex, and creative media generation.",
   "requestFramePermissions": [
     "microphone"
   ],
