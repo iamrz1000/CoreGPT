@@ -80,6 +80,12 @@ export const api = {
         body: JSON.stringify(body),
       }),
 
+    adminLogin: (body: { email: string; password: string }) =>
+      request<{ message: string; user: User; token: string }>('/api/auth/admin-login', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
     googleSignIn: (body: { email: string; displayName?: string; googleId?: string }) =>
       request<{ message: string; user: User; token: string }>('/api/auth/google', {
         method: 'POST',
@@ -218,6 +224,18 @@ export const api = {
           createdAt: string;
         }>;
       }>('/api/video/list'),
+
+    getUsage: () =>
+      request<{
+        isAdmin: boolean;
+        textToVideoCount: number;
+        textToVideoLimit: number;
+        textToVideoRemaining: number;
+        imageToVideoCount: number;
+        imageToVideoLimit: number;
+        imageToVideoRemaining: number;
+        resetsAt: string;
+      }>('/api/video/usage'),
   },
 
   voice: {

@@ -52,6 +52,8 @@ export interface UsageRecord {
   date: string; // YYYY-MM-DD
   text_count: number;
   image_count: number;
+  text_to_video_count?: number;
+  image_to_video_count?: number;
   voice_seconds: number;
   created_at: string;
   updated_at: string;
@@ -162,35 +164,34 @@ class DatabaseService {
   }
 
   private ensureAdminUser() {
-    const adminEmail = 'umarhani2000@gmail.com';
+    const adminEmails = [
+      'umarhani2000@gmail.com',
+      'faqruddin00000@gmail.com',
+      (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
+    ].filter(Boolean);
     // Verified bcrypt hash for 'MH04MQ6421'
     const adminPasswordHash = '$2b$10$5sgjfcBEc5u0zCumee1pV.SSSR53K/HHrtVXJmp.wjADIyOusQjlu';
-
-    // Demote any non-admin users that might have mistakenly had the admin role
-    for (const u of this.data.users) {
-      if (u.email.toLowerCase() !== adminEmail && u.role === 'admin') {
-        u.role = 'user';
-      }
-    }
-
-    const existingAdmin = this.data.users.find((u) => u.email.toLowerCase() === adminEmail);
     const now = new Date().toISOString();
-    if (existingAdmin) {
-      existingAdmin.role = 'admin';
-      existingAdmin.status = 'active';
-      existingAdmin.password_hash = adminPasswordHash;
-      existingAdmin.updated_at = now;
-    } else {
-      this.data.users.push({
-        id: 'admin-umarhani2000',
-        email: adminEmail,
-        display_name: 'Administrator',
-        password_hash: adminPasswordHash,
-        role: 'admin',
-        status: 'active',
-        created_at: now,
-        updated_at: now,
-      });
+
+    for (const adminEmail of adminEmails) {
+      const existingAdmin = this.data.users.find((u) => u.email.toLowerCase() === adminEmail);
+      if (existingAdmin) {
+        existingAdmin.role = 'admin';
+        existingAdmin.status = 'active';
+        existingAdmin.password_hash = adminPasswordHash;
+        existingAdmin.updated_at = now;
+      } else {
+        this.data.users.push({
+          id: `admin-${adminEmail.split('@')[0]}`,
+          email: adminEmail,
+          display_name: adminEmail.startsWith('umar') ? 'Umar Hani (Admin)' : 'Administrator',
+          password_hash: adminPasswordHash,
+          role: 'admin',
+          status: 'active',
+          created_at: now,
+          updated_at: now,
+        });
+      }
     }
   }
 
@@ -514,7 +515,7 @@ class DatabaseService {
 
   checkAndIncrementQuota(
     userId: string,
-    type: 'text' | 'image'
+    type: 'text' | 'image' | 'text_to_video' | 'image_to_video'
   ): { allowed: boolean; remaining: number; limit: number; resetsAt: string } {
     const user = this.getUserById(userId);
     if (!user) throw new Error('User not found');
@@ -523,11 +524,16 @@ class DatabaseService {
     midnight.setHours(24, 0, 0, 0);
     const resetsAt = midnight.toISOString();
 
+    const usage = this.getUsageToday(userId);
+    usage.text_to_video_count = usage.text_to_video_count || 0;
+    usage.image_to_video_count = usage.image_to_video_count || 0;
+
     // Admins have unlimited application-level daily quota
     if (user.role === 'admin') {
-      const usage = this.getUsageToday(userId);
       if (type === 'text') usage.text_count += 1;
       else if (type === 'image') usage.image_count += 1;
+      else if (type === 'text_to_video') usage.text_to_video_count += 1;
+      else if (type === 'image_to_video') usage.image_to_video_count += 1;
       usage.updated_at = new Date().toISOString();
       this.persist();
       return { allowed: true, remaining: 999999, limit: 999999, resetsAt };
@@ -535,6 +541,7 @@ class DatabaseService {
 
     // Determine limit
     let limit = 20;
+    let current = 0;
     if (type === 'text') {
       if (typeof user.daily_quota_override === 'number') {
         limit = user.daily_quota_override;
@@ -542,13 +549,20 @@ class DatabaseService {
         const setting = this.getSetting('default_user_daily_quota', '20');
         limit = parseInt(setting, 10) || 20;
       }
+      current = usage.text_count;
     } else if (type === 'image') {
       const setting = this.getSetting('default_image_daily_quota', '5');
       limit = parseInt(setting, 10) || 5;
+      current = usage.image_count;
+    } else if (type === 'text_to_video') {
+      const setting = this.getSetting('default_text_to_video_daily_quota', '2');
+      limit = parseInt(setting, 10) || 2;
+      current = usage.text_to_video_count;
+    } else if (type === 'image_to_video') {
+      const setting = this.getSetting('default_image_to_video_daily_quota', '2');
+      limit = parseInt(setting, 10) || 2;
+      current = usage.image_to_video_count;
     }
-
-    const usage = this.getUsageToday(userId);
-    const current = type === 'text' ? usage.text_count : usage.image_count;
 
     if (current >= limit) {
       return { allowed: false, remaining: 0, limit, resetsAt };
@@ -557,10 +571,39 @@ class DatabaseService {
     // Atomic increment
     if (type === 'text') usage.text_count += 1;
     else if (type === 'image') usage.image_count += 1;
+    else if (type === 'text_to_video') usage.text_to_video_count += 1;
+    else if (type === 'image_to_video') usage.image_to_video_count += 1;
     usage.updated_at = new Date().toISOString();
     this.persist();
 
     return { allowed: true, remaining: limit - (current + 1), limit, resetsAt };
+  }
+
+  getVideoUsage(userId: string) {
+    const user = this.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    const usage = this.getUsageToday(userId);
+    const isAdmin = user.role === 'admin';
+
+    const textToVideoLimit = isAdmin ? 999999 : (parseInt(this.getSetting('default_text_to_video_daily_quota', '2'), 10) || 2);
+    const imageToVideoLimit = isAdmin ? 999999 : (parseInt(this.getSetting('default_image_to_video_daily_quota', '2'), 10) || 2);
+
+    const textToVideoCount = usage.text_to_video_count || 0;
+    const imageToVideoCount = usage.image_to_video_count || 0;
+
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+
+    return {
+      isAdmin,
+      textToVideoCount,
+      textToVideoLimit,
+      textToVideoRemaining: isAdmin ? 999999 : Math.max(0, textToVideoLimit - textToVideoCount),
+      imageToVideoCount,
+      imageToVideoLimit,
+      imageToVideoRemaining: isAdmin ? 999999 : Math.max(0, imageToVideoLimit - imageToVideoCount),
+      resetsAt: midnight.toISOString(),
+    };
   }
 
   // --- Generated Images ---

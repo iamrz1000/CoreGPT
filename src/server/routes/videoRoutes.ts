@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { AuthenticatedRequest, requireAuth } from '../auth.ts';
+import { db } from '../db.ts';
 import { startVeoVideoGeneration, checkVeoVideoStatus, fetchVeoVideoStream } from '../gemini.ts';
 import {
   generatePhotoAnimation,
@@ -99,6 +100,18 @@ videoRouter.get('/stream/:id', async (req: Request, res: Response) => {
 // All following routes require authentication
 videoRouter.use(requireAuth);
 
+// GET /api/video/usage
+videoRouter.get('/usage', (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user!;
+    const usage = db.getVideoUsage(user.id);
+    return res.json(usage);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch video usage';
+    return res.status(500).json({ error: message });
+  }
+});
+
 // POST /api/video/generate
 videoRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -107,6 +120,19 @@ videoRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) =
 
     if (!prompt && !base64Image) {
       return res.status(400).json({ error: 'A prompt or image is required for video generation.' });
+    }
+
+    // Enforce daily video limit: normal users have limit, admins have unlimited
+    const genType = base64Image ? 'image_to_video' : 'text_to_video';
+    const quotaCheck = db.checkAndIncrementQuota(user.id, genType);
+    if (!quotaCheck.allowed) {
+      const typeLabel = base64Image ? 'Image-to-Video' : 'Text-to-Video';
+      return res.status(429).json({
+        error: `Daily limit reached for ${typeLabel} (${quotaCheck.limit} generations per day for standard users). Administrator accounts have unlimited access.`,
+        limit: quotaCheck.limit,
+        remaining: quotaCheck.remaining,
+        resetsAt: quotaCheck.resetsAt,
+      });
     }
 
     const ar: '16:9' | '9:16' = aspectRatio === '9:16' ? '9:16' : '16:9';

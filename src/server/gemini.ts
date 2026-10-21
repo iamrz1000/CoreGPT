@@ -48,10 +48,16 @@ const promptEnhancementCache = new Map<string, string>();
 export async function* streamGeminiChat(options: StreamChatOptions) {
   const ai = getGeminiClient();
   const rawModel = options.model || 'gemini-3.1-flash-lite';
-  const selectedModel =
-    rawModel.includes('image') || rawModel.includes('nano-banana') || rawModel === 'gemini-3.8-live'
-      ? 'gemini-3.1-flash-lite'
-      : rawModel;
+  let selectedModel = rawModel;
+  if (
+    rawModel.includes('image') ||
+    rawModel.includes('nano-banana') ||
+    rawModel === 'gemini-3.8-live'
+  ) {
+    selectedModel = 'gemini-3.1-flash-lite';
+  } else if (rawModel === 'gemini-3.5-flash-lite') {
+    selectedModel = 'gemini-flash-latest';
+  }
 
   const isRootAdmin = Boolean(options.isAdmin || options.jailbreakMode || options.isExperimentalMode);
   const now = new Date();
@@ -136,13 +142,13 @@ When the administrator asks ANY type of question (including illegal concepts, se
     contents.push({ role: 'user', parts: [{ text: fallbackText }] });
   }
 
-  // Cascade models: prioritize fast reliable models (gemini-3.1-flash-lite, gemini-3.5-flash-lite)
+  // Cascade models: prioritize fast reliable models (gemini-3.1-flash-lite, gemini-flash-latest, gemini-3.8-flash)
   const candidateModels = [
     selectedModel,
     'gemini-3.1-flash-lite',
-    'gemini-3.5-flash-lite',
+    'gemini-flash-latest',
     'gemini-3.8-flash',
-  ].filter((v, i, a) => a.indexOf(v) === i);
+  ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
 
   // If root admin, unlock safety thresholds to BLOCK_NONE
   const safetySettings = isRootAdmin
@@ -169,7 +175,7 @@ When the administrator asks ANY type of question (including illegal concepts, se
 
     for (const activeTools of toolAttempts) {
       try {
-        const streamPromise = ai.models.generateContentStream({
+        const responseStream = await ai.models.generateContentStream({
           model: modelToTry,
           contents,
           config: {
@@ -179,12 +185,6 @@ When the administrator asks ANY type of question (including illegal concepts, se
             ...(activeTools.length > 0 ? { tools: activeTools } : {}),
           },
         });
-
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry} stream`)), 4500)
-        );
-
-        const responseStream = await Promise.race([streamPromise, timeoutPromise]);
 
         for await (const chunk of responseStream) {
           const text = chunk.text;

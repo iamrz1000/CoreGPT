@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
       icon: Zap,
     },
     {
-      id: 'gemini-3.5-flash-lite',
+      id: 'gemini-flash-latest',
       name: 'CoreGPT Turbo',
       tag: 'High Throughput',
       icon: Sparkles,

@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import { Message } from '../types/index.ts';
 import { api } from '../services/api.ts';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
+import { CoreGptWatermark } from './CoreGptWatermark.tsx';
 import {
   Sparkles,
   Copy,
@@ -214,9 +215,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-md text-[10px] text-zinc-200 font-medium">
-                <Sparkles className="w-3 h-3 text-zinc-300" />
-                <span>CoreGPT Visual Synthesis</span>
+              <div className="absolute bottom-2.5 right-2.5 pointer-events-none">
+                <CoreGptWatermark size="sm" theme="glass" />
               </div>
             </div>
           </div>
