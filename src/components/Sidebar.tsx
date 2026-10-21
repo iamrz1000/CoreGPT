@@ -13,6 +13,8 @@ import {
   Shield,
   Film,
   Image as ImageIcon,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 import { Conversation, User, UsageState } from '../types/index.ts';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
@@ -33,6 +35,7 @@ interface SidebarProps {
   onOpenSettings: () => void;
   onLogout: () => void;
   onOpenLogoModal?: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -51,6 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSettings,
   onLogout,
   onOpenLogoModal,
+  onOpenInstallModal,
 }) => {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -324,6 +328,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Install Mobile App / APK Banner */}
+        {onOpenInstallModal && (
+          <div className="px-3 pb-2 pt-1">
+            <button
+              onClick={onOpenInstallModal}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-zinc-200/70 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-900 dark:text-white text-xs font-medium transition-all group cursor-pointer border border-zinc-300/50 dark:border-white/5"
+              title="Install CoreGPT on Android or iOS"
+            >
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+                <span>Install Mobile App</span>
+              </div>
+              <Download className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+            </button>
           </div>
         )}
 

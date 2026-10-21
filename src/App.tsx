@@ -11,8 +11,9 @@ import { VoiceConversationModal } from './components/VoiceConversationModal.tsx'
 import { AdminDashboard } from './components/AdminDashboard.tsx';
 import { SettingsModal } from './components/SettingsModal.tsx';
 import { AuthModal } from './components/AuthModal.tsx';
-import { ThinkAiLogo } from './components/ThinkAiLogo.tsx';
 import { LogoCustomizerModal } from './components/LogoCustomizerModal.tsx';
+import { ThinkAiLogo } from './components/ThinkAiLogo.tsx';
+import { InstallAppModal } from './components/InstallAppModal.tsx';
 import { ThemeAccent } from './components/Header.tsx';
 import {
   Sparkles,
@@ -65,6 +66,20 @@ export default function App() {
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  // Listen for native PWA beforeinstallprompt on Android & Chromium
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   // Theme Accent Palette
   const [themeAccent, setThemeAccent] = useState<ThemeAccent>(() => {
@@ -478,6 +493,7 @@ export default function App() {
         onOpenSettings={() => setShowSettingsModal(true)}
         onLogout={handleLogout}
         onOpenLogoModal={() => setShowLogoModal(true)}
+        onOpenInstallModal={() => setShowInstallModal(true)}
       />
 
       {/* Main Content Pane */}
@@ -497,6 +513,7 @@ export default function App() {
           onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           onOpenVoiceMode={() => setShowVoiceModal(true)}
           onOpenLogoModal={() => setShowLogoModal(true)}
+          onOpenInstallModal={() => setShowInstallModal(true)}
           themeAccent={themeAccent}
           onThemeAccentChange={setThemeAccent}
         />
@@ -671,6 +688,14 @@ export default function App() {
       <LogoCustomizerModal
         isOpen={showLogoModal}
         onClose={() => setShowLogoModal(false)}
+      />
+
+      {/* Install Mobile App / Android APK Package Modal */}
+      <InstallAppModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        deferredPrompt={deferredPrompt}
+        onInstallSuccess={() => setShowInstallModal(false)}
       />
 
       {/* Authentication Modal */}

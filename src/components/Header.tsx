@@ -12,6 +12,7 @@ import {
   Radio,
   BrainCircuit,
   Wand2,
+  Smartphone,
 } from 'lucide-react';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
 import { User, UsageState, ThemeAccent } from '../types/index.ts';
@@ -31,6 +32,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   onOpenVoiceMode: () => void;
   onOpenLogoModal?: () => void;
+  onOpenInstallModal?: () => void;
   themeAccent?: ThemeAccent;
   onThemeAccentChange?: (accent: ThemeAccent) => void;
 }
@@ -49,6 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   onOpenVoiceMode,
   onOpenLogoModal,
+  onOpenInstallModal,
 }) => {
   const models = [
     {
@@ -190,6 +193,18 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[11px] font-mono">
               {isExperimentalMode ? '⚡ Jailbreak [ON]' : '⚡ Jailbreak'}
             </span>
+          </button>
+        )}
+
+        {/* Install App / Mobile APK Modal */}
+        {onOpenInstallModal && (
+          <button
+            onClick={onOpenInstallModal}
+            className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors"
+            title="Install CoreGPT on Android or iOS"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
+            <span className="hidden sm:inline text-[11px]">Install App</span>
           </button>
         )}
 
