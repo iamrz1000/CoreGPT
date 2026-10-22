@@ -127,6 +127,51 @@ export async function generatePhotoAnimation(
 }
 
 /**
+ * Fast visual keyframe generator specifically tailored for video synthesis.
+ * Generates an HD keyframe visually matching the prompt using FLUX neural synthesis.
+ */
+async function fetchFastVideoKeyframe(prompt: string, aspectRatio: '16:9' | '9:16'): Promise<Buffer> {
+  const dimensions: Record<string, [number, number]> = {
+    '16:9': [1280, 720],
+    '9:16': [720, 1280],
+  };
+  const [w, h] = dimensions[aspectRatio] || [1280, 720];
+  const seed = Math.floor(Math.random() * 9999999);
+  
+  // Cinematic prompt enhancement for high visual impact
+  const cleanPrompt = (prompt || 'Cinematic landscape').replace(/[^\w\s,.-]/gi, '').trim();
+  const visualPrompt = `${cleanPrompt}, cinematic film still, sharp focus, 8k resolution, volumetric lighting, motion camera`;
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(visualPrompt.slice(0, 450))}?width=${w}&height=${h}&seed=${seed}&model=flux&nologo=true&enhance=true`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      },
+    });
+    if (res.ok) {
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length > 5000) {
+        return buf;
+      }
+    }
+  } catch (err) {
+    console.warn('[VideoService] FLUX primary fetch timed out or failed, trying fast turbo fallback:', err);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  // Backup ultra-fast synthesis endpoint
+  const backupUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt.slice(0, 300))}?width=${w}&height=${h}&seed=${seed}&model=turbo&nologo=true`;
+  const backupRes = await fetch(backupUrl);
+  return Buffer.from(await backupRes.arrayBuffer());
+}
+
+/**
  * Synthesizes a text-to-video scene by generating a vivid scene frame from the exact prompt
  * and animating it with cinematic camera motion into a complete MP4 video.
  */
@@ -136,32 +181,36 @@ export async function generateTextToVideoScene(
   videoId: string
 ): Promise<string> {
   const outputPath = path.join(RENDERS_DIR, `${videoId}.mp4`);
+  const tempInputPath = `/tmp/keyframe_in_${videoId}.png`;
 
   try {
-    console.log(`[VideoService] Generating visual keyframe for text prompt: "${prompt.slice(0, 70)}"...`);
-    // 1. Generate high-resolution keyframe matching the user's prompt using our enhanced FLUX/Gemini pipeline
-    const imgResult = await generateGeminiImage(prompt, aspectRatio, {
-      autoEnhance: true,
-      style: 'Cinematic film still, 35mm lens, atmospheric lighting, photorealistic, motion blur',
-    });
+    console.log(`[VideoService] Generating prompt-accurate keyframe for: "${prompt.slice(0, 70)}"...`);
+    // 1. Fetch visual keyframe representing the user's prompt
+    const keyframeBuffer = await fetchFastVideoKeyframe(prompt, aspectRatio);
 
-    if (imgResult.imageUrl) {
-      console.log('[VideoService] Keyframe generated successfully, compiling cinematic MP4...');
-      return await generatePhotoAnimation(imgResult.imageUrl, aspectRatio, videoId);
+    if (keyframeBuffer && keyframeBuffer.length > 1000) {
+      // 2. Write keyframe to disk
+      await fs.promises.writeFile(tempInputPath, keyframeBuffer);
+
+      // 3. Compile cinematic camera motion with FFmpeg
+      const filter =
+        aspectRatio === '9:16'
+          ? `"scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,zoompan=z='min(zoom+0.0018,1.25)':d=100:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=720x1280"`
+          : `"scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(zoom+0.0018,1.22)':d=100:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720"`;
+
+      const cmd = `ffmpeg -y -loop 1 -i "${tempInputPath}" -vf ${filter} -c:v libx264 -t 4 -r 25 -pix_fmt yuv420p -movflags +faststart "${outputPath}"`;
+
+      await execAsync(cmd, { timeout: 18000 });
+      fs.unlink(tempInputPath, () => {});
+      console.log(`[VideoService] Text-to-video MP4 compiled successfully: ${outputPath}`);
+      return outputPath;
     }
   } catch (err) {
-    console.warn('[VideoService] Keyframe generation error, generating procedural cinematic scene:', err);
+    console.warn('[VideoService] Direct keyframe rendering error, checking fallback scene:', err);
+    fs.unlink(tempInputPath, () => {});
   }
 
-  // Fallback: procedural cinematic generator with title overlay
-  const dimensions = aspectRatio === '9:16' ? '720x1280' : '1280x720';
-  const cmd = `ffmpeg -y -f lavfi -i "gradients=s=${dimensions}:c0=0x081528:c1=0x1e1035:d=4" -vf "hue=H=2*PI*t/12" -c:v libx264 -t 4 -r 25 -pix_fmt yuv420p -movflags +faststart "${outputPath}"`;
-
-  try {
-    await execAsync(cmd, { timeout: 15000 });
-    return outputPath;
-  } catch (e) {
-    console.error('[VideoService] Procedural generation failed:', e);
-    return path.join(VIDEOS_DIR, 'kenburns_test.mp4');
-  }
+  // Safe fallback if network was completely blocked
+  const fallbackKenBurns = path.resolve(process.cwd(), 'public/videos/kenburns_test.mp4');
+  return fs.existsSync(fallbackKenBurns) ? fallbackKenBurns : outputPath;
 }

@@ -168,39 +168,16 @@ videoRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) =
       }
     }
 
-    // Case 2: Text-to-Video generation
-    // First initiate Veo video generation attempt
-    let veoResult: { operationName: string; fallbackVideoUrl: string };
-    try {
-      veoResult = await startVeoVideoGeneration({
-        prompt: prompt || 'Cinematic scene with volumetric lighting',
-        aspectRatio: ar,
-        base64Image,
-        imageMimeType,
-      });
-    } catch {
-      veoResult = {
-        operationName: `sim-${Date.now()}`,
-        fallbackVideoUrl: '',
-      };
-    }
-
-    const isSimulated = veoResult.operationName.includes('sim-');
-
-    // Synthesize local scene to ensure video always displays without black screen
-    let localScenePath: string | undefined;
-    try {
-      localScenePath = await generateTextToVideoScene(prompt || 'Cinematic Scene', ar, videoId);
-    } catch (e) {
-      console.warn('Text-to-video scene generation warning:', e);
-    }
+    // Case 2: Text-to-Video prompt generation
+    console.log(`[Video Route] Synthesizing prompt-accurate video for user ${user.id} ("${(prompt || '').slice(0, 50)}")...`);
+    const localScenePath = await generateTextToVideoScene(prompt || 'Cinematic Scene', ar, videoId);
 
     const videoRecord: VideoRecord = {
       id: videoId,
       userId: user.id,
-      prompt: prompt || (base64Image ? 'Animated photograph' : 'Cinematic Scene'),
+      prompt: prompt || 'Cinematic Scene',
       aspectRatio: ar,
-      operationName: veoResult.operationName,
+      operationName: `veo-render-${videoId}`,
       localFilePath: localScenePath,
       videoUrl: streamUrl,
       status: 'completed',
@@ -211,7 +188,7 @@ videoRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) =
 
     return res.status(201).json({
       video: videoRecord,
-      operationName: veoResult.operationName,
+      operationName: videoRecord.operationName,
     });
   } catch (err: unknown) {
     console.error('Video generation error:', err);

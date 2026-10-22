@@ -58,8 +58,6 @@ export const VideoStudio: React.FC = () => {
   const [videoUsage, setVideoUsage] = useState<VideoUsageInfo | null>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
-  const galleryInputRef = React.useRef<HTMLInputElement | null>(null);
-  const cameraInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const loadUsage = async () => {
     try {
@@ -457,44 +455,32 @@ export const VideoStudio: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Hidden Universal File Inputs */}
-                  <input
-                    type="file"
-                    ref={galleryInputRef}
-                    accept="image/*"
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                  />
-                  <input
-                    type="file"
-                    ref={cameraInputRef}
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleFileInputChange}
-                    className="hidden"
-                  />
 
                   {uploadedImage ? (
-                    <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-52 group bg-black/5 dark:bg-white/5">
+                    <div className="relative rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-56 group bg-black/5 dark:bg-white/5">
                       <img
                         src={uploadedImage}
                         alt="To animate"
                         className="w-full h-48 object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none" />
                       <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
                         <span className="text-[11px] text-white font-medium drop-shadow-sm flex items-center gap-1">
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
                           Photo ready to animate
                         </span>
                         <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => galleryInputRef.current?.click()}
-                            className="px-2.5 py-1 rounded-lg bg-white/90 text-zinc-900 text-xs font-semibold hover:bg-white transition-all cursor-pointer shadow-sm active:scale-95"
-                          >
-                            Change
-                          </button>
+                          {/* Native touch-friendly Change Photo button */}
+                          <label className="relative px-2.5 py-1 rounded-lg bg-white/95 text-zinc-900 text-xs font-semibold hover:bg-white transition-all cursor-pointer shadow-sm active:scale-95 flex items-center">
+                            <span>Change</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileInputChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                          </label>
+
                           <button
                             type="button"
                             onClick={() => setUploadedImage(null)}
@@ -507,51 +493,60 @@ export const VideoStudio: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-2.5">
-                      {/* Interactive Tap Zone */}
-                      <div
-                        onClick={() => galleryInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 rounded-xl cursor-pointer bg-zinc-50 dark:bg-zinc-850 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-all select-none"
-                      >
+                      {/* Interactive Tap Zone with Native Invisible Input Overlay */}
+                      <label className="relative flex flex-col items-center justify-center p-5 border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 rounded-xl cursor-pointer bg-zinc-50 dark:bg-zinc-850 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-all select-none overflow-hidden">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileInputChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
                         {isProcessingPhoto ? (
-                          <div className="flex flex-col items-center py-2">
+                          <div className="flex flex-col items-center py-2 pointer-events-none">
                             <Loader2 className="w-7 h-7 text-zinc-800 dark:text-zinc-200 animate-spin mb-2" />
                             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                               Optimizing mobile photo...
                             </span>
                           </div>
                         ) : (
-                          <>
+                          <div className="flex flex-col items-center pointer-events-none">
                             <Upload className="w-7 h-7 text-zinc-400 mb-2" />
-                            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 text-center">
                               Tap or Drag Photo to Animate
                             </span>
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
-                              Supports any phone photo, camera shots, PNG, JPG or WEBP
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 text-center">
+                              Works on all phones · Camera or Gallery photo
                             </span>
-                          </>
+                          </div>
                         )}
-                      </div>
+                      </label>
 
-                      {/* Mobile Action Buttons (Direct Camera vs Gallery) */}
+                      {/* Mobile Native Action Buttons (Camera vs Gallery) */}
                       <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => cameraInputRef.current?.click()}
-                          disabled={isProcessingPhoto}
-                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-2xs"
-                        >
-                          <Camera className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
-                          <span>Take Photo</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => galleryInputRef.current?.click()}
-                          disabled={isProcessingPhoto}
-                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-2xs"
-                        >
-                          <ImageIcon className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
-                          <span>Photo Gallery</span>
-                        </button>
+                        {/* Direct Camera Button */}
+                        <label className="relative flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-2xs overflow-hidden">
+                          <Camera className="w-4 h-4 text-zinc-600 dark:text-zinc-300 pointer-events-none" />
+                          <span className="pointer-events-none">Take Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleFileInputChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                        </label>
+
+                        {/* Direct Gallery Button */}
+                        <label className="relative flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-2xs overflow-hidden">
+                          <ImageIcon className="w-4 h-4 text-zinc-600 dark:text-zinc-300 pointer-events-none" />
+                          <span className="pointer-events-none">Photo Gallery</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileInputChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                        </label>
                       </div>
                     </div>
                   )}
