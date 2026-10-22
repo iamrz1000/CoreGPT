@@ -28,7 +28,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [selectedStyle, setSelectedStyle] = useState('Realistic Photo');
-  const [selectedModel, setSelectedModel] = useState('gemini-nano-banana-2.1');
+  const [selectedModel, setSelectedModel] = useState('flux-realism');
   const [loading, setLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [autoEnhance, setAutoEnhance] = useState(true);
@@ -40,22 +40,28 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
 
   const models = [
     {
+      id: 'flux-realism',
+      name: 'FLUX.1 Realism Master',
+      tag: 'Ultra-Realism 8K',
+      desc: 'State-of-the-art neural engine with hyper-realistic textures, authentic human skin tones, crisp lighting, and zero distortion',
+    },
+    {
       id: 'gemini-nano-banana-2.1',
-      name: 'Google Advanced Gemini Nano Banana 2.1',
+      name: 'Google Gemini Nano Banana 2.1',
       tag: 'Google Advanced 4K',
-      desc: 'Next-gen Google flagship model for high-resolution 4K detail, photorealism, and intricate texture generation',
+      desc: 'Next-gen Google flagship model for high-resolution detail, rich cinematic depth, and intricate composition',
+    },
+    {
+      id: 'flux-anime',
+      name: 'FLUX.1 Anime & Digital Art',
+      tag: 'Artistic Master',
+      desc: 'Specialized model for breathtaking manga, anime, 3D digital art, and stylized illustrations',
     },
     {
       id: 'gemini-3.1-flash-lite-image',
       name: 'Gemini Nano Banana Lite',
       tag: 'Ultra-Fast',
       desc: 'High-throughput generative engine for rapid visual prototyping',
-    },
-    {
-      id: 'gemini-3-pro-image',
-      name: 'Gemini Nano Banana Pro',
-      tag: 'Studio Master',
-      desc: 'Studio composition model with cinematic dynamic lighting range',
     },
   ];
 
@@ -183,7 +189,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
   const isSmallPrompt = wordCount > 0 && wordCount < 12;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-white dark:bg-[#181818] text-zinc-900 dark:text-zinc-100 transition-colors">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-white dark:bg-[#181818] text-zinc-900 dark:text-zinc-100 transition-colors">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Studio Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03]">
@@ -202,16 +208,21 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
             </p>
           </div>
 
-          {/* Quota info badge */}
+          {/* Daily Use Limit / Quota badge */}
           {usage && (
             <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-right shrink-0">
               <div className="flex items-center justify-end gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
                 <Flame className="w-3.5 h-3.5 text-zinc-800 dark:text-zinc-200" />
-                <span>Daily Image Quota</span>
+                <span>{usage.isAdmin ? 'Admin Clearance' : 'Daily Use Limit'}</span>
               </div>
               <p className="text-base font-bold font-mono tabular-nums text-zinc-900 dark:text-white">
-                {usage.isAdmin ? 'Unlimited (Admin)' : `${usage.imageRemaining} / ${usage.imageLimit} left`}
+                {usage.isAdmin ? 'Admin: Unlimited' : `${usage.imageRemaining} / ${usage.imageLimit} left today`}
               </p>
+              {!usage.isAdmin && (
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                  Resets daily at 00:00 UTC
+                </p>
+              )}
             </div>
           )}
         </div>

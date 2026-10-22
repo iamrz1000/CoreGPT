@@ -73,13 +73,13 @@ async function startServer() {
   } else {
     console.log('✅ [NextGen AI]: Gemini AI API key successfully loaded.');
   }
-
   if (!isProduction) {
-    // Development mode: Mount Vite middleware for fast HMR and client bundle delivery
+    // Development mode: Mount Vite middleware for fast client bundle delivery (HMR is disabled in container environment)
     const { createServer } = await import('vite');
     const vite = await createServer({
       server: {
         middlewareMode: true,
+        hmr: false,
       },
       appType: 'spa',
     });

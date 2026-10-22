@@ -10,6 +10,7 @@ import {
   FileText,
   AlertCircle,
   Plus,
+  Headphones,
 } from 'lucide-react';
 
 interface AttachedFile {
@@ -30,6 +31,7 @@ interface ChatInputProps {
   onToggleSearchGrounding?: () => void;
   useMapsGrounding?: boolean;
   onToggleMapsGrounding?: () => void;
+  onOpenVoiceMode?: () => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -40,6 +42,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   selectedLanguage = 'auto',
   useSearchGrounding = false,
   onToggleSearchGrounding,
+  onOpenVoiceMode,
 }) => {
   const [text, setText] = useState('');
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
@@ -172,7 +175,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const hasContent = Boolean(text.trim() || attachedFile);
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pb-4 select-none">
+    <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 pb-16 md:pb-4 select-none">
       {voiceError && (
         <div className="mb-2 p-2 rounded-xl bg-zinc-100 dark:bg-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
@@ -251,6 +254,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               </button>
             )}
 
+            {/* Live Voice Conversation Mode (Duplex) */}
+            {onOpenVoiceMode && (
+              <button
+                type="button"
+                onClick={onOpenVoiceMode}
+                className="p-1.5 rounded-full text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-colors flex items-center gap-1"
+                title="Start Real-Time Voice Conversation"
+              >
+                <Headphones className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+              </button>
+            )}
+
             {/* Dictation */}
             <button
               type="button"
@@ -266,27 +281,42 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             </button>
           </div>
 
-          {/* Right tool: Circular Send / Stop button */}
-          <div>
+          {/* Right tool: Circular Send / Voice / Stop button */}
+          <div className="flex items-center gap-1.5">
             {isStreaming ? (
               <button
                 type="button"
                 onClick={onStopGeneration}
-                className="w-8 h-8 rounded-full bg-black text-white dark:bg-white dark:text-black hover:opacity-85 transition-all flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-black text-white dark:bg-white dark:text-black hover:opacity-85 transition-all flex items-center justify-center cursor-pointer shadow-xs"
                 title="Stop generation"
               >
                 <Square className="w-3 h-3 fill-current" />
               </button>
-            ) : (
+            ) : hasContent ? (
               <button
                 type="button"
                 onClick={() => handleSubmit()}
-                disabled={!hasContent || disabled}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  hasContent
-                    ? 'bg-black text-white dark:bg-white dark:text-black hover:opacity-85 cursor-pointer shadow-xs'
-                    : 'bg-black/10 text-black/30 dark:bg-white/10 dark:text-white/30 cursor-not-allowed'
-                }`}
+                disabled={disabled}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black text-white dark:bg-white dark:text-black hover:opacity-85 cursor-pointer shadow-xs transition-all"
+                title="Send message"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+            ) : onOpenVoiceMode ? (
+              <button
+                type="button"
+                onClick={onOpenVoiceMode}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-zinc-900 text-white dark:bg-white dark:text-black hover:opacity-90 active:scale-95 shadow-xs transition-all cursor-pointer"
+                title="Start Real-Time Voice Conversation"
+                aria-label="Start Voice Conversation"
+              >
+                <Headphones className="w-4 h-4 text-sky-400 dark:text-blue-600 animate-pulse" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-black/10 text-black/30 dark:bg-white/10 dark:text-white/30 cursor-not-allowed"
                 title="Send message"
               >
                 <ArrowUp className="w-4 h-4" />

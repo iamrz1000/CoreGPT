@@ -514,40 +514,40 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-[#0e0e12] border border-white/[0.09] rounded-2xl p-6 md:p-8 text-white shadow-2xl flex flex-col items-center text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto bg-[#0e0e12] border border-white/[0.09] rounded-2xl p-5 sm:p-7 text-white shadow-2xl flex flex-col items-center text-center">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+          className="absolute top-3.5 right-3.5 p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors z-20 min-w-[44px] min-h-[44px] flex items-center justify-center"
           title="Close voice conversation"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Modal Top Logo */}
-        <div className="mb-3">
-          <ThinkAiLogo size={44} />
+        <div className="mb-2.5">
+          <ThinkAiLogo size={40} />
         </div>
 
         {/* Model Mode Toggle Header */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/90 border border-white/[0.08] mb-4 text-xs">
+        <div className="flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-zinc-900/90 border border-white/[0.08] mb-3 text-xs w-full max-w-sm">
           <button
             type="button"
             onClick={() => {
               setActiveModel('gemini-3.8-live');
               cleanupAll();
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
               activeModel === 'gemini-3.8-live'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Gemini 3.8 Live API</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-sky-300 font-semibold">
-              Duplex
+            <Radio className="w-3.5 h-3.5 shrink-0" />
+            <span>Live Duplex</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-sky-300 font-semibold hidden xs:inline">
+              Real-time
             </span>
           </button>
 
@@ -557,14 +557,14 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               setActiveModel('gemini-3.8-flash');
               cleanupAll();
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
               activeModel === 'gemini-3.8-flash'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Gemini 3.8 Flash</span>
+            <Zap className="w-3.5 h-3.5 shrink-0" />
+            <span>Gemini Flash</span>
           </button>
         </div>
 

@@ -309,24 +309,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* Quota Progress */}
+        {/* Daily Use Limit / Quota Progress */}
         {usage && (
-          <div className="px-3 py-2 mx-3 mb-2 rounded-lg bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5 text-xs text-zinc-600 dark:text-zinc-400">
-            <div className="flex items-center justify-between text-[11px] mb-1">
-              <span>Messages Today</span>
-              <span className="font-mono tabular-nums">
-                {usage.isAdmin ? 'Unlimited' : `${usage.textCount} / ${usage.textLimit}`}
+          <div className="px-3 py-2.5 mx-3 mb-2 rounded-xl bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/5 text-xs text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center justify-between text-[11px] mb-1.5">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                {usage.isAdmin ? 'Admin Clearance' : 'Daily Use Limit'}
+              </span>
+              <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+                {usage.isAdmin ? 'Unlimited' : `${usage.textCount} / ${usage.textLimit} used`}
               </span>
             </div>
-            {!usage.isAdmin && (
-              <div className="w-full h-1 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-zinc-900 dark:bg-white transition-all duration-300"
-                  style={{
-                    width: `${Math.min(100, Math.round((usage.textCount / usage.textLimit) * 100))}%`,
-                  }}
-                />
-              </div>
+            {usage.isAdmin ? (
+              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                Unlimited message generations (Admin role)
+              </p>
+            ) : (
+              <>
+                <div className="w-full h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden mb-1.5">
+                  <div
+                    className="h-full bg-zinc-900 dark:bg-white transition-all duration-300"
+                    style={{
+                      width: `${Math.min(100, Math.round((usage.textCount / usage.textLimit) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500">
+                  <span>{usage.textRemaining} messages left today</span>
+                  <span>Resets at 00:00 UTC</span>
+                </div>
+              </>
             )}
           </div>
         )}

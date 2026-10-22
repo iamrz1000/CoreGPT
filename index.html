@@ -42,13 +42,17 @@
           // Fallback if property is non-configurable
         }
 
-        // Suppress unhandled errors originating from external browser extensions
+        // Suppress unhandled errors originating from external browser extensions or Vite HMR in container
         window.addEventListener('error', function (event) {
           var file = (event && event.filename) || '';
+          var msg = (event && (event.message || '')) || '';
           if (
             file.indexOf('chrome-extension://') !== -1 ||
             file.indexOf('moz-extension://') !== -1 ||
-            file.indexOf('safari-extension://') !== -1
+            file.indexOf('safari-extension://') !== -1 ||
+            file.indexOf('@vite/client') !== -1 ||
+            msg.indexOf('WebSocket') !== -1 ||
+            msg.indexOf('closed without opened') !== -1
           ) {
             event.stopImmediatePropagation();
             event.preventDefault();
@@ -57,11 +61,15 @@
         }, true);
 
         window.addEventListener('unhandledrejection', function (event) {
-          var stack = (event && event.reason && event.reason.stack) || '';
+          var reason = (event && event.reason) || '';
+          var stack = (reason && (reason.stack || reason.message || String(reason))) || '';
           if (
             stack.indexOf('chrome-extension://') !== -1 ||
             stack.indexOf('moz-extension://') !== -1 ||
-            stack.indexOf('safari-extension://') !== -1
+            stack.indexOf('safari-extension://') !== -1 ||
+            stack.indexOf('@vite/client') !== -1 ||
+            stack.indexOf('WebSocket') !== -1 ||
+            stack.indexOf('closed without opened') !== -1
           ) {
             event.stopImmediatePropagation();
             event.preventDefault();

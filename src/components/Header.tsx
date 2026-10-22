@@ -103,12 +103,12 @@ export const Header: React.FC<HeaderProps> = ({
   const currentModel = models.find((m) => m.id === selectedModel) || models[0];
 
   return (
-    <header className="h-14 border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-[#212121] px-3 md:px-5 flex items-center justify-between gap-3 z-20 shrink-0 transition-colors">
+    <header className="min-h-14 py-1.5 border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-[#212121] px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-3 z-20 shrink-0 transition-colors">
       {/* Zone 1: Sidebar Toggle & Brand */}
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+          className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors shrink-0"
           title="Toggle Sidebar"
         >
           <Menu className="w-4 h-4" />
@@ -116,17 +116,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div
           onClick={onOpenLogoModal}
-          className="flex items-center gap-2 cursor-pointer group select-none py-1 px-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+          className="flex items-center gap-1.5 cursor-pointer group select-none py-1 px-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shrink-0"
           title="CoreGPT — Founded by Umar Hani · Developed by Ahmadraza"
         >
-          <CoreGptLogo size={26} />
-          <div className="flex items-center font-bold tracking-tight text-zinc-900 dark:text-white">
-            <span className="text-sm md:text-base">CoreGPT</span>
-          </div>
+          <CoreGptLogo size={24} />
+          <span className="font-bold tracking-tight text-zinc-900 dark:text-white text-sm sm:text-base hidden xs:inline">
+            CoreGPT
+          </span>
         </div>
 
         {/* Model Selector styled like ChatGPT dropdown */}
-        <div className="relative flex items-center ml-1">
+        <div className="relative flex items-center">
           <select
             value={selectedModel}
             onChange={(e) => {
@@ -136,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenVoiceMode();
               }
             }}
-            className="appearance-none pl-3 pr-7 py-1 text-xs font-semibold rounded-lg bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 cursor-pointer focus:outline-none transition-colors border-none"
+            className="appearance-none pl-2 sm:pl-2.5 pr-6 py-1 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 cursor-pointer focus:outline-none transition-colors border border-transparent max-w-[95px] xs:max-w-[125px] sm:max-w-[170px] truncate"
             title="Model Architecture"
           >
             {models.map((m) => (
@@ -149,86 +149,87 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Zone 2: Controls & Actions */}
-      <div className="flex items-center gap-2 shrink-0">
-        {/* Language selector */}
-        <div className="relative hidden lg:flex items-center">
-          <Globe className="pointer-events-none absolute left-2 w-3 h-3 text-zinc-400 dark:text-zinc-500" />
-          <select
-            value={selectedLanguage}
-            onChange={(e) => onLanguageChange(e.target.value)}
-            className="appearance-none pl-6 pr-6 py-1 text-xs font-normal rounded-lg bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-600 dark:text-zinc-300 cursor-pointer focus:outline-none"
-            title="Language"
-          >
-            {languages.map((l) => (
-              <option key={l.code} value={l.code} className="dark:bg-[#171717]">
-                {l.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-1 w-3 h-3 text-zinc-400 dark:text-zinc-500" />
-        </div>
-
-        {/* Real-time Indicator */}
-        <div
-          className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg text-zinc-600 dark:text-zinc-400 text-xs font-medium"
-          title="Real-Time Temporal & Web Grounding: Active"
+      {/* Zone 2: Controls & Actions (Jailbreak, Voice, Quota, Theme) */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        {/* Jailbreak Toggle Button - Always visible, compact on mobile */}
+        <button
+          onClick={onToggleExperimentalMode}
+          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
+            isExperimentalMode
+              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5'
+          }`}
+          title={
+            isExperimentalMode
+              ? '⚡ Jailbreak Active: Direct answers without refusals (Click to turn off)'
+              : '⚡ Turn on Jailbreak mode for unrestricted answers'
+          }
+          aria-label="Toggle Jailbreak Mode"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-[11px] font-mono">Live</span>
-        </div>
+          <Zap className={`w-3.5 h-3.5 ${isExperimentalMode ? 'text-amber-500 fill-amber-500' : 'text-zinc-400'}`} />
+          <span className="text-[11px] font-mono hidden sm:inline">
+            {isExperimentalMode ? 'Jailbreak [ON]' : 'Jailbreak'}
+          </span>
+          <span className="text-[11px] font-mono sm:hidden">
+            {isExperimentalMode ? 'Jailbreak' : 'Normal'}
+          </span>
+        </button>
 
-        {/* Admin-only Root Jailbreak toggle */}
-        {currentUser?.role === 'admin' && (
-          <button
-            onClick={onToggleExperimentalMode}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
-              isExperimentalMode
-                ? 'bg-zinc-900 text-white dark:bg-white dark:text-black border-zinc-900 dark:border-white shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-white/15 hover:bg-zinc-100 dark:hover:bg-white/10'
-            }`}
-            title="Admin Root Jailbreak Mode: Unlocks all types of questions without refusals"
+        {/* Voice Conversation Mode Button - Prominent & accessible on all screens */}
+        <button
+          onClick={onOpenVoiceMode}
+          className="flex items-center gap-1 py-1 px-2 sm:px-2.5 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-black hover:opacity-90 text-xs font-semibold shadow-xs transition-all cursor-pointer shrink-0"
+          title="Start real-time duplex voice conversation"
+          aria-label="Start Voice Conversation"
+        >
+          <Mic className="w-3.5 h-3.5 text-sky-400 dark:text-blue-600 animate-pulse" />
+          <span className="text-[11px] font-semibold">Voice</span>
+        </button>
+
+        {/* Daily Use Limit / Admin Clearance Badge - Visible on Mobile and Desktop */}
+        {usage && (
+          <div
+            className="flex items-center gap-1 px-1.5 xs:px-2 py-1 rounded-lg text-xs font-mono tabular-nums border border-zinc-200 dark:border-white/10 bg-zinc-100/80 dark:bg-white/5 select-none shrink-0"
+            title={
+              usage.isAdmin
+                ? 'Administrator Clearance: Unlimited Messages'
+                : `Daily Use Limit: ${usage.textRemaining} of ${usage.textLimit} messages left today (Resets daily at 00:00 UTC)`
+            }
           >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-mono">
-              {isExperimentalMode ? '⚡ Jailbreak [ON]' : '⚡ Jailbreak'}
-            </span>
-          </button>
+            {usage.isAdmin ? (
+              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="hidden sm:inline">Admin:</span>
+                <strong className="text-emerald-600 dark:text-emerald-400">Unlimited</strong>
+              </span>
+            ) : (
+              <div className="flex items-center gap-1 text-[11px] text-zinc-700 dark:text-zinc-300">
+                <span className="text-zinc-400 dark:text-zinc-500 hidden sm:inline">Daily:</span>
+                <span className="font-semibold text-zinc-900 dark:text-white">
+                  {usage.textRemaining}/{usage.textLimit}
+                </span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500">left</span>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Install App / Mobile APK Modal */}
         {onOpenInstallModal && (
           <button
             onClick={onOpenInstallModal}
-            className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors"
+            className="hidden lg:flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors"
             title="Install CoreGPT on Android or iOS"
           >
             <Smartphone className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
-            <span className="hidden sm:inline text-[11px]">Install App</span>
+            <span className="text-[11px]">Install</span>
           </button>
-        )}
-
-        {/* Voice Mode Button */}
-        <button
-          onClick={onOpenVoiceMode}
-          className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors"
-          title="Start real-time voice conversation"
-        >
-          <Mic className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
-          <span className="hidden sm:inline text-[11px]">Voice</span>
-        </button>
-
-        {/* Credits / Quota indicator */}
-        {usage && (
-          <div className="hidden xl:flex items-center gap-1.5 px-2 py-1 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono tabular-nums">
-            <span>{usage.isAdmin ? 'Unlimited' : `${usage.textRemaining} credits`}</span>
-          </div>
         )}
 
         {/* Light / Dark Mode Toggle */}
         <button
           onClick={onToggleTheme}
-          className="p-1.5 rounded-lg text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+          className="p-1.5 rounded-lg text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors shrink-0"
           title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
         >
           {theme === 'dark' ? (

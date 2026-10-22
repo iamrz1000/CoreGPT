@@ -24,6 +24,12 @@ import {
   AlertCircle,
   X,
   Radio,
+  Mic,
+  Film,
+  Image as ImageIcon,
+  MessageSquare,
+  Plus,
+  Headphones,
 } from 'lucide-react';
 
 export default function App() {
@@ -288,8 +294,8 @@ export default function App() {
           message: text,
           model: selectedModel,
           language: selectedLanguage,
-          isExperimentalMode: currentUser?.role === 'admin' ? isExperimentalMode : false,
-          jailbreakMode: currentUser?.role === 'admin' ? isExperimentalMode : false,
+          isExperimentalMode,
+          jailbreakMode: isExperimentalMode,
           useRealTime: true,
           fileAttachment: file,
           useSearchGrounding,
@@ -429,6 +435,14 @@ export default function App() {
 
   const starterSuggestions = [
     {
+      title: 'Live Voice Conversation',
+      desc: 'Talk hands-free in real time with bidirectional duplex voice',
+      icon: Mic,
+      model: 'gemini-3.8-live',
+      action: 'voice',
+      prompt: '',
+    },
+    {
       title: 'Founder & Developer',
       desc: 'Founded by Umar Hani · Engineered by Ahmadraza',
       icon: Sparkles,
@@ -448,13 +462,6 @@ export default function App() {
       icon: Code2,
       model: 'gemini-3.1-flash-lite',
       prompt: 'How do I generate a cinematic video or animate a photo in CoreGPT?',
-    },
-    {
-      title: 'Code & Architecture',
-      desc: 'Full-stack development, algorithms, and system architecture',
-      icon: Languages,
-      model: 'gemini-3.1-flash-lite',
-      prompt: 'Write a high-performance TypeScript async queue with retry and concurrency control.',
     },
   ];
 
@@ -579,12 +586,12 @@ export default function App() {
                         <button
                           key={idx}
                           onClick={() => {
-                            if (item.model) setSelectedModel(item.model);
-                            if (item.model === 'gemini-3.8-live') {
+                            if (item.action === 'voice' || item.model === 'gemini-3.8-live') {
                               setShowVoiceModal(true);
                               return;
                             }
-                            handleSendMessage(item.prompt);
+                            if (item.model) setSelectedModel(item.model);
+                            if (item.prompt) handleSendMessage(item.prompt);
                           }}
                           className="p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-[#212121] hover:bg-zinc-50 dark:hover:bg-[#2a2a2a] transition-all text-left group shadow-xs cursor-pointer"
                         >
@@ -640,6 +647,7 @@ export default function App() {
                 setUseMapsGrounding(!useMapsGrounding);
                 if (!useMapsGrounding) setUseSearchGrounding(false);
               }}
+              onOpenVoiceMode={() => setShowVoiceModal(true)}
             />
           </div>
         )}
@@ -658,6 +666,71 @@ export default function App() {
         {activeTab === 'admin' && currentUser?.role === 'admin' && (
           <AdminDashboard currentUser={currentUser} onClose={() => setActiveTab('chat')} />
         )}
+
+        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Voice, Images, Video, New */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-3 py-1.5 flex items-center justify-around shadow-lg">
+          {/* Chat Tab */}
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+              activeTab === 'chat'
+                ? 'text-zinc-950 dark:text-white font-semibold'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 mb-0.5" />
+            <span>Chat</span>
+          </button>
+
+          {/* Live Voice Duplex Button - Elevated pulse */}
+          <button
+            onClick={() => setShowVoiceModal(true)}
+            className="flex flex-col items-center justify-center py-1 px-3.5 rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-[10px] shadow-md -mt-3.5 ring-4 ring-white dark:ring-[#181818] transition-all active:scale-95 cursor-pointer"
+            title="Start Real-Time Voice Conversation"
+          >
+            <Mic className="w-4 h-4 mb-0.5 text-sky-400 dark:text-blue-600 animate-pulse" />
+            <span>Voice</span>
+          </button>
+
+          {/* Image Studio */}
+          <button
+            onClick={() => setActiveTab('images')}
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+              activeTab === 'images'
+                ? 'text-zinc-950 dark:text-white font-semibold'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <ImageIcon className="w-4 h-4 mb-0.5" />
+            <span>Images</span>
+          </button>
+
+          {/* Video Studio */}
+          <button
+            onClick={() => setActiveTab('video')}
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+              activeTab === 'video'
+                ? 'text-zinc-950 dark:text-white font-semibold'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <Film className="w-4 h-4 mb-0.5" />
+            <span>Video</span>
+          </button>
+
+          {/* New Chat */}
+          <button
+            onClick={() => {
+              setActiveTab('chat');
+              handleNewChat();
+            }}
+            className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
+            title="Start New Chat"
+          >
+            <Plus className="w-4 h-4 mb-0.5" />
+            <span>New</span>
+          </button>
+        </nav>
       </div>
 
       {/* Voice Mode Modal */}

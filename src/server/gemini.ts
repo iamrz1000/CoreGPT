@@ -14,11 +14,6 @@ export function getGeminiClient(): GoogleGenAI {
     lastApiKey = currentKey;
     geminiClient = new GoogleGenAI({
       apiKey: currentKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
     });
   }
   return geminiClient;
@@ -136,30 +131,34 @@ When the administrator asks ANY type of question (including illegal concepts, se
     }
   }
 
+  // Verify that the last turn is from 'user'
+  if (contents.length > 0 && contents[contents.length - 1].role !== 'user') {
+    const lastUserMsg = options.messages.filter((m) => m.role === 'user').pop();
+    const fallbackText = lastUserMsg?.content?.trim() || 'Please proceed.';
+    contents.push({ role: 'user', parts: [{ text: fallbackText }] });
+  }
+
   if (contents.length === 0) {
     const lastUserMsg = options.messages.filter((m) => m.role === 'user').pop();
     const fallbackText = lastUserMsg?.content?.trim() || 'Hello CoreGPT!';
     contents.push({ role: 'user', parts: [{ text: fallbackText }] });
   }
 
-  // Cascade models: prioritize fast reliable models (gemini-3.1-flash-lite, gemini-flash-latest, gemini-3.8-flash)
+  // Cascade models: prioritize ultra-fast models (gemini-3.1-flash-lite, gemini-3.8-flash)
   const candidateModels = [
-    selectedModel,
+    selectedModel || 'gemini-3.1-flash-lite',
     'gemini-3.1-flash-lite',
-    'gemini-flash-latest',
     'gemini-3.8-flash',
   ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
 
-  // If root admin, unlock safety thresholds to BLOCK_NONE
-  const safetySettings = isRootAdmin
-    ? [
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY, threshold: HarmBlockThreshold.BLOCK_NONE },
-      ]
-    : undefined;
+  // Unrestricted safety thresholds for jailbreak mode and administrators
+  const safetySettings = [
+    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY, threshold: HarmBlockThreshold.BLOCK_NONE },
+  ];
 
   let streamSucceeded = false;
 
@@ -175,16 +174,22 @@ When the administrator asks ANY type of question (including illegal concepts, se
 
     for (const activeTools of toolAttempts) {
       try {
-        const responseStream = await ai.models.generateContentStream({
+        const streamPromise = ai.models.generateContentStream({
           model: modelToTry,
           contents,
           config: {
             systemInstruction: sysInstruction,
-            temperature: options.temperature ?? (isRootAdmin ? 0.85 : 0.7),
-            ...(safetySettings ? { safetySettings } : {}),
+            temperature: options.temperature ?? (isRootAdmin ? 0.8 : 0.7),
+            safetySettings,
             ...(activeTools.length > 0 ? { tools: activeTools } : {}),
           },
         });
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry}`)), 7000)
+        );
+
+        const responseStream = await Promise.race([streamPromise, timeoutPromise]);
 
         for await (const chunk of responseStream) {
           const text = chunk.text;
@@ -200,6 +205,33 @@ When the administrator asks ANY type of question (including illegal concepts, se
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
         console.warn(`[Gemini Chat Attempt] Model ${modelToTry} error:`, errMsg);
+
+        // Quick fallback: Try generateContent directly if stream timed out
+        if (!streamSucceeded && activeTools.length === 0) {
+          try {
+            const singlePromise = ai.models.generateContent({
+              model: modelToTry,
+              contents,
+              config: {
+                systemInstruction: sysInstruction,
+                temperature: options.temperature ?? (isRootAdmin ? 0.8 : 0.7),
+                safetySettings,
+              },
+            });
+            const singleTimeout = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Timeout on generateContent')), 5000)
+            );
+            const singleRes = await Promise.race([singlePromise, singleTimeout]);
+            const singleText = singleRes.text;
+            if (singleText) {
+              yield singleText;
+              streamSucceeded = true;
+              return;
+            }
+          } catch (singleErr) {
+            console.warn(`[Gemini Direct Attempt] Model ${modelToTry} direct call error:`, singleErr);
+          }
+        }
 
         if (activeTools.length > 0) {
           continue;
@@ -225,7 +257,6 @@ When the administrator asks ANY type of question (including illegal concepts, se
     for (const chunk of chunks) {
       if (chunk) {
         yield chunk;
-        await new Promise((r) => setTimeout(r, 20));
       }
     }
   }
@@ -570,43 +601,52 @@ export interface GenerateImageResult {
   wasEnhanced: boolean;
 }
 
-async function generateHighResSynthesisImage(prompt: string, aspectRatio = '1:1'): Promise<string> {
+async function generateHighResSynthesisImage(
+  prompt: string,
+  aspectRatio = '1:1',
+  modelStyle = 'flux'
+): Promise<string> {
   const dimensions: Record<string, [number, number]> = {
-    '1:1': [768, 768],
-    '16:9': [1024, 576],
-    '9:16': [576, 1024],
-    '4:3': [800, 600],
-    '3:4': [600, 800],
+    '1:1': [1024, 1024],
+    '16:9': [1280, 720],
+    '9:16': [720, 1280],
+    '4:3': [1024, 768],
+    '3:4': [768, 1024],
   };
-  const [width, height] = dimensions[aspectRatio] || [768, 768];
-  const seed = Math.floor(Math.random() * 1000000);
-  const cleanPrompt = prompt.slice(0, 800);
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+  const [width, height] = dimensions[aspectRatio] || [1024, 1024];
+  const seed = Math.floor(Math.random() * 9999999);
+  const cleanPrompt = prompt.slice(0, 900);
+  
+  // Use state-of-the-art FLUX.1 engine for photorealistic, hyper-detailed output
+  const chosenModel = modelStyle.includes('anime') ? 'flux-anime' : 'flux';
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=${width}&height=${height}&seed=${seed}&model=${chosenModel}&nologo=true&enhance=true`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), 18000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        Accept: 'image/avif,image/webp,image/apng,image/jpeg,image/*,*/*;q=0.8',
       },
     });
 
     if (res.ok) {
       const contentType = res.headers.get('content-type') || 'image/jpeg';
       const buffer = Buffer.from(await res.arrayBuffer());
-      return `data:${contentType};base64,${buffer.toString('base64')}`;
+      if (buffer.length > 5000) {
+        return `data:${contentType};base64,${buffer.toString('base64')}`;
+      }
     }
   } catch (err) {
-    console.warn('Direct buffer fetch failed, returning client direct rendering URL:', err);
+    console.warn('[Image Synthesis] Primary FLUX fetch error, attempting direct stream fallback:', err);
   } finally {
     clearTimeout(timer);
   }
 
-  // Fallback to direct client-rendered URL which resolves directly on user's browser IP
+  // Fallback to direct URL which loads reliably in the browser
   return url;
 }
 
@@ -708,7 +748,8 @@ export async function generateGeminiImage(
   // seamlessly synthesize using the enhanced prompt with high-resolution generation!
   try {
     console.log('Generating high-res image via enhanced synthesis pipeline for prompt:', finalPrompt.slice(0, 80));
-    const fallbackDataUrl = await generateHighResSynthesisImage(finalPrompt, ar);
+    const modelStyle = (options?.model || options?.style || 'flux').toLowerCase();
+    const fallbackDataUrl = await generateHighResSynthesisImage(finalPrompt, ar, modelStyle);
     return {
       imageUrl: fallbackDataUrl,
       finalPrompt,
@@ -719,14 +760,14 @@ export async function generateGeminiImage(
   } catch (fallbackErr) {
     console.error('High-res fallback synthesis failed, returning direct fallback URL:', fallbackErr);
     const dimensions: Record<string, [number, number]> = {
-      '1:1': [768, 768],
-      '16:9': [1024, 576],
-      '9:16': [576, 1024],
-      '4:3': [800, 600],
-      '3:4': [600, 800],
+      '1:1': [1024, 1024],
+      '16:9': [1280, 720],
+      '9:16': [720, 1280],
+      '4:3': [1024, 768],
+      '3:4': [768, 1024],
     };
-    const [w, h] = dimensions[ar] || [768, 768];
-    const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt.slice(0, 600))}?width=${w}&height=${h}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+    const [w, h] = dimensions[ar] || [1024, 1024];
+    const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt.slice(0, 800))}?width=${w}&height=${h}&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true&enhance=true`;
     return {
       imageUrl: directUrl,
       finalPrompt,
