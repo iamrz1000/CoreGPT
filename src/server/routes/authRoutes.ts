@@ -64,6 +64,7 @@ authRouter.post('/signup', async (req, res: Response) => {
       password_hash: passwordHash,
       role,
       status: 'active',
+      auth_provider: 'password',
     });
 
     // Create session token
@@ -231,6 +232,7 @@ authRouter.post('/google', async (req, res: Response) => {
         password_hash: passwordHash,
         role: assignedRole,
         status: 'active',
+        auth_provider: 'google',
       });
 
       if (assignedRole === 'admin') {

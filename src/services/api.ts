@@ -6,6 +6,7 @@ import {
   GeneratedImage,
   UsageState,
   User,
+  UserChatHistory,
 } from '../types/index.ts';
 
 export class ApiError extends Error {
@@ -272,6 +273,14 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify(updates),
       }),
+
+    deleteUser: (id: string) =>
+      request<{ message: string }>(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getUserHistory: (id: string) =>
+      request<UserChatHistory>(`/api/admin/users/${id}/history`),
 
     settings: () => request<{ settings: Record<string, AppSetting> }>('/api/admin/settings'),
 

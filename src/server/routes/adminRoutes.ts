@@ -86,6 +86,68 @@ adminRouter.patch('/users/:id', requireAdmin, (req: AuthenticatedRequest, res: R
   }
 });
 
+// DELETE /api/admin/users/:id
+adminRouter.delete('/users/:id', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const admin = req.user!;
+    const { id } = req.params;
+
+    const targetUser = db.getUserById(id);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Protect against self-deletion
+    if (targetUser.id === admin.id) {
+      return res.status(400).json({ error: 'You cannot delete your own administrator account.' });
+    }
+
+    const success = db.deleteUser(id);
+    if (!success) {
+      return res.status(500).json({ error: 'Failed to delete user account.' });
+    }
+
+    db.logAdminAction(
+      admin.email,
+      'USER_DELETED',
+      `Permanently deleted user account ${targetUser.email} (Name: ${targetUser.display_name}) along with all chat history and data.`,
+      admin.id,
+      req.ip
+    );
+
+    return res.json({ message: `User ${targetUser.email} has been permanently deleted.` });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to delete user';
+    return res.status(500).json({ error: message });
+  }
+});
+
+// GET /api/admin/users/:id/history
+adminRouter.get('/users/:id/history', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const targetUser = db.getUserById(id);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const history = db.getUserHistory(id);
+    return res.json({
+      user: {
+        id: targetUser.id,
+        email: targetUser.email,
+        displayName: targetUser.display_name,
+        role: targetUser.role,
+        status: targetUser.status,
+      },
+      ...history,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve user history';
+    return res.status(500).json({ error: message });
+  }
+});
+
 // GET /api/admin/settings
 adminRouter.get('/settings', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
   try {

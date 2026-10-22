@@ -6,6 +6,24 @@ export interface User {
   status: 'active' | 'suspended';
   dailyQuotaOverride?: number | null;
   createdAt: string;
+  authType?: 'password' | 'google';
+  passwordHashPreview?: string;
+  conversationCount?: number;
+  messageCount?: number;
+  lastActive?: string;
+}
+
+export interface UserChatHistory {
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+    role: string;
+    status: string;
+  };
+  conversations: (Conversation & { messages: Message[] })[];
+  totalConversations: number;
+  totalMessages: number;
 }
 
 export interface Conversation {

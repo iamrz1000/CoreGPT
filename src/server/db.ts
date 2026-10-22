@@ -10,6 +10,7 @@ export interface User {
   role: 'user' | 'admin';
   status: 'active' | 'suspended';
   daily_quota_override?: number | null;
+  auth_provider?: 'password' | 'google';
   created_at: string;
   updated_at: string;
 }
@@ -307,7 +308,18 @@ class DatabaseService {
     query?: string,
     limit = 50,
     offset = 0
-  ): { users: Omit<User, 'password_hash'>[]; total: number } {
+  ): {
+    users: (Omit<User, 'password_hash'> & {
+      displayName: string;
+      createdAt: string;
+      authType: 'password' | 'google';
+      passwordHashPreview: string;
+      conversationCount: number;
+      messageCount: number;
+      lastActive?: string;
+    })[];
+    total: number;
+  } {
     let list = this.data.users;
     if (query) {
       const q = query.toLowerCase();
@@ -321,9 +333,60 @@ class DatabaseService {
     const paginated = list.slice(offset, offset + limit).map((u) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password_hash, ...safe } = u;
-      return safe;
+      const userConvs = this.data.conversations.filter((c) => c.user_id === u.id);
+      const convIds = new Set(userConvs.map((c) => c.id));
+      const userMessages = this.data.messages.filter((m) => convIds.has(m.conversation_id));
+
+      const authType: 'password' | 'google' = u.auth_provider
+        ? u.auth_provider
+        : (u.email.endsWith('@gmail.com') && !u.password_hash.includes('MH04MQ6421') ? 'google' : 'password');
+
+      const latestMsg = userMessages.length > 0 ? userMessages[userMessages.length - 1].created_at : undefined;
+      const latestConv = userConvs.length > 0 ? userConvs[0].updated_at : undefined;
+      const lastActive = latestMsg || latestConv || u.updated_at || u.created_at;
+
+      return {
+        ...safe,
+        displayName: u.display_name,
+        createdAt: u.created_at,
+        authType,
+        passwordHashPreview: u.password_hash
+          ? `${u.password_hash.substring(0, 10)}...${u.password_hash.substring(u.password_hash.length - 4)}`
+          : 'OAuth Token Protected',
+        conversationCount: userConvs.length,
+        messageCount: userMessages.length,
+        lastActive,
+      };
     });
     return { users: paginated, total };
+  }
+
+  getUserHistory(userId: string): {
+    conversations: (Conversation & { messages: Message[] })[];
+    totalConversations: number;
+    totalMessages: number;
+  } {
+    const userConvs = this.data.conversations
+      .filter((c) => c.user_id === userId)
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+    const conversations = userConvs.map((conv) => {
+      const messages = this.data.messages
+        .filter((m) => m.conversation_id === conv.id)
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      return {
+        ...conv,
+        messages,
+      };
+    });
+
+    const totalMessages = conversations.reduce((acc, c) => acc + c.messages.length, 0);
+
+    return {
+      conversations,
+      totalConversations: userConvs.length,
+      totalMessages,
+    };
   }
 
   // --- Sessions ---
