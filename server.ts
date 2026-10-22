@@ -25,9 +25,35 @@ const app = express();
 const PORT = 3000;
 const server = http.createServer(app);
 
-// WebSocket server for gemini-3.8-live Live API
-const wss = new WebSocketServer({ server, path: '/live' });
-setupLiveWebSocket(wss);
+// WebSocket servers with centralized upgrade dispatcher
+const liveWss = new WebSocketServer({ noServer: true });
+setupLiveWebSocket(liveWss);
+
+const hmrWss = new WebSocketServer({ noServer: true });
+hmrWss.on('connection', (socket) => {
+  try {
+    socket.send(JSON.stringify({ type: 'connected' }));
+  } catch {}
+});
+
+server.on('upgrade', (request, socket, head) => {
+  let pathname = '/';
+  try {
+    const url = new URL(request.url || '', 'http://localhost');
+    pathname = url.pathname;
+  } catch {}
+
+  if (pathname.startsWith('/live')) {
+    liveWss.handleUpgrade(request, socket, head, (ws) => {
+      liveWss.emit('connection', ws, request);
+    });
+  } else {
+    // Gracefully handle Vite dev HMR upgrades without socket rejection
+    hmrWss.handleUpgrade(request, socket, head, (ws) => {
+      hmrWss.emit('connection', ws, request);
+    });
+  }
+});
 
 // Security and parser middlewares
 app.use(express.json({ limit: '20mb' }));

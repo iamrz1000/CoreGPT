@@ -76,6 +76,19 @@
             return true;
           }
         }, true);
+
+        // Suppress console.error for Vite HMR closed without opened
+        var _originalConsoleError = console.error;
+        console.error = function () {
+          var text = Array.prototype.slice.call(arguments).join(' ');
+          if (
+            text.indexOf('closed without opened') !== -1 ||
+            (text.indexOf('[vite]') !== -1 && text.indexOf('WebSocket') !== -1)
+          ) {
+            return;
+          }
+          _originalConsoleError.apply(console, arguments);
+        };
       })();
     </script>
   </head>
