@@ -738,6 +738,7 @@ export default function App() {
         isOpen={showVoiceModal}
         onClose={() => setShowVoiceModal(false)}
         voiceName={voiceName}
+        onVoiceChange={setVoiceName}
         selectedLanguage={selectedLanguage}
       />
 

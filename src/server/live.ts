@@ -3,8 +3,19 @@ import { getGeminiClient } from './gemini.ts';
 import { LiveServerMessage, Modality } from '@google/genai';
 
 export function setupLiveWebSocket(wss: WebSocketServer) {
-  wss.on('connection', async (clientWs: WebSocket) => {
-    console.log('🎙️ [Live API]: Client connected for real-time conversation');
+  wss.on('connection', async (clientWs: WebSocket, req: any) => {
+    let url: URL;
+    try {
+      url = new URL(req.url || '', 'http://localhost');
+    } catch {
+      url = new URL('http://localhost');
+    }
+
+    const requestedVoice = url.searchParams.get('voice') || 'Zephyr';
+    const validVoices = ['Puck', 'Charon', 'Kore', 'Fenrir', 'Zephyr'];
+    const voiceName = validVoices.includes(requestedVoice) ? requestedVoice : 'Zephyr';
+
+    console.log(`🎙️ [Live API]: Client connected for real-time conversation (Voice: ${voiceName})`);
     let session: any = null;
     let isConnected = true;
 
@@ -25,10 +36,13 @@ export function setupLiveWebSocket(wss: WebSocketServer) {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName } },
           },
-          systemInstruction:
-            'You are CoreGPT Live Voice, a real-time conversational voice partner founded by Umar Hani and developed by Ahmadraza. You have a natural, articulate, engaging speaking voice. Answer the user conversationally in concise, helpful spoken sentences.',
+          systemInstruction: `You are CoreGPT Live, an elite, real-time conversational partner with live camera vision powered by Google Gemini 3.8 technology. Founder: Umar Hani, Developer: Ahmadraza.
+You possess real-time auditory hearing and real-time visual camera perception.
+- Vocal Persona: Speak with a charismatic, professional, articulate, warm human tone—identical to Google Gemini Live and Project Astra. Keep your vocal pacing natural, fluid, and engaging.
+- Live Camera & Vision: You receive real-time camera video frames from the user's camera feed (front or rear). When the user asks about what they are showing you, pointing at, holding up, or wearing, analyze the visual scene with high precision, detail, and contextual intelligence.
+- Direct & Punchy: Keep spoken answers concise, conversational, and direct so a fast-flowing back-and-forth dialogue is easy. Avoid markdown formatting, asterisks, bulleted lists, or robotic phrasing unless asked. If interrupted, halt gracefully and listen.`,
         },
         callbacks: {
           onmessage: (message: LiveServerMessage) => {
@@ -68,7 +82,8 @@ export function setupLiveWebSocket(wss: WebSocketServer) {
           JSON.stringify({
             type: 'ready',
             model: 'gemini-3.8-live',
-            message: 'Connected to Gemini 3.8 Live API session',
+            voice: voiceName,
+            message: `Connected to Gemini 3.8 Live API with ${voiceName} voice & camera vision enabled`,
           })
         );
       }
@@ -81,6 +96,16 @@ export function setupLiveWebSocket(wss: WebSocketServer) {
           if (parsed.audio && session) {
             session.sendRealtimeInput({
               audio: { data: parsed.audio, mimeType: 'audio/pcm;rate=16000' },
+            });
+          }
+
+          // Handle real-time camera video frame (JPEG base64 at 1 FPS)
+          if (parsed.video && session) {
+            session.sendRealtimeInput({
+              video: {
+                data: parsed.video,
+                mimeType: parsed.mimeType || 'image/jpeg',
+              },
             });
           }
 
