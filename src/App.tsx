@@ -152,12 +152,12 @@ export default function App() {
   };
 
   // Fetch Conversations once authenticated
-  const loadConversations = async () => {
+  const loadConversations = async (autoSelectFirst = false) => {
     if (!currentUser) return;
     try {
       const res = await api.conversations.list();
       setConversations(res.conversations || []);
-      if (!activeConversationId && res.conversations?.length > 0) {
+      if (autoSelectFirst && !activeConversationId && res.conversations?.length > 0) {
         selectConversation(res.conversations[0].id);
       }
     } catch (err) {
@@ -171,7 +171,7 @@ export default function App() {
 
   useEffect(() => {
     if (currentUser) {
-      loadConversations();
+      loadConversations(true);
       refreshUsage();
     }
   }, [currentUser]);
@@ -335,7 +335,7 @@ export default function App() {
                     assignedConvId = event.conversationId;
                     setActiveConversationId(event.conversationId);
                     if (event.isNew) {
-                      loadConversations();
+                      loadConversations(false);
                     }
                   } else if (event.type === 'image') {
                     accumulated = event.text;
