@@ -251,6 +251,17 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(body),
       }),
+
+    visionQuery: (body: {
+      prompt: string;
+      imageBase64: string;
+      voice?: string;
+      language?: string;
+    }) =>
+      request<{ text: string; audioBase64: string; mimeType: string }>('/api/voice/vision-query', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
   },
 
   usage: {

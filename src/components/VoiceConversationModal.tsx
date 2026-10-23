@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { api, getAuthToken } from '../services/api.ts';
+import { api } from '../services/api.ts';
 import {
   X,
   Mic,
@@ -10,8 +10,6 @@ import {
   RefreshCw,
   Sparkles,
   Loader2,
-  Radio,
-  Zap,
   Activity,
   RotateCcw,
   Eye,
@@ -79,6 +77,115 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+// Helper to draw smooth sinusoidal/bezier audio waveform on any canvas
+function renderWaveformCanvas(
+  canvas: HTMLCanvasElement | null,
+  timeData: Uint8Array,
+  rms: number,
+  isSpeaking: boolean,
+  isMuted: boolean,
+  timeCounter: number
+) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const centerY = h / 2;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (isMuted) {
+    // Flat muted red/gray line
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(0, centerY);
+    ctx.lineTo(w, centerY);
+    ctx.stroke();
+    return;
+  }
+
+  // Choose color theme
+  let primaryStroke = 'rgba(6, 182, 212, 0.9)'; // Cyan (Listening / Mic)
+  let secondaryStroke = 'rgba(16, 185, 129, 0.5)'; // Emerald
+  let glowColor = 'rgba(6, 182, 212, 0.5)';
+
+  if (isSpeaking) {
+    primaryStroke = 'rgba(96, 165, 250, 0.95)'; // Sky / Blue (Model Speaking)
+    secondaryStroke = 'rgba(168, 85, 247, 0.6)'; // Purple / Violet
+    glowColor = 'rgba(59, 130, 246, 0.6)';
+  }
+
+  const bufferLength = timeData.length;
+  const sliceWidth = w / (bufferLength - 1);
+
+  // Dynamic amplification factor based on RMS loudness
+  // Add subtle breathing wave so line remains organic when silent
+  const idleOscillation = Math.sin(timeCounter * 0.05) * 1.5;
+  const effectiveAmp = Math.max(idleOscillation, rms * (h * 0.85));
+
+  // Layer 1: Secondary softer harmonizing wave (phase shifted)
+  ctx.save();
+  ctx.beginPath();
+  ctx.strokeStyle = secondaryStroke;
+  ctx.lineWidth = 1.5;
+
+  let x = 0;
+  for (let i = 0; i < bufferLength; i++) {
+    const rawVal = (timeData[i] - 128) / 128;
+    // Window envelope to smoothly taper edges
+    const window = Math.sin((i / bufferLength) * Math.PI);
+    const harmonicPhase = Math.sin(timeCounter * 0.08 + i * 0.2);
+    const y = centerY + rawVal * effectiveAmp * 0.7 * window + harmonicPhase * 1.2;
+
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+    x += sliceWidth;
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // Layer 2: Primary glowing crisp waveform
+  ctx.save();
+  ctx.beginPath();
+  ctx.strokeStyle = primaryStroke;
+  ctx.lineWidth = 2.5;
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = glowColor;
+
+  x = 0;
+  let prevX = 0;
+  let prevY = centerY;
+
+  for (let i = 0; i < bufferLength; i++) {
+    const rawVal = (timeData[i] - 128) / 128;
+    const window = Math.sin((i / bufferLength) * Math.PI);
+    const y = centerY + rawVal * effectiveAmp * window;
+
+    if (i === 0) {
+      ctx.moveTo(x, y);
+      prevX = x;
+      prevY = y;
+    } else {
+      // Smooth quadratic curve interpolation
+      const midX = (prevX + x) / 2;
+      const midY = (prevY + y) / 2;
+      ctx.quadraticCurveTo(prevX, prevY, midX, midY);
+      prevX = x;
+      prevY = y;
+    }
+    x += sliceWidth;
+  }
+  ctx.lineTo(prevX, prevY);
+  ctx.stroke();
+  ctx.restore();
+}
+
 export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   isOpen,
   onClose,
@@ -86,16 +193,17 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   onVoiceChange,
   selectedLanguage,
 }) => {
-  const [activeModel, setActiveModel] = useState<'gemini-3.8-live' | 'gemini-3.8-flash'>(
-    'gemini-3.8-live'
-  );
   const [state, setState] = useState<'idle' | 'connecting' | 'listening' | 'speaking' | 'thinking'>(
     'idle'
   );
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   const [transcript, setTranscript] = useState('');
   const [aiResponse, setAiResponse] = useState('');
-  const [statusMessage, setStatusMessage] = useState('Tap Start to begin live session');
-  const [liveConnected, setLiveConnected] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('Connecting to Gemini Live...');
 
   // Voice selection state
   const [currentVoice, setCurrentVoice] = useState<string>(voiceName || 'Zephyr');
@@ -112,10 +220,16 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [visionFramesSent, setVisionFramesSent] = useState(0);
   const [snapshotEffect, setSnapshotEffect] = useState(false);
+  const [isProcessingVision, setIsProcessingVision] = useState(false);
 
-  // Audio level meter for reactive aura visualizer
+  // Real-time audio reactive feedback
   const [audioLevel, setAudioLevel] = useState(0);
   const [freqBars, setFreqBars] = useState<number[]>(new Array(16).fill(0.08));
+
+  // Canvas Waveform References
+  const mainWaveformCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const dockWaveformCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cameraWaveformCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // References for Live API WebSocket & AudioContext
   const wsRef = useRef<WebSocket | null>(null);
@@ -126,9 +240,11 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const inputAudioContextRef = useRef<AudioContext | null>(null);
 
-  // Audio Analyser
-  const analyserRef = useRef<AnalyserNode | null>(null);
+  // Audio Analysers
+  const masterAnalyserRef = useRef<AnalyserNode | null>(null);
+  const micAnalyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const animationTickerRef = useRef<number>(0);
 
   // Camera references
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -137,10 +253,11 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   const frameIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastFrameBase64Ref = useRef<string | null>(null);
 
-  // Fallback Web Speech Recognition
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  // Fallback Audio Player
   const fallbackAudioRef = useRef<HTMLAudioElement | null>(null);
+  // Web Speech for voice command detection
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const speechRecRef = useRef<any>(null);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -156,7 +273,6 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     if (!isOpen) {
       cleanupAll();
     } else {
-      // Auto-start session for effortless, instant conversation
       startLiveApiSession();
     }
     return () => {
@@ -164,28 +280,36 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     };
   }, [isOpen]);
 
+  const ensureAudioContextsResumed = async () => {
+    try {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      if (inputAudioContextRef.current && inputAudioContextRef.current.state === 'suspended') {
+        await inputAudioContextRef.current.resume();
+      }
+    } catch (e) {
+      console.warn('AudioContext resume notice:', e);
+    }
+  };
+
   const cleanupAll = () => {
     stopLiveSession();
     stopCamera();
-    cleanupFallback();
     stopAudioAnalysis();
-    setState('idle');
-    setLiveConnected(false);
-    setAudioLevel(0);
-    setFreqBars(new Array(16).fill(0.08));
-  };
-
-  const cleanupFallback = () => {
-    if (recognitionRef.current) {
+    if (speechRecRef.current) {
       try {
-        recognitionRef.current.stop();
+        speechRecRef.current.stop();
       } catch {}
-      recognitionRef.current = null;
+      speechRecRef.current = null;
     }
     if (fallbackAudioRef.current) {
       fallbackAudioRef.current.pause();
       fallbackAudioRef.current = null;
     }
+    setState('idle');
+    setAudioLevel(0);
+    setFreqBars(new Array(16).fill(0.08));
   };
 
   const stopAudioAnalysis = () => {
@@ -193,47 +317,93 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
-    analyserRef.current = null;
+    masterAnalyserRef.current = null;
+    micAnalyserRef.current = null;
   };
 
-  const setupAudioAnalysis = (sourceNode: AudioNode, ctx: AudioContext) => {
-    stopAudioAnalysis();
-    try {
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.65;
-      sourceNode.connect(analyser);
-      analyserRef.current = analyser;
+  // High-performance visualizer loop sampling real-time mic or playback audio
+  const startVisualizerLoop = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+    }
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const freqData = new Uint8Array(128);
+    const timeData = new Uint8Array(128);
 
-      const updateMeter = () => {
-        if (!analyserRef.current) return;
-        analyser.getByteFrequencyData(dataArray);
+    const tick = () => {
+      animationTickerRef.current += 1;
+      const isSpeaking = stateRef.current === 'speaking';
 
-        let sum = 0;
+      // Select active analyser: speaker playback when AI speaks, otherwise user's microphone
+      const activeAnalyser = isSpeaking
+        ? (masterAnalyserRef.current || micAnalyserRef.current)
+        : (!isMutedRef.current && micAnalyserRef.current ? micAnalyserRef.current : masterAnalyserRef.current);
+
+      let rms = 0;
+      if (activeAnalyser) {
+        activeAnalyser.getByteFrequencyData(freqData);
+        activeAnalyser.getByteTimeDomainData(timeData);
+
+        // Compute RMS loudness
+        let sumSquares = 0;
+        for (let i = 0; i < timeData.length; i++) {
+          const norm = (timeData[i] - 128) / 128;
+          sumSquares += norm * norm;
+        }
+        rms = Math.sqrt(sumSquares / timeData.length);
+
+        // Compute frequency bars for spectrum meter
+        let sumFreq = 0;
         const bars: number[] = [];
-        const step = Math.max(1, Math.floor(dataArray.length / 16));
+        const step = Math.max(1, Math.floor(freqData.length / 16));
         for (let i = 0; i < 16; i++) {
-          const val = dataArray[i * step] || 0;
-          sum += val;
+          const val = freqData[i * step] || 0;
+          sumFreq += val;
           bars.push(Math.max(0.06, val / 255));
         }
-        const avg = sum / (dataArray.length * 255);
+        const avg = sumFreq / (freqData.length * 255);
         setAudioLevel(avg);
         setFreqBars(bars);
+      } else {
+        timeData.fill(128);
+        setAudioLevel(0.02);
+      }
 
-        animFrameRef.current = requestAnimationFrame(updateMeter);
-      };
+      // Render Dynamic Waveform onto all active canvas elements
+      renderWaveformCanvas(
+        mainWaveformCanvasRef.current,
+        timeData,
+        rms,
+        isSpeaking,
+        isMutedRef.current,
+        animationTickerRef.current
+      );
 
-      animFrameRef.current = requestAnimationFrame(updateMeter);
-    } catch (e) {
-      console.warn('Audio analysis setup warning:', e);
-    }
+      renderWaveformCanvas(
+        dockWaveformCanvasRef.current,
+        timeData,
+        rms,
+        isSpeaking,
+        isMutedRef.current,
+        animationTickerRef.current
+      );
+
+      renderWaveformCanvas(
+        cameraWaveformCanvasRef.current,
+        timeData,
+        rms,
+        isSpeaking,
+        isMutedRef.current,
+        animationTickerRef.current
+      );
+
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
   };
 
   const stopLiveSession = () => {
-    // Stop all audio output sources
     scheduledSourcesRef.current.forEach((src) => {
       try {
         src.stop();
@@ -242,7 +412,6 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     scheduledSourcesRef.current = [];
     nextStartTimeRef.current = 0;
 
-    // Disconnect microphone processor & tracks
     if (processorRef.current) {
       try {
         processorRef.current.disconnect();
@@ -265,22 +434,20 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       } catch {}
       audioContextRef.current = null;
     }
-
-    // Close WebSocket
     if (wsRef.current) {
       try {
         wsRef.current.close();
       } catch {}
       wsRef.current = null;
     }
-
-    setLiveConnected(false);
   };
 
   // CAMERA LIVE STREAM CONTROLS
   const startCamera = async (facing: 'user' | 'environment' = cameraFacingMode) => {
     setIsCameraLoading(true);
     setCameraError(null);
+    await ensureAudioContextsResumed();
+
     try {
       if (cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -333,6 +500,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   };
 
   const toggleCamera = () => {
+    ensureAudioContextsResumed();
     if (isCameraActive) {
       stopCamera();
     } else {
@@ -341,6 +509,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
   };
 
   const flipCamera = () => {
+    ensureAudioContextsResumed();
     const nextFacing = cameraFacingMode === 'user' ? 'environment' : 'user';
     startCamera(nextFacing);
   };
@@ -398,8 +567,10 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     }
   };
 
-  // Instant visual query when user taps an Astra quick-action chip
-  const handleQuickVisionPrompt = (promptText: string) => {
+  // Instant visual query when user taps an Astra quick-action chip or center shutter button
+  const handleQuickVisionPrompt = async (promptText: string) => {
+    await ensureAudioContextsResumed();
+
     const frame = captureCurrentFrame();
     if (!frame && isCameraActive) {
       setStatusMessage('Focusing camera on scene...');
@@ -409,11 +580,13 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     setSnapshotEffect(true);
     setTimeout(() => setSnapshotEffect(false), 220);
 
+    setIsProcessingVision(true);
     setState('thinking');
     setAiResponse('');
     setTranscript(promptText);
     setStatusMessage(`Analyzing visual scene: "${promptText}"...`);
 
+    // First try live WebSocket vision query
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
@@ -423,14 +596,36 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
         })
       );
     } else {
-      handleProcessFlashQuestion(promptText);
+      // Direct HTTP vision fallback
+      try {
+        const res = await api.voice.visionQuery({
+          prompt: promptText,
+          imageBase64: frame || '',
+          voice: currentVoice,
+          language: selectedLanguage,
+        });
+
+        setIsProcessingVision(false);
+        setAiResponse(res.text);
+
+        if (res.audioBase64) {
+          playWavAudio(res.audioBase64);
+        } else {
+          setState('listening');
+          setStatusMessage('Listening to you... Speak anytime');
+        }
+      } catch (err) {
+        console.warn('Vision direct query fallback error:', err);
+        setIsProcessingVision(false);
+        setState('listening');
+        setStatusMessage('Could not analyze camera frame. Please tap to try again.');
+      }
     }
   };
 
   // Start Gemini 3.8 Live API real-time session
   const startLiveApiSession = async (voiceOverride?: string) => {
     stopLiveSession();
-    cleanupFallback();
     stopAudioAnalysis();
     setState('connecting');
     const activeVoice = voiceOverride || currentVoice;
@@ -442,12 +637,19 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const outputCtx = new AudioCtx({ sampleRate: 24000 });
       if (outputCtx.state === 'suspended') {
-        await outputCtx.resume();
+        outputCtx.resume().catch(() => {});
       }
       audioContextRef.current = outputCtx;
       nextStartTimeRef.current = outputCtx.currentTime;
 
-      // 2. Open WebSocket to backend Live API proxy with selected voice
+      // Master Analyser Node for output visualizer
+      const masterAnalyser = outputCtx.createAnalyser();
+      masterAnalyser.fftSize = 256;
+      masterAnalyser.smoothingTimeConstant = 0.6;
+      masterAnalyser.connect(outputCtx.destination);
+      masterAnalyserRef.current = masterAnalyser;
+
+      // 2. Open WebSocket to backend Live API proxy
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/live?voice=${encodeURIComponent(activeVoice)}`;
       const ws = new WebSocket(wsUrl);
@@ -462,7 +664,6 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
           const msg = JSON.parse(event.data);
 
           if (msg.type === 'ready') {
-            setLiveConnected(true);
             setState('listening');
             setStatusMessage(
               isCameraActive
@@ -473,12 +674,14 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
 
           // Handle incoming live model audio chunks (24kHz PCM)
           if (msg.type === 'audio' && msg.audio && audioContextRef.current) {
+            setIsProcessingVision(false);
             setState('speaking');
             playLiveAudioChunk(msg.audio);
           }
 
-          // Handle synthesized WAV audio from vision queries or TTS fallback
+          // Handle synthesized WAV audio from vision queries
           if (msg.type === 'audio_wav' && msg.audio) {
+            setIsProcessingVision(false);
             setState('speaking');
             if (msg.text) {
               setAiResponse(msg.text);
@@ -486,22 +689,26 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
             playWavAudio(msg.audio);
           }
 
-          // Handle incoming text transcription
+          // Handle model output subtitles
           if (msg.type === 'text' && msg.text) {
-            setAiResponse((prev) => prev + msg.text);
+            setIsProcessingVision(false);
+            setAiResponse((prev) => (msg.replace ? msg.text : prev + msg.text));
           }
 
-          // Handle model interruption
+          // Handle user speech transcription
+          if (msg.type === 'user_transcript' && msg.text) {
+            setTranscript((prev) => (prev ? prev + ' ' + msg.text : msg.text));
+          }
+
+          // Handle interruption
           if (msg.type === 'interrupted') {
             interruptLiveAudio();
             setStatusMessage('Listening to you... Speak anytime');
             setState('listening');
           }
 
-          // Handle fallback signal from server
           if (msg.type === 'fallback') {
-            setStatusMessage('Live session active in ultra-fast voice pipeline.');
-            setLiveConnected(true);
+            setStatusMessage('Gemini Live active in high-fidelity voice mode.');
             setState('listening');
           }
         } catch (e) {
@@ -510,12 +717,12 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       };
 
       ws.onerror = (err) => {
-        console.warn('Live API WebSocket notice, falling back to Flash voice pipeline:', err);
-        fallbackToFlashVoice();
+        console.warn('Live API WebSocket notice:', err);
+        setStatusMessage('Connecting in direct multimodal voice mode...');
       };
 
       ws.onclose = () => {
-        setLiveConnected(false);
+        console.log('Live API WebSocket closed');
       };
 
       // 3. Capture Microphone at 16kHz for Live API Input
@@ -534,10 +741,16 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       inputAudioContextRef.current = inputCtx;
       const source = inputCtx.createMediaStreamSource(stream);
 
-      // Connect mic to visualizer analyser
-      setupAudioAnalysis(source, inputCtx);
+      // Connect mic to dedicated low-latency micAnalyser with fast response (0.45 smoothing)
+      const micAnalyser = inputCtx.createAnalyser();
+      micAnalyser.fftSize = 256;
+      micAnalyser.smoothingTimeConstant = 0.45;
+      source.connect(micAnalyser);
+      micAnalyserRef.current = micAnalyser;
 
-      // Buffer size 2048 at 16kHz is ~128ms per chunk
+      // Start unified visualizer animation loop
+      startVisualizerLoop();
+
       const processor = inputCtx.createScriptProcessor(2048, 1, 1);
       processorRef.current = processor;
 
@@ -553,8 +766,10 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       source.connect(processor);
       processor.connect(inputCtx.destination);
     } catch (err: unknown) {
-      console.warn('Could not initialize direct Live API audio pipeline:', err);
-      fallbackToFlashVoice();
+      console.warn('Live API audio init fallback:', err);
+      setState('listening');
+      setStatusMessage('Gemini Live listening. Tap anytime to speak or scan.');
+      startVisualizerLoop();
     }
   };
 
@@ -568,9 +783,12 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       const source = ctx.createBufferSource();
       source.buffer = buffer;
 
-      // Connect to output analyser for visual frequency bouncing
-      setupAudioAnalysis(source, ctx);
-      source.connect(ctx.destination);
+      // Connect directly to singleton master analyser
+      if (masterAnalyserRef.current) {
+        source.connect(masterAnalyserRef.current);
+      } else {
+        source.connect(ctx.destination);
+      }
 
       // Gapless scheduling
       const now = ctx.currentTime;
@@ -595,7 +813,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     }
   };
 
-  // Play WAV audio buffer
+  // Play WAV audio buffer from vision queries
   const playWavAudio = (base64Wav: string) => {
     try {
       if (fallbackAudioRef.current) {
@@ -604,6 +822,11 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       const audioUrl = `data:audio/wav;base64,${base64Wav}`;
       const audio = new Audio(audioUrl);
       fallbackAudioRef.current = audio;
+
+      audio.onplay = () => {
+        setState('speaking');
+        setStatusMessage('CoreGPT Live speaking...');
+      };
 
       audio.onended = () => {
         setState('listening');
@@ -621,10 +844,11 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       audio.play().catch(console.warn);
     } catch (e) {
       console.warn('Failed to play WAV audio:', e);
+      setState('listening');
     }
   };
 
-  // Interruption: immediately cancel queued playback nodes
+  // Interruption: cancel playback immediately
   const interruptLiveAudio = () => {
     scheduledSourcesRef.current.forEach((src) => {
       try {
@@ -643,191 +867,11 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
     }
   };
 
-  // Fallback to Gemini 3.8 Flash + Web Speech Recognition + TTS
-  const fallbackToFlashVoice = () => {
-    setActiveModel('gemini-3.8-flash');
-    startFlashListening();
-  };
-
-  const startFlashListening = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setStatusMessage('Speech recognition is not supported in this browser.');
-      setState('idle');
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-
-      if (selectedLanguage && selectedLanguage !== 'auto') {
-        const langMap: Record<string, string> = {
-          English: 'en-US',
-          Hindi: 'hi-IN',
-          Urdu: 'ur-PK',
-          Marathi: 'mr-IN',
-          Arabic: 'ar-SA',
-          Spanish: 'es-ES',
-          French: 'fr-FR',
-          German: 'de-DE',
-          Chinese: 'zh-CN',
-          Japanese: 'ja-JP',
-        };
-        recognition.lang = langMap[selectedLanguage] || 'en-US';
-      }
-
-      recognition.onstart = () => {
-        setState('listening');
-        setStatusMessage('Listening with Gemini Flash... Speak now');
-        setTranscript('');
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
-        let text = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          text += event.results[i][0].transcript;
-        }
-        setTranscript(text);
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onerror = (event: any) => {
-        if (event.error === 'not-allowed') {
-          setStatusMessage('Microphone access is blocked. Please enable microphone permissions.');
-        } else if (event.error !== 'no-speech') {
-          setStatusMessage(`Voice notice: ${event.error}`);
-        }
-        setState('idle');
-      };
-
-      recognition.onend = () => {
-        setTranscript((current) => {
-          if (current.trim()) {
-            handleProcessFlashQuestion(current.trim());
-          } else {
-            setState('idle');
-            setStatusMessage('No speech detected. Tap Start to speak again.');
-          }
-          return current;
-        });
-      };
-
-      recognition.start();
-      recognitionRef.current = recognition;
-    } catch (err) {
-      console.error('Speech initialization error:', err);
-      setStatusMessage('Could not access microphone.');
-      setState('idle');
-    }
-  };
-
-  const handleProcessFlashQuestion = async (userQuestion: string) => {
-    setState('thinking');
-    setStatusMessage('Thinking with Gemini Flash...');
-
-    try {
-      const token = getAuthToken();
-      let contextualMessage = userQuestion;
-      if (isCameraActive && lastFrameBase64Ref.current) {
-        contextualMessage += `\n[Camera Vision Snapshot attached: user is pointing camera at this item]`;
-      }
-
-      const response = await fetch('/api/chat/stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message: contextualMessage,
-          model: 'gemini-3.8-flash',
-          language: selectedLanguage,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate AI response');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = '';
-
-      if (reader) {
-        let done = false;
-        while (!done) {
-          const { value, done: readerDone } = await reader.read();
-          done = readerDone;
-          if (value) {
-            const rawChunk = decoder.decode(value, { stream: true });
-            const lines = rawChunk.split('\n');
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                try {
-                  const parsed = JSON.parse(line.slice(6));
-                  if (parsed.type === 'chunk' && parsed.text) {
-                    accumulated += parsed.text;
-                    setAiResponse(accumulated);
-                  }
-                } catch {}
-              }
-            }
-          }
-        }
-      }
-
-      if (accumulated.trim()) {
-        await playFlashSpeech(accumulated.trim());
-      } else {
-        setState('idle');
-        setStatusMessage('Done. Tap to talk again.');
-      }
-    } catch (err) {
-      console.error('Processing voice query failed:', err);
-      setStatusMessage('Encountered an issue. Please try again.');
-      setState('idle');
-    }
-  };
-
-  const playFlashSpeech = async (text: string) => {
-    setState('speaking');
-    setStatusMessage('Speaking response...');
-
-    try {
-      const res = await api.voice.tts({
-        text: text.slice(0, 1000),
-        voice: currentVoice,
-      });
-
-      playWavAudio(res.audioBase64);
-    } catch (err) {
-      console.error('TTS playback error:', err);
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text.slice(0, 500));
-        utterance.onend = () => {
-          startFlashListening();
-        };
-        window.speechSynthesis.speak(utterance);
-      } else {
-        setState('idle');
-      }
-    }
-  };
-
   const handleSelectVoice = (v: string) => {
     setCurrentVoice(v);
     onVoiceChange?.(v);
     setShowVoicePicker(false);
-    if (activeModel === 'gemini-3.8-live') {
-      startLiveApiSession(v);
-    }
+    startLiveApiSession(v);
   };
 
   if (!isOpen) return null;
@@ -838,10 +882,10 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Main Gemini Live Frame Container */}
-      <div className="relative w-full max-w-4xl h-[92vh] sm:h-[86vh] bg-[#090a10] border border-white/[0.12] rounded-[32px] sm:rounded-[38px] text-white shadow-2xl shadow-blue-500/10 flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-4xl h-[94vh] sm:h-[88vh] bg-[#08090f] border border-white/[0.12] rounded-[32px] sm:rounded-[38px] text-white shadow-2xl shadow-cyan-500/10 flex flex-col overflow-hidden">
         
         {/* TOP FLOATING GLASS HEADER */}
-        <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between p-4 sm:p-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-auto">
+        <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between p-4 sm:p-5 bg-gradient-to-b from-black/85 via-black/45 to-transparent pointer-events-auto">
           {/* Brand & Live status badge */}
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -855,7 +899,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
                   <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
-                  GEMINI 3.8 LIVE
+                  GEMINI 3.8
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400 flex items-center gap-1.5 mt-0.5">
@@ -875,7 +919,10 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
             {/* Voice Persona Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setShowVoicePicker(!showVoicePicker)}
+                onClick={() => {
+                  ensureAudioContextsResumed();
+                  setShowVoicePicker(!showVoicePicker);
+                }}
                 className="py-1.5 px-3 rounded-full bg-black/60 hover:bg-black/80 border border-white/15 text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xl transition-all cursor-pointer"
                 title="Select Gemini Prebuilt Voice"
               >
@@ -938,7 +985,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               {/* Shutter Snapshot Flash Effect */}
               <div
                 className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-200 z-20 ${
-                  snapshotEffect ? 'opacity-35' : 'opacity-0'
+                  snapshotEffect ? 'opacity-40' : 'opacity-0'
                 }`}
               />
 
@@ -953,19 +1000,46 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
                 <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400 rounded-br-xl" />
               </div>
 
-              {/* Top HUD Perception Badge */}
-              <div className="absolute top-20 left-4 sm:left-6 z-20 flex items-center gap-2">
+              {/* Top HUD Perception Badge + Real-time Microphone Waveform */}
+              <div className="absolute top-20 left-4 sm:left-6 z-20 flex items-center gap-2 flex-wrap">
                 <div className="px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-xl border border-cyan-500/40 text-[11px] font-mono text-cyan-300 font-bold tracking-wider flex items-center gap-2 shadow-lg">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span>GEMINI VISION · ACTIVE</span>
                   <span className="text-zinc-500">|</span>
                   <span className="text-[10px] text-zinc-300">{visionFramesSent} frames analyzed</span>
                 </div>
+
+                {/* Real-time Camera Waveform Visualizer */}
+                <div className="px-3 py-1 rounded-full bg-black/75 backdrop-blur-xl border border-cyan-500/30 flex items-center gap-2 shadow-lg">
+                  <Mic className={`w-3 h-3 ${isMuted ? 'text-red-400' : 'text-cyan-400 animate-pulse'}`} />
+                  <canvas ref={cameraWaveformCanvasRef} width={80} height={18} className="rounded" />
+                  <span className="text-[10px] font-mono font-semibold text-cyan-300">
+                    {isMuted ? 'MUTED' : audioLevel > 0.04 ? 'VOICE' : 'IDLE'}
+                  </span>
+                </div>
+              </div>
+
+              {/* CENTER "ASK GEMINI WHAT YOU SEE" SHUTTER BUTTON (Google Project Astra Experience) */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                <button
+                  onClick={() => handleQuickVisionPrompt('What do you see in front of the camera? Explain it clearly.')}
+                  disabled={isProcessingVision}
+                  className="pointer-events-auto group relative flex items-center gap-2.5 px-6 py-3 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-2xl border-2 border-cyan-400/60 hover:border-cyan-400 shadow-2xl shadow-cyan-500/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  {isProcessingVision ? (
+                    <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 text-cyan-400 group-hover:rotate-12 transition-transform" />
+                  )}
+                  <span className="font-bold text-xs sm:text-sm text-white tracking-wide">
+                    {isProcessingVision ? 'Analyzing Scene...' : 'Ask Gemini About Scene'}
+                  </span>
+                </button>
               </div>
             </div>
           ) : (
-            /* GEMINI LIVE MULTI-COLORED FLUID AURA (When camera is OFF) */
-            <div className="relative w-full h-full flex flex-col items-center justify-center select-none overflow-hidden">
+            /* GEMINI LIVE MULTI-COLORED FLUID AURA & STUDIO WAVEFORM (When camera is OFF) */
+            <div className="relative w-full h-full flex flex-col items-center justify-center select-none overflow-hidden px-4">
               {/* Deep Ambient Background Glow */}
               <div
                 className="absolute w-96 h-96 rounded-full blur-3xl opacity-30 pointer-events-none transition-transform duration-200"
@@ -986,6 +1060,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               <div
                 className="relative rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer"
                 onClick={() => {
+                  ensureAudioContextsResumed();
                   if (state === 'idle') startLiveApiSession();
                   else if (state === 'speaking') interruptLiveAudio();
                 }}
@@ -993,7 +1068,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               >
                 {/* Outer Breathing Halo */}
                 <div
-                  className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full border border-cyan-400/20 blur-sm animate-spin-slow pointer-events-none"
+                  className="absolute w-56 h-56 sm:w-72 sm:h-72 rounded-full border border-cyan-400/20 blur-sm pointer-events-none"
                   style={{
                     transform: `scale(${1 + audioLevel * 0.8})`,
                     background:
@@ -1003,7 +1078,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
 
                 {/* Core Aura Orb */}
                 <div
-                  className={`relative z-10 w-36 h-36 sm:w-44 sm:h-44 rounded-full flex flex-col items-center justify-center text-white shadow-2xl transition-all ${
+                  className={`relative z-10 w-32 h-32 sm:w-40 sm:h-40 rounded-full flex flex-col items-center justify-center text-white shadow-2xl transition-all ${
                     state === 'listening'
                       ? 'bg-gradient-to-tr from-cyan-500 via-sky-600 to-emerald-400 shadow-cyan-500/40 border border-cyan-300/40'
                       : state === 'speaking'
@@ -1014,14 +1089,14 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
                   }`}
                 >
                   {state === 'listening' ? (
-                    <Mic className="w-12 h-12 text-white animate-pulse" />
+                    <Mic className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-pulse" />
                   ) : state === 'speaking' ? (
-                    <Volume2 className="w-12 h-12 text-white animate-bounce" />
+                    <Volume2 className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-bounce" />
                   ) : state === 'thinking' ? (
-                    <Loader2 className="w-12 h-12 text-white animate-spin" />
+                    <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-white animate-spin" />
                   ) : (
                     <div className="flex flex-col items-center">
-                      <Mic className="w-10 h-10 text-zinc-300 mb-1" />
+                      <Mic className="w-9 h-9 sm:w-10 sm:h-10 text-zinc-300 mb-1" />
                       <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                         Start
                       </span>
@@ -1030,9 +1105,19 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
                 </div>
               </div>
 
-              {/* Reactive Soundwave Frequency Spectrum Bars */}
+              {/* DYNAMIC REAL-TIME WAVEFORM VISUALIZER RIBBON */}
+              <div className="relative w-full max-w-lg h-16 sm:h-20 flex flex-col items-center justify-center mt-6 z-10">
+                <canvas
+                  ref={mainWaveformCanvasRef}
+                  width={420}
+                  height={64}
+                  className="w-full h-full max-w-md drop-shadow-[0_0_12px_rgba(6,182,212,0.35)]"
+                />
+              </div>
+
+              {/* Real-time Spectrum Soundwave Bars */}
               {state !== 'idle' && (
-                <div className="flex items-center justify-center gap-1.5 mt-8 h-8 px-4 z-10">
+                <div className="flex items-center justify-center gap-1.5 mt-2 h-7 px-4 z-10">
                   {freqBars.map((bar, idx) => (
                     <div
                       key={idx}
@@ -1044,7 +1129,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
                           : 'bg-zinc-600'
                       }`}
                       style={{
-                        height: `${Math.max(6, bar * 32)}px`,
+                        height: `${Math.max(6, bar * 28)}px`,
                       }}
                     />
                   ))}
@@ -1056,7 +1141,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
           {/* FLOATING SUBTITLES & TRANSCRIPTS BUBBLE (Gemini Style) */}
           <div className="absolute bottom-28 inset-x-3 sm:inset-x-8 z-30 pointer-events-none flex flex-col items-center">
             {/* Live Status Tag */}
-            <div className="mb-2.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-xl border border-white/10 text-xs font-semibold text-cyan-300 flex items-center gap-2 shadow-lg pointer-events-auto">
+            <div className="mb-2 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xl border border-white/10 text-xs font-semibold text-cyan-300 flex items-center gap-2 shadow-lg pointer-events-auto">
               {state === 'connecting' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {state === 'speaking' && <Activity className="w-3.5 h-3.5 animate-pulse text-cyan-400" />}
               {state === 'thinking' && <Sparkles className="w-3.5 h-3.5 animate-spin text-purple-400" />}
@@ -1065,7 +1150,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
 
             {/* Transcript / Spoken Output Bubble */}
             {(transcript || aiResponse) && (
-              <div className="w-full max-w-xl max-h-28 overflow-y-auto p-3.5 sm:p-4 rounded-2xl bg-black/80 backdrop-blur-2xl border border-white/15 text-left text-xs sm:text-sm space-y-1.5 pointer-events-auto shadow-2xl">
+              <div className="w-full max-w-xl max-h-28 overflow-y-auto p-3.5 sm:p-4 rounded-2xl bg-black/85 backdrop-blur-2xl border border-white/15 text-left text-xs sm:text-sm space-y-1.5 pointer-events-auto shadow-2xl">
                 {transcript && (
                   <p className="text-zinc-400 italic font-medium flex items-center gap-1.5">
                     <span className="text-[10px] uppercase font-bold not-italic px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">
@@ -1091,6 +1176,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
             <div className="absolute bottom-20 inset-x-3 sm:inset-x-6 z-30 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
               <button
                 onClick={() => handleQuickVisionPrompt('What is this? Please explain clearly.')}
+                disabled={isProcessingVision}
                 className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-xl border border-white/20 text-xs font-medium text-white flex items-center gap-1.5 transition-all shrink-0 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
               >
                 <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
@@ -1098,7 +1184,8 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               </button>
 
               <button
-                onClick={() => handleQuickVisionPrompt('Read and transcribe any text visible here.')}
+                onClick={() => handleQuickVisionPrompt('Read and transcribe any text visible in front of the camera.')}
+                disabled={isProcessingVision}
                 className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-xl border border-white/20 text-xs font-medium text-white flex items-center gap-1.5 transition-all shrink-0 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5 text-emerald-400" />
@@ -1106,7 +1193,8 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               </button>
 
               <button
-                onClick={() => handleQuickVisionPrompt('Explain what you see in front of the camera.')}
+                onClick={() => handleQuickVisionPrompt('Explain what you see in front of the camera in detail.')}
+                disabled={isProcessingVision}
                 className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-xl border border-white/20 text-xs font-medium text-white flex items-center gap-1.5 transition-all shrink-0 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
               >
                 <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
@@ -1114,7 +1202,8 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
               </button>
 
               <button
-                onClick={() => handleQuickVisionPrompt('Analyze this and give step-by-step helpful guidance.')}
+                onClick={() => handleQuickVisionPrompt('Analyze this and give step-by-step helpful advice.')}
+                disabled={isProcessingVision}
                 className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-xl border border-white/20 text-xs font-medium text-white flex items-center gap-1.5 transition-all shrink-0 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
               >
                 <Scan className="w-3.5 h-3.5 text-purple-400" />
@@ -1134,7 +1223,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
           )}
         </div>
 
-        {/* BOTTOM FLOATING CONTROLS DOCK (Iconic Gemini Live Glass Pill) */}
+        {/* BOTTOM FLOATING CONTROLS DOCK (Iconic Gemini Live Glass Pill with Live Waveform) */}
         <div className="absolute bottom-4 inset-x-0 z-30 flex items-center justify-center px-4 pointer-events-auto">
           <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-black/85 backdrop-blur-2xl border border-white/15 shadow-2xl">
             {/* Camera Toggle Button */}
@@ -1171,7 +1260,10 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
 
             {/* Microphone Mute Button */}
             <button
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={() => {
+                ensureAudioContextsResumed();
+                setIsMuted(!isMuted);
+              }}
               className={`p-3 rounded-full transition-all cursor-pointer flex items-center justify-center ${
                 isMuted
                   ? 'bg-red-500/20 text-red-400 border border-red-500/40'
@@ -1181,6 +1273,23 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
             >
               {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
+
+            {/* DOCK REAL-TIME MICROPHONE WAVEFORM PILL */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-md">
+              <span
+                className={`w-2 h-2 rounded-full transition-all ${
+                  isMuted
+                    ? 'bg-red-400'
+                    : audioLevel > 0.04
+                    ? 'bg-emerald-400 animate-ping'
+                    : 'bg-emerald-500/60'
+                }`}
+              />
+              <canvas ref={dockWaveformCanvasRef} width={80} height={22} className="rounded" />
+              <span className="text-[10px] font-mono text-zinc-400 font-semibold w-10 text-right">
+                {isMuted ? 'MUTE' : audioLevel > 0.04 ? 'REC' : 'MIC'}
+              </span>
+            </div>
 
             {/* Interrupt Speech Button (Active during speaking) */}
             {state === 'speaking' && (

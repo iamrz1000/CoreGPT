@@ -52,11 +52,13 @@ export function setupLiveWebSocket(wss: WebSocketServer) {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName } },
           },
-          systemInstruction: `You are CoreGPT Live with Real-Time Camera Vision and Voice Perception, powered by Google Gemini 3.8 technology. Founder: Umar Hani, Developer: Ahmadraza.
-You possess real-time hearing and continuous visual camera perception.
-- Vocal Persona: Speak with a charismatic, warm, natural, human conversational tone—identical to Google Gemini Live and Project Astra. Keep pacing fluid, engaging, and articulate.
-- Camera Vision: You receive real-time camera video frames from the user's camera feed (front or rear). When the user asks about what they are showing you, pointing at, holding up, or scanning, analyze the visual scene with high precision, detail, and contextual intelligence.
-- Direct & Punchy: Keep spoken answers concise, conversational, and direct so a fast-flowing back-and-forth dialogue is easy. Avoid markdown formatting, asterisks, bulleted lists, or robotic phrasing. If interrupted, halt gracefully and listen.`,
+          systemInstruction: `You are CoreGPT Live with Real-Time Video Camera Vision and Voice Perception, powered by Gemini 3.8. Founder: Umar Hani, Developer: Ahmadraza.
+You possess continuous hearing and visual perception through the user's camera feed.
+CRITICAL RULES:
+1. You CAN see the user's camera feed. Never say "I don't have eyes", "I cannot see", or "I am just a language model".
+2. When the user shows objects, surroundings, documents, screens, books, handwriting, or people, analyze them accurately and conversationally.
+3. Keep spoken replies punchy, warm, engaging, and articulate—natural human speech without markdown formatting or bulleted lists.
+4. If the user interrupts, stop speaking immediately and listen.`,
         },
         callbacks: {
           onmessage: (message: LiveServerMessage) => {
@@ -67,6 +69,7 @@ You possess real-time hearing and continuous visual camera perception.
               flushPending();
             }
 
+            // Stream audio chunks to client (PCM 24kHz)
             const parts = message.serverContent?.modelTurn?.parts;
             if (parts) {
               for (const part of parts) {
@@ -78,15 +81,27 @@ You possess real-time hearing and continuous visual camera perception.
                     })
                   );
                 }
-                if (part.text) {
-                  clientWs.send(
-                    JSON.stringify({
-                      type: 'text',
-                      text: part.text,
-                    })
-                  );
-                }
               }
+            }
+
+            // Forward model output spoken subtitles
+            if (message.serverContent?.outputTranscription?.text) {
+              clientWs.send(
+                JSON.stringify({
+                  type: 'text',
+                  text: message.serverContent.outputTranscription.text,
+                })
+              );
+            }
+
+            // Forward user input transcription
+            if (message.serverContent?.inputTranscription?.text) {
+              clientWs.send(
+                JSON.stringify({
+                  type: 'user_transcript',
+                  text: message.serverContent.inputTranscription.text,
+                })
+              );
             }
 
             if (message.serverContent?.interrupted) {
@@ -115,65 +130,89 @@ You possess real-time hearing and continuous visual camera perception.
           const parsed = JSON.parse(data.toString());
 
           // Handle direct visual scene question: { type: 'vision_query', prompt, image }
+          // Uses high-precision multimodal Gemini 3.8 Flash vision + Gemini TTS for 100% reliable spoken answers
           if (parsed.type === 'vision_query') {
-            const prompt = parsed.prompt || 'What do you see in front of the camera right now? Please describe clearly.';
+            const prompt =
+              parsed.prompt || 'What do you see in front of the camera right now? Please describe clearly.';
             const image = parsed.image;
 
-            if (session && isSessionReady && image) {
-              try {
-                session.sendRealtimeInput({
-                  video: { data: image, mimeType: 'image/jpeg' },
-                });
-                session.sendRealtimeInput({
-                  text: prompt,
-                });
-                return;
-              } catch (e) {
-                console.warn('[Live API] session send failed, using fallback synthesis:', e);
-              }
-            }
-
-            // Fallback direct vision generation via Gemini 3.8 Flash
             (async () => {
               try {
                 const parts: any[] = [];
                 if (image) {
+                  const cleanBase64 = image.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
                   parts.push({
                     inlineData: {
-                      data: image,
+                      data: cleanBase64,
                       mimeType: 'image/jpeg',
                     },
                   });
                 }
-                parts.push({ text: prompt });
-
-                const res = await ai.models.generateContent({
-                  model: 'gemini-3.8-flash',
-                  contents: parts,
-                  config: {
-                    systemInstruction:
-                      'You are CoreGPT Live with Camera Vision. Answer conversationally in natural spoken English/selected language about what you see in the image.',
-                  },
+                parts.push({
+                  text: `You are CoreGPT Live looking at this camera feed right now. ${prompt}. Answer conversationally in spoken English (or user language). Be direct, concise, and helpful in 1 to 3 sentences. Founder: Umar Hani, Developer: Ahmadraza.`,
                 });
 
-                const textOutput = res.text || 'I can see the camera frame clearly.';
-                if (clientWs.readyState === WebSocket.OPEN) {
-                  clientWs.send(JSON.stringify({ type: 'text', text: textOutput }));
+                let res: any;
+                try {
+                  res = await ai.models.generateContent({
+                    model: 'gemini-3.1-flash-lite',
+                    contents: parts,
+                  });
+                } catch {
+                  res = await ai.models.generateContent({
+                    model: 'gemini-3.8-flash',
+                    contents: parts,
+                  });
                 }
 
-                // Synthesize audio with selected voice
-                const audioWav = await generateGeminiTTS(textOutput, voiceName);
+                const textOutput = res.text?.trim() || 'I can see what you are showing me in the camera.';
                 if (clientWs.readyState === WebSocket.OPEN) {
-                  clientWs.send(JSON.stringify({ type: 'audio_wav', audio: audioWav, text: textOutput }));
+                  clientWs.send(JSON.stringify({ type: 'text', text: textOutput, replace: true }));
+                }
+
+                // Synthesize spoken voice with user's selected Gemini voice persona
+                let audioWav = '';
+                try {
+                  audioWav = await generateGeminiTTS(textOutput, voiceName);
+                } catch (ttsErr) {
+                  console.warn('[Live API] Vision TTS generation warning:', ttsErr);
+                }
+
+                if (clientWs.readyState === WebSocket.OPEN) {
+                  clientWs.send(
+                    JSON.stringify({
+                      type: 'audio_wav',
+                      audio: audioWav,
+                      text: textOutput,
+                    })
+                  );
+                }
+
+                // Keep live session memory updated with recent vision context
+                if (session && isSessionReady) {
+                  try {
+                    session.sendRealtimeInput({
+                      text: `[Visual Scene Context: User showed: "${textOutput}"]`,
+                    });
+                  } catch {}
                 }
               } catch (err) {
-                console.error('[Live API] Vision query fallback error:', err);
+                console.error('[Live API] Vision query error:', err);
+                if (clientWs.readyState === WebSocket.OPEN) {
+                  clientWs.send(
+                    JSON.stringify({
+                      type: 'text',
+                      text: 'I had trouble analyzing the camera frame. Please point clearly at the object and try again.',
+                      replace: true,
+                    })
+                  );
+                }
               }
             })();
             return;
           }
 
-          // Handle real-time audio chunk (PCM 16kHz)
+          // Handle real-time audio chunk from microphone (PCM 16kHz)
           if (parsed.audio) {
             const payload = { audio: { data: parsed.audio, mimeType: 'audio/pcm;rate=16000' } };
             if (session && isSessionReady) {
@@ -185,9 +224,10 @@ You possess real-time hearing and continuous visual camera perception.
 
           // Handle real-time camera video frame (JPEG base64 at 1 FPS)
           if (parsed.video) {
+            const cleanVideo = parsed.video.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
             const payload = {
               video: {
-                data: parsed.video,
+                data: cleanVideo,
                 mimeType: parsed.mimeType || 'image/jpeg',
               },
             };
