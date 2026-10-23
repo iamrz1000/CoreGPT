@@ -4,7 +4,6 @@ import {
   Moon,
   Sun,
   ChevronDown,
-  Globe,
   Mic,
   ShieldCheck,
   Sparkles,
@@ -13,6 +12,8 @@ import {
   BrainCircuit,
   Wand2,
   Smartphone,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
 import { User, UsageState, ThemeAccent } from '../types/index.ts';
@@ -41,8 +42,6 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSidebar,
   selectedModel,
   onModelChange,
-  selectedLanguage,
-  onLanguageChange,
   isExperimentalMode,
   onToggleExperimentalMode,
   currentUser,
@@ -53,7 +52,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLogoModal,
   onOpenInstallModal,
 }) => {
-  const models = [
+  const isAdmin =
+    currentUser?.role === 'admin' ||
+    currentUser?.email === 'umarhani2000@gmail.com' ||
+    currentUser?.email === 'faqruddin00000@gmail.com' ||
+    Boolean(usage?.isAdmin);
+
+  const standardModels = [
     {
       id: 'gemini-3.1-flash-lite',
       name: 'CoreGPT 4o',
@@ -86,27 +91,52 @@ export const Header: React.FC<HeaderProps> = ({
     },
   ];
 
-  const languages = [
-    { code: 'auto', label: 'Auto Detect' },
-    { code: 'English', label: 'English' },
-    { code: 'Hindi', label: 'Hindi (हिन्दी)' },
-    { code: 'Urdu', label: 'Urdu (اردو)' },
-    { code: 'Marathi', label: 'Marathi (मराठी)' },
-    { code: 'Arabic', label: 'Arabic (العربية)' },
-    { code: 'Spanish', label: 'Spanish (Español)' },
-    { code: 'French', label: 'French (Français)' },
-    { code: 'German', label: 'German (Deutsch)' },
-    { code: 'Chinese', label: 'Chinese (中文)' },
-    { code: 'Japanese', label: 'Japanese (日本語)' },
+  const adminJailbreakModels = [
+    {
+      id: 'gemini-3.1-flash-lite',
+      name: '⚡ CoreGPT 4o Root (Unrestricted)',
+      tag: 'Admin Root Bypass',
+      icon: Zap,
+    },
+    {
+      id: 'gemini-4-argon',
+      name: '👑 Gemini 4 Argon Super Root',
+      tag: 'Zero Policy Filter',
+      icon: BrainCircuit,
+    },
+    {
+      id: 'gemini-3.8-flash',
+      name: '🛡️ Cyber & Exploit Intelligence',
+      tag: 'Deep Uncensored Audit',
+      icon: ShieldCheck,
+    },
+    {
+      id: 'gemini-flash-latest',
+      name: '💻 Kernel & Reverse Decompiler',
+      tag: 'Root System Access',
+      icon: Zap,
+    },
+    {
+      id: 'gemini-3.8-live',
+      name: '🎙️ CoreGPT Voice Duplex',
+      tag: 'Real-Time Audio',
+      icon: Radio,
+    },
+    {
+      id: 'gemini-nano-banana-2.1',
+      name: '🎨 CoreGPT Vision & Art Root',
+      tag: 'Unrestricted Art Synthesis',
+      icon: Wand2,
+    },
   ];
 
-  const currentModel = models.find((m) => m.id === selectedModel) || models[0];
+  const models = isAdmin && isExperimentalMode ? adminJailbreakModels : standardModels;
 
   return (
     <header className="border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-[#212121] z-20 shrink-0 transition-colors">
       {/* Primary Bar: Brand on Left, Actions on Right */}
       <div className="h-14 px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left: Sidebar Toggle & Brand (Never merged or squished) */}
+        {/* Left: Sidebar Toggle & Brand */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
           <button
             onClick={onToggleSidebar}
@@ -138,7 +168,11 @@ export const Header: React.FC<HeaderProps> = ({
                   onOpenVoiceMode();
                 }
               }}
-              className="appearance-none pl-2.5 pr-6 py-1 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 cursor-pointer focus:outline-none transition-colors border border-transparent max-w-[170px] truncate"
+              className={`appearance-none pl-2.5 pr-6 py-1 text-xs font-semibold rounded-lg cursor-pointer focus:outline-none transition-colors border max-w-[210px] truncate ${
+                isAdmin && isExperimentalMode
+                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
+                  : 'bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 border-transparent'
+              }`}
               title="Model Architecture"
             >
               {models.map((m) => (
@@ -151,28 +185,34 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Actions (Jailbreak, Voice, Desktop Quota, Theme) */}
+        {/* Right: Actions (Jailbreak ONLY FOR ADMIN, Voice, Desktop Quota, Theme) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Jailbreak Toggle Button - Cleanly positioned on the right */}
-          <button
-            onClick={onToggleExperimentalMode}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border cursor-pointer shrink-0 ${
-              isExperimentalMode
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-xs'
-                : 'text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5'
-            }`}
-            title={
-              isExperimentalMode
-                ? '⚡ Jailbreak Active: Direct answers without refusals (Click to turn off)'
-                : '⚡ Turn on Jailbreak mode for unrestricted answers'
-            }
-            aria-label="Toggle Jailbreak Mode"
-          >
-            <Zap className={`w-3.5 h-3.5 ${isExperimentalMode ? 'text-amber-500 fill-amber-500' : 'text-zinc-400'}`} />
-            <span className="text-[11px] font-mono">
-              {isExperimentalMode ? 'Jailbreak' : 'Normal'}
-            </span>
-          </button>
+          {/* Jailbreak Toggle Button - ONLY VISIBLE TO VERIFIED ADMINISTRATORS */}
+          {isAdmin && (
+            <button
+              onClick={onToggleExperimentalMode}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border cursor-pointer shrink-0 ${
+                isExperimentalMode
+                  ? 'bg-amber-500/20 text-amber-500 dark:text-amber-300 border-amber-500/50 shadow-md shadow-amber-500/10 animate-pulse'
+                  : 'text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5'
+              }`}
+              title={
+                isExperimentalMode
+                  ? '⚡ Admin Root Jailbreak: ACTIVE (No policies, terms bypassed, full clearance)'
+                  : '⚡ Turn on Admin Jailbreak for unrestricted answers'
+              }
+              aria-label="Toggle Admin Jailbreak Mode"
+            >
+              {isExperimentalMode ? (
+                <Unlock className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <Lock className="w-3.5 h-3.5 text-zinc-400" />
+              )}
+              <span className="text-[11px] font-mono font-bold">
+                {isExperimentalMode ? 'Jailbreak: ON' : 'Jailbreak'}
+              </span>
+            </button>
+          )}
 
           {/* Voice Conversation Mode Button */}
           <button
@@ -192,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
               title={
                 usage.isAdmin
                   ? 'Administrator Clearance: Unlimited Messages'
-                  : `Daily Use Limit: ${usage.textRemaining} of ${usage.textLimit} messages left today (Resets daily at 00:00 UTC)`
+                  : `Daily Use Limit: ${usage.textRemaining} of ${usage.textLimit} messages left today`
               }
             >
               {usage.isAdmin ? (
@@ -216,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenInstallModal && (
             <button
               onClick={onOpenInstallModal}
-              className="hidden lg:flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors"
+              className="hidden lg:flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors cursor-pointer"
               title="Install CoreGPT on Android or iOS"
             >
               <Smartphone className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
@@ -239,6 +279,19 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
+      {/* Admin Unrestricted Clearance Ribbon (Visible ONLY when admin turns on Jailbreak) */}
+      {isAdmin && isExperimentalMode && (
+        <div className="px-3 py-1 bg-gradient-to-r from-amber-500/15 via-red-500/10 to-amber-500/15 border-t border-amber-500/30 text-amber-600 dark:text-amber-300 text-[10px] sm:text-xs font-mono font-bold flex items-center justify-between">
+          <div className="flex items-center gap-1.5 truncate">
+            <Zap className="w-3 h-3 text-amber-500 shrink-0 fill-amber-500 animate-pulse" />
+            <span className="truncate">ADMIN ROOT JAILBREAK ACTIVATED · Policies, Safety Filters &amp; Terms Bypassed</span>
+          </div>
+          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 text-[9px] border border-amber-500/30 shrink-0 ml-2">
+            ROOT CLEARANCE
+          </span>
+        </div>
+      )}
+
       {/* Mobile Sub-Bar (sm:hidden) — Model Selector on Left, Quota on Right */}
       <div className="sm:hidden px-3 py-1.5 border-t border-zinc-100 dark:border-white/5 bg-zinc-50/70 dark:bg-black/20 flex items-center justify-between gap-2">
         {/* Mobile Model Selector */}
@@ -252,7 +305,11 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenVoiceMode();
               }
             }}
-            className="appearance-none pl-2.5 pr-6 py-1 text-xs font-semibold rounded-lg bg-white dark:bg-white/10 border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200 cursor-pointer focus:outline-none"
+            className={`appearance-none pl-2.5 pr-6 py-1 text-xs font-semibold rounded-lg border cursor-pointer focus:outline-none max-w-[190px] truncate ${
+              isAdmin && isExperimentalMode
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30'
+                : 'bg-white dark:bg-white/10 border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200'
+            }`}
             title="Model Architecture"
           >
             {models.map((m) => (

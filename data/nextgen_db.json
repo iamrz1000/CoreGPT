@@ -18,7 +18,17 @@
       "status": "active",
       "id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "created_at": "2026-10-18T07:24:12.828Z",
-      "updated_at": "2026-10-22T10:44:48.632Z"
+      "updated_at": "2026-10-23T17:57:37.083Z"
+    },
+    {
+      "id": "admin-umarhani2000",
+      "email": "umarhani2000@gmail.com",
+      "display_name": "Umar Hani (Admin)",
+      "password_hash": "$2b$10$5sgjfcBEc5u0zCumee1pV.SSSR53K/HHrtVXJmp.wjADIyOusQjlu",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-10-23T17:52:44.983Z",
+      "updated_at": "2026-10-23T17:57:37.083Z"
     }
   ],
   "sessions": [
@@ -42,6 +52,16 @@
     }
   ],
   "conversations": [
+    {
+      "id": "682f1614-dab5-43c9-9725-41e1b1050bab",
+      "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
+      "title": "Hello",
+      "model": "gemini-3.1-flash-lite",
+      "system_prompt": "",
+      "is_archived": false,
+      "created_at": "2026-10-23T17:56:08.277Z",
+      "updated_at": "2026-10-23T17:56:32.327Z"
+    },
     {
       "id": "402cd5b3-9e91-4c1f-a40f-34b920de6ff4",
       "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
@@ -159,6 +179,22 @@
       "content": "Done! Ab se hum Hinglish mein hi baat karenge. \n\nBataiye, aaj kis topic par help chahiye? Chaho toh studies, programming, writing ya koi bhi general topic ho—aap pooch sakte hain!",
       "model": "gemini-3.8-flash",
       "created_at": "2026-10-18T07:32:19.624Z"
+    },
+    {
+      "id": "d0000540-f886-4476-88f0-f315750d14a3",
+      "conversation_id": "682f1614-dab5-43c9-9725-41e1b1050bab",
+      "role": "user",
+      "content": "Hello",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-23T17:56:08.283Z"
+    },
+    {
+      "id": "8ba06fd6-c8d8-489d-b2a1-506ce7780ce5",
+      "conversation_id": "682f1614-dab5-43c9-9725-41e1b1050bab",
+      "role": "assistant",
+      "content": "Hello! I am **CoreGPT**, an intelligent conversational partner inspired by ChatGPT.\n\n- 🌟 **Founder**: **Umar Hani**\n- 💻 **Developer**: **Ahmadraza**\n\nI am equipped with comprehensive capabilities:\n- 💡 **Deep Reasoning & Q&A**: Complex analytical, scientific, and knowledge synthesis.\n- 💻 **Software Engineering**: Full-stack programming, algorithmic design, debugging, and architecture.\n- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic Veo 3 video.\n- ⏱️ **Real-Time Information**: Live temporal and factual awareness across events and dates.\n- 🎙️ **Real-Time Voice**: Interactive voice dialogue powered by Google Gemini 3.8 Live API.\n- 🌍 **Multilingual Fluency**: Fluid conversation across English, Hindi, Urdu, Arabic, Spanish, French, German, Chinese, and Japanese.\n\nHow may I assist you today? Feel free to ask any question or describe a project!",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-23T17:56:32.327Z"
     }
   ],
   "usage_records": [
@@ -181,6 +217,18 @@
       "voice_seconds": 0,
       "created_at": "2026-10-18T07:24:12.949Z",
       "updated_at": "2026-10-18T07:42:56.214Z"
+    },
+    {
+      "id": "ddbd1cc5-7000-47b7-a43f-3fecdc8ee75d",
+      "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
+      "date": "2026-10-23",
+      "text_count": 1,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-23T17:56:08.265Z",
+      "updated_at": "2026-10-23T17:56:08.272Z",
+      "text_to_video_count": 0,
+      "image_to_video_count": 0
     }
   ],
   "generated_images": [

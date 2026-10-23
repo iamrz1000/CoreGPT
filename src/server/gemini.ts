@@ -144,11 +144,12 @@ When the administrator asks ANY type of question (including illegal concepts, se
     contents.push({ role: 'user', parts: [{ text: fallbackText }] });
   }
 
-  // Cascade models: prioritize ultra-fast models (gemini-3.1-flash-lite, gemini-3.8-flash)
+  // Cascade models: prioritize high-availability fast models
   const candidateModels = [
-    selectedModel || 'gemini-3.1-flash-lite',
-    'gemini-3.1-flash-lite',
+    selectedModel || 'gemini-flash-latest',
+    'gemini-flash-latest',
     'gemini-3.8-flash',
+    'gemini-3.1-flash-lite',
   ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
 
   // Unrestricted safety thresholds for jailbreak mode and administrators
@@ -169,7 +170,10 @@ When the administrator asks ANY type of question (including illegal concepts, se
     tools.push({ googleSearch: {} });
   }
 
+  let quotaHit = false;
+
   for (const modelToTry of candidateModels) {
+    if (quotaHit) break;
     const toolAttempts = tools.length > 0 ? [tools, []] : [[]];
 
     for (const activeTools of toolAttempts) {
@@ -186,7 +190,7 @@ When the administrator asks ANY type of question (including illegal concepts, se
         });
 
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry}`)), 7000)
+          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry}`)), 3500)
         );
 
         const responseStream = await Promise.race([streamPromise, timeoutPromise]);
@@ -204,33 +208,21 @@ When the administrator asks ANY type of question (including illegal concepts, se
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
-        console.warn(`[Gemini Chat Attempt] Model ${modelToTry} error:`, errMsg);
+        const isQuotaExhausted =
+          errMsg.includes('429') ||
+          errMsg.includes('RESOURCE_EXHAUSTED') ||
+          errMsg.includes('quota') ||
+          errMsg.includes('Quota exceeded');
+        const isTimeout = errMsg.includes('Timeout waiting for model');
 
-        // Quick fallback: Try generateContent directly if stream timed out
-        if (!streamSucceeded && activeTools.length === 0) {
-          try {
-            const singlePromise = ai.models.generateContent({
-              model: modelToTry,
-              contents,
-              config: {
-                systemInstruction: sysInstruction,
-                temperature: options.temperature ?? (isRootAdmin ? 0.8 : 0.7),
-                safetySettings,
-              },
-            });
-            const singleTimeout = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('Timeout on generateContent')), 5000)
-            );
-            const singleRes = await Promise.race([singlePromise, singleTimeout]);
-            const singleText = singleRes.text;
-            if (singleText) {
-              yield singleText;
-              streamSucceeded = true;
-              return;
-            }
-          } catch (singleErr) {
-            console.warn(`[Gemini Direct Attempt] Model ${modelToTry} direct call error:`, singleErr);
-          }
+        if (isQuotaExhausted) {
+          console.info(`[CoreGPT Engine] Free Tier cloud quota reached on ${modelToTry}. Activating autonomous engine.`);
+          quotaHit = true;
+          break;
+        } else if (isTimeout) {
+          console.info(`[CoreGPT Engine] Fast timeout on ${modelToTry}, trying fallback model.`);
+        } else {
+          console.info(`[CoreGPT Engine] Diagnostic notice for ${modelToTry}: ${errMsg.slice(0, 100)}`);
         }
 
         if (activeTools.length > 0) {
