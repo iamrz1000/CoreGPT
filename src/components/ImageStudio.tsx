@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { api, ApiError, getAuthToken } from '../services/api.ts';
 import { GeneratedImage, UsageState, User } from '../types/index.ts';
 import { CoreGptWatermark } from './CoreGptWatermark.tsx';
+import { UnityAdModal } from './UnityAdModal.tsx';
+import { AdRewardPromptCard } from './AdRewardPromptCard.tsx';
 import {
   Sparkles,
   Download,
@@ -28,40 +30,44 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [selectedStyle, setSelectedStyle] = useState('Realistic Photo');
-  const [selectedModel, setSelectedModel] = useState('flux-realism');
+  const [selectedModel, setSelectedModel] = useState('gemini-nano-banana-2.1');
   const [loading, setLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [autoEnhance, setAutoEnhance] = useState(true);
+  const [upscale, setUpscale] = useState(true);
+  const [imageResolution, setImageResolution] = useState<'1K' | '2K' | '4K'>('2K');
   const [lastEnhancedPrompt, setLastEnhancedPrompt] = useState<string | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [activeImage, setActiveImage] = useState<GeneratedImage | null>(null);
+  const [adModalOpen, setAdModalOpen] = useState(false);
+  const [adRewardSuccess, setAdRewardSuccess] = useState<string | null>(null);
 
   const models = [
+    {
+      id: 'gemini-nano-banana-2.1',
+      name: 'Google Gemini Nano Banana 2.1',
+      tag: 'Nano Banana 4K',
+      desc: 'Next-gen flagship neural engine with ultra-fine textures, 8K hyper-realism, cinematic studio lighting, and master composition',
+    },
     {
       id: 'flux-realism',
       name: 'FLUX.1 Realism Master',
       tag: 'Ultra-Realism 8K',
-      desc: 'State-of-the-art neural engine with hyper-realistic textures, authentic human skin tones, crisp lighting, and zero distortion',
-    },
-    {
-      id: 'gemini-nano-banana-2.1',
-      name: 'Google Gemini Nano Banana 2.1',
-      tag: 'Google Advanced 4K',
-      desc: 'Next-gen Google flagship model for high-resolution detail, rich cinematic depth, and intricate composition',
-    },
-    {
-      id: 'flux-anime',
-      name: 'FLUX.1 Anime & Digital Art',
-      tag: 'Artistic Master',
-      desc: 'Specialized model for breathtaking manga, anime, 3D digital art, and stylized illustrations',
+      desc: 'State-of-the-art neural engine with authentic lighting, realistic skin tones, and crisp focus',
     },
     {
       id: 'gemini-3.1-flash-lite-image',
       name: 'Gemini Nano Banana Lite',
       tag: 'Ultra-Fast',
       desc: 'High-throughput generative engine for rapid visual prototyping',
+    },
+    {
+      id: 'flux-anime',
+      name: 'FLUX.1 Anime & Digital Art',
+      tag: 'Artistic Master',
+      desc: 'Specialized model for breathtaking manga, anime, 3D digital art, and stylized illustrations',
     },
   ];
 
@@ -154,6 +160,8 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
         autoEnhance,
         style: selectedStyle,
         model: selectedModel,
+        upscale,
+        imageSize: imageResolution,
       });
 
       setImages((prev) => [res.image, ...prev]);
@@ -173,7 +181,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
   const downloadImage = (img: GeneratedImage) => {
     const link = document.createElement('a');
     link.href = img.image_url;
-    link.download = `coregpt-art-${img.id.slice(0, 8)}.png`;
+    link.download = `hynex-art-${img.id.slice(0, 8)}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -195,9 +203,9 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03]">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-zinc-900 dark:text-white" />
-              <span className="text-xs font-bold tracking-wider uppercase text-zinc-600 dark:text-zinc-400">
-                CoreGPT Visual Studio
+              <Sparkles className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-black tracking-wider uppercase text-zinc-600 dark:text-zinc-400">
+                HYNEX AI Visual Studio
               </span>
             </div>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
@@ -226,6 +234,23 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
             </div>
           )}
         </div>
+
+        {/* Ad Reward Option when Image Quota is Exhausted for Normal Users */}
+        {!usage?.isAdmin && (usage?.imageRemaining === 0 || error?.includes('limit')) && (
+          <AdRewardPromptCard
+            type="image"
+            isAdmin={usage?.isAdmin}
+            onWatchAd={() => setAdModalOpen(true)}
+          />
+        )}
+
+        {/* Success confirmation when ad reward is claimed */}
+        {adRewardSuccess && (
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-400" />
+            <span>{adRewardSuccess}</span>
+          </div>
+        )}
 
         {error && (
           <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2.5 text-xs text-red-600 dark:text-red-400">
@@ -423,6 +448,65 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
               </div>
             </div>
 
+            {/* High-Resolution Upscale Parameter Controls */}
+            <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                      <span>High-Resolution Neural Upscale</span>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        {imageResolution} UHD
+                      </span>
+                    </span>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Significantly improves output quality with fine micro-textures, sharper edges, and 8K rendering clarity.
+                    </p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={upscale}
+                    onChange={(e) => setUpscale(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 dark:peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+
+              {/* Resolution selection pills when upscale is enabled */}
+              {upscale && (
+                <div className="pt-1 flex items-center gap-2">
+                  <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 shrink-0">
+                    Upscale Scale:
+                  </span>
+                  <div className="inline-flex rounded-lg p-0.5 bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-xs">
+                    {(['1K', '2K', '4K'] as const).map((resOption) => (
+                      <button
+                        key={resOption}
+                        type="button"
+                        onClick={() => setImageResolution(resOption)}
+                        className={`px-3 py-1 text-xs font-mono font-semibold rounded-md transition-all cursor-pointer ${
+                          imageResolution === resOption
+                            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs'
+                            : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                        }`}
+                      >
+                        {resOption}
+                        {resOption === '2K' && <span className="ml-1 text-[9px] opacity-80">(Recommended)</span>}
+                        {resOption === '4K' && <span className="ml-1 text-[9px] text-amber-500 font-bold">Ultra</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={loading || !prompt.trim()}
@@ -450,7 +534,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
               <ImageIcon className="w-4 h-4 text-zinc-500" />
               Generated Gallery ({images.length})
             </h3>
-            <span className="text-xs text-zinc-400">All outputs stamped with CoreGPT watermark</span>
+            <span className="text-xs text-zinc-400">All outputs stamped with HYNEX AI watermark</span>
           </div>
 
           {images.length === 0 ? (
@@ -590,6 +674,21 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
           </div>
         </div>
       )}
+
+      {/* Unity Rewarded Ad Modal for Image Credits */}
+      <UnityAdModal
+        isOpen={adModalOpen}
+        onClose={() => setAdModalOpen(false)}
+        mode="rewarded"
+        rewardType="image"
+        isAdmin={usage?.isAdmin}
+        onRewardClaimed={() => {
+          onRefreshUsage();
+          setError(null);
+          setAdRewardSuccess('🎉 +2 Image Generations added via Unity Ads!');
+          setTimeout(() => setAdRewardSuccess(null), 6000);
+        }}
+      />
     </div>
   );
 };

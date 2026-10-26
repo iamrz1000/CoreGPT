@@ -314,7 +314,7 @@ chatRouter.post('/chat/stream', async (req: AuthenticatedRequest, res: Response)
 
     // Safety fallback: Guarantee non-empty response so the chatbot never fails to answer
     if (!fullAiResponse || !fullAiResponse.trim()) {
-      fullAiResponse = `### CoreGPT\n\nI have received your request: **"${fullUserContent.length > 60 ? fullUserContent.slice(0, 57) + '...' : fullUserContent}"**.\n\nHere is a comprehensive breakdown:\n\n1. **Core Concept**: Implement a modular, step-by-step approach ensuring all requirements and edge cases are handled.\n2. **Execution Strategy**: Verify each functional unit systematically with proper logging and state management.\n\n*CoreGPT · Founded by Umar Hani · Developed by Ahmadraza*`;
+      fullAiResponse = `### HYNEX AI\n\nI have received your request: **"${fullUserContent.length > 60 ? fullUserContent.slice(0, 57) + '...' : fullUserContent}"**.\n\nHere is a comprehensive breakdown:\n\n1. **Core Concept**: Implement a modular, step-by-step approach ensuring all requirements and edge cases are handled.\n2. **Execution Strategy**: Verify each functional unit systematically with proper logging and state management.`;
       res.write(`data: ${JSON.stringify({ type: 'chunk', text: fullAiResponse })}\n\n`);
     }
 
@@ -342,7 +342,7 @@ chatRouter.post('/chat/stream', async (req: AuthenticatedRequest, res: Response)
     console.error('Chat stream error:', err);
 
     if (!fullAiResponse) {
-      const fallbackResponse = `### CoreGPT\n\nI have received your request: **"${fullUserContent.length > 60 ? fullUserContent.slice(0, 57) + '...' : fullUserContent}"**.\n\nHere is a comprehensive breakdown:\n\n1. **Core Concept**: Implement a modular, step-by-step approach ensuring all requirements and edge cases are handled.\n2. **Execution Strategy**: Verify each functional unit systematically with proper logging and state management.\n\n*CoreGPT · Founded by Umar Hani · Developed by Ahmadraza*`;
+      const fallbackResponse = `### HYNEX AI\n\nI have received your request: **"${fullUserContent.length > 60 ? fullUserContent.slice(0, 57) + '...' : fullUserContent}"**.\n\nHere is a comprehensive breakdown:\n\n1. **Core Concept**: Implement a modular, step-by-step approach ensuring all requirements and edge cases are handled.\n2. **Execution Strategy**: Verify each functional unit systematically with proper logging and state management.`;
       res.write(`data: ${JSON.stringify({ type: 'chunk', text: fallbackResponse })}\n\n`);
       db.addMessage(convId, 'assistant', fallbackResponse, model);
       res.write(`data: ${JSON.stringify({ type: 'done', fullText: fallbackResponse })}\n\n`);

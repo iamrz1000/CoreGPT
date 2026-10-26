@@ -293,7 +293,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               ? 'Listening...'
               : isAdmin && isJailbreakMode
               ? '⚡ Enter unrestricted admin prompt (Policies, terms and safety filters bypassed)...'
-              : 'Message CoreGPT...'
+              : 'Message HYNEX AI...'
           }
           rows={1}
           disabled={disabled}
@@ -330,7 +330,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     ? 'bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold'
                     : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10'
                 }`}
-                title={useSearchGrounding ? 'Web Search Active' : 'Search web with CoreGPT'}
+                title={useSearchGrounding ? 'Web Search Active' : 'Search web with HYNEX AI'}
               >
                 <Globe className="w-3.5 h-3.5" />
                 <span className="text-[11px]">Search</span>
@@ -411,7 +411,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Footer Attribution Disclaimer */}
       <p className="text-[11px] text-center text-zinc-400 dark:text-zinc-500 mt-2 select-none">
-        CoreGPT can make mistakes. Verify important info. · Founder: Umar Hani · Developer: Ahmadraza
+        HYNEX AI can make mistakes. Verify important info.
       </p>
     </div>
   );

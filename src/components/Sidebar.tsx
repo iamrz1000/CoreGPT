@@ -15,6 +15,8 @@ import {
   Image as ImageIcon,
   Smartphone,
   Download,
+  Music,
+  Gamepad2,
 } from 'lucide-react';
 import { Conversation, User, UsageState } from '../types/index.ts';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
@@ -29,8 +31,8 @@ interface SidebarProps {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   currentUser: User | null;
-  activeTab: 'chat' | 'images' | 'video' | 'admin';
-  onTabChange: (tab: 'chat' | 'images' | 'video' | 'admin') => void;
+  activeTab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'admin';
+  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'admin') => void;
   usage: UsageState | null;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -110,12 +112,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div
             onClick={onOpenLogoModal}
             className="flex items-center gap-2.5 cursor-pointer group py-1 px-1 rounded-lg hover:bg-zinc-200/60 dark:hover:bg-white/5 transition-colors"
-            title="CoreGPT — Founded by Umar Hani · Developed by Ahmadraza"
+            title="HYNEX AI — Founded by Umar Hani · Developed by Ahmadraza"
           >
             <CoreGptLogo size={28} />
-            <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
-              CoreGPT
-            </span>
+            <div className="flex items-center gap-1 font-black text-sm tracking-wider">
+              <span className="text-zinc-900 dark:text-white">HYNEX</span>
+              <span className="text-emerald-500 dark:text-emerald-400 font-extrabold text-xs px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20">
+                AI
+              </span>
+            </div>
           </div>
           <button
             onClick={onToggle}
@@ -142,41 +147,68 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">⌘K</span>
           </button>
 
-          {/* Segmented Workspace Control (Chat / Images / Veo 3) */}
-          <div className="grid grid-cols-3 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
-            <button
-              onClick={() => onTabChange('chat')}
-              className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all ${
-                activeTab === 'chat'
-                  ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>Chat</span>
-            </button>
-            <button
-              onClick={() => onTabChange('images')}
-              className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all ${
-                activeTab === 'images'
-                  ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>Images</span>
-            </button>
-            <button
-              onClick={() => onTabChange('video')}
-              className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all ${
-                activeTab === 'video'
-                  ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              <Film className="w-3.5 h-3.5" />
-              <span>Veo 3</span>
-            </button>
+          {/* Segmented Workspace Control (Chat / Images / Veo 3 / Music / 3D Game) */}
+          <div className="space-y-1">
+            <div className="grid grid-cols-3 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
+              <button
+                onClick={() => onTabChange('chat')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'chat'
+                    ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Chat</span>
+              </button>
+              <button
+                onClick={() => onTabChange('images')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'images'
+                    ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Images</span>
+              </button>
+              <button
+                onClick={() => onTabChange('video')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'video'
+                    ? 'bg-white dark:bg-[#212121] text-black dark:text-white shadow-2xs font-semibold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Veo 3</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
+              <button
+                onClick={() => onTabChange('music')}
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'music'
+                    ? 'bg-purple-600 text-white shadow-2xs font-semibold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <Music className="w-3.5 h-3.5 text-purple-400" />
+                <span>Music Studio</span>
+              </button>
+              <button
+                onClick={() => onTabChange('game')}
+                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'game'
+                    ? 'bg-emerald-600 text-white shadow-2xs font-semibold'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>3D Game</span>
+              </button>
+            </div>
           </div>
         </div>
 

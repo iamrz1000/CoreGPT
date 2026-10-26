@@ -239,15 +239,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
               <div
                 onClick={handleLogoTap}
                 className="cursor-pointer select-none transition-transform active:scale-95"
-                title="CoreGPT"
+                title="HYNEX AI"
                 role="button"
                 tabIndex={0}
               >
                 <CoreGptLogo size={40} />
               </div>
               <div>
-                <h2 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
-                  CoreGPT
+                <h2 className="text-lg font-black tracking-wider text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  <span>HYNEX</span>
+                  <span className="text-emerald-500 font-extrabold text-sm px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">AI</span>
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Founded by Umar Hani · Developed by Ahmadraza

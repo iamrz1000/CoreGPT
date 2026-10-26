@@ -7,6 +7,8 @@ import { ChatMessage } from './components/ChatMessage.tsx';
 import { ChatInput } from './components/ChatInput.tsx';
 import { ImageStudio } from './components/ImageStudio.tsx';
 import { VideoStudio } from './components/VideoStudio.tsx';
+import { MusicStudio } from './components/MusicStudio.tsx';
+import { CyberRunnerGame } from './components/game/CyberRunnerGame.tsx';
 import { VoiceConversationModal } from './components/VoiceConversationModal.tsx';
 import { AdminDashboard } from './components/AdminDashboard.tsx';
 import { SettingsModal } from './components/SettingsModal.tsx';
@@ -14,6 +16,8 @@ import { AuthModal } from './components/AuthModal.tsx';
 import { LogoCustomizerModal } from './components/LogoCustomizerModal.tsx';
 import { ThinkAiLogo } from './components/ThinkAiLogo.tsx';
 import { InstallAppModal } from './components/InstallAppModal.tsx';
+import { UnityAdModal } from './components/UnityAdModal.tsx';
+import { AdRewardPromptCard } from './components/AdRewardPromptCard.tsx';
 import { ThemeAccent } from './components/Header.tsx';
 import {
   Sparkles,
@@ -31,6 +35,8 @@ import {
   Plus,
   Headphones,
   Zap,
+  Gamepad2,
+  Music,
 } from 'lucide-react';
 
 export default function App() {
@@ -41,7 +47,7 @@ export default function App() {
 
   // App Layout & Mode
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'admin'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'game' | 'admin'>('chat');
   const [useSearchGrounding, setUseSearchGrounding] = useState(false);
   const [useMapsGrounding, setUseMapsGrounding] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -68,6 +74,11 @@ export default function App() {
 
   // Quota & Usage
   const [usage, setUsage] = useState<UsageState | null>(null);
+
+  // Unity Ads Reward System for Normal Users
+  const [adModalOpen, setAdModalOpen] = useState(false);
+  const [adRewardType, setAdRewardType] = useState<'text' | 'image' | 'video'>('text');
+  const [adRewardToast, setAdRewardToast] = useState<string | null>(null);
 
   // Modals
   const [showVoiceModal, setShowVoiceModal] = useState(false);
@@ -452,7 +463,7 @@ export default function App() {
 
       // If still empty (e.g. unexpected complete offline drop), ensure assistant responds
       if (!accumulated) {
-        accumulated = `### CoreGPT\n\nHello! I am CoreGPT, your intelligent AI assistant founded by Umar Hani and engineered by Ahmadraza.\n\nI have received your message and am ready to assist you. Please ask any question or tell me what you would like to explore!`;
+        accumulated = `### HYNEX AI\n\nHello! I am **HYNEX AI**, your intelligent conversational partner founded by Umar Hani and engineered by Ahmadraza.\n\nI have received your message and am ready to assist you. Please ask any question or tell me what you would like to explore!`;
         setMessages((prev) =>
           prev.map((m) =>
             m.id === tempAiMsgId ? { ...m, content: accumulated } : m
@@ -469,6 +480,13 @@ export default function App() {
       } else {
         const message = err instanceof Error ? err.message : 'An error occurred during response generation.';
         setStreamError(message);
+
+        // If daily limit error and user is not admin, trigger the rewarded ad option
+        if (!isAdmin && (message.toLowerCase().includes('limit') || err?.status === 429)) {
+          setAdRewardType('text');
+          setAdModalOpen(true);
+        }
+
         setMessages((prev) =>
           prev.map((m) =>
             m.id === tempAiMsgId
@@ -536,7 +554,7 @@ export default function App() {
       desc: 'Founded by Umar Hani · Engineered by Ahmadraza',
       icon: Sparkles,
       model: 'gemini-3.1-flash-lite',
-      prompt: 'Who founded CoreGPT and who is the developer?',
+      prompt: 'Who founded HYNEX AI and who is the developer?',
     },
     {
       title: 'Real-Time Web Intelligence',
@@ -550,7 +568,7 @@ export default function App() {
       desc: 'Animate photos or generate cinematic 1080p clips',
       icon: Code2,
       model: 'gemini-3.1-flash-lite',
-      prompt: 'How do I generate a cinematic video or animate a photo in CoreGPT?',
+      prompt: 'How do I generate a cinematic video or animate a photo in HYNEX AI?',
     },
   ];
 
@@ -596,7 +614,7 @@ export default function App() {
           <ThinkAiLogo size={64} />
         </div>
         <h2 className="text-xs font-semibold tracking-wider uppercase text-zinc-500 dark:text-zinc-400">
-          Initializing CoreGPT...
+          Initializing HYNEX AI...
         </h2>
       </div>
     );
@@ -673,20 +691,21 @@ export default function App() {
                   <div
                     onClick={() => setShowLogoModal(true)}
                     className="relative group cursor-pointer"
-                    title="Click to customize CoreGPT Logo or upload image"
+                    title="Click to customize HYNEX AI Logo or upload image"
                   >
-                    <ThinkAiLogo size={68} />
+                    <ThinkAiLogo size={72} />
                     <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black dark:bg-white text-white dark:text-black text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap shadow-md pointer-events-none">
                       Change Logo
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                      What can I help with today?
+                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white flex items-center justify-center gap-2">
+                      <span>Welcome to</span>
+                      <span className="text-emerald-500 dark:text-emerald-400">HYNEX AI</span>
                     </h2>
                     <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
-                      CoreGPT executive conversational intelligence, real-time web knowledge, and creative media synthesis.
+                      HYNEX AI executive conversational intelligence, real-time web knowledge, and creative media synthesis.
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
                       <span className="px-3 py-1 rounded-full bg-zinc-100 dark:bg-[#2f2f2f] border border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-zinc-200">
@@ -752,6 +771,32 @@ export default function App() {
               )}
             </div>
 
+            {/* Daily Message Limit Reached Prompt Card (Normal Users Only) */}
+            {!isAdmin && usage && usage.textRemaining <= 0 && (
+              <div className="max-w-3xl mx-auto px-4 pb-2 w-full">
+                <AdRewardPromptCard
+                  type="text"
+                  isAdmin={isAdmin}
+                  onWatchAd={() => {
+                    setAdRewardType('text');
+                    setAdModalOpen(true);
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Ad Reward Success Notification */}
+            {adRewardToast && (
+              <div className="max-w-3xl mx-auto px-4 pb-2 w-full animate-in fade-in duration-300">
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-between shadow-lg">
+                  <span>{adRewardToast}</span>
+                  <button onClick={() => setAdRewardToast(null)} className="p-1 hover:text-white cursor-pointer">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Input Bar */}
             <ChatInput
               onSendMessage={handleSendMessage}
@@ -788,17 +833,27 @@ export default function App() {
           <VideoStudio />
         )}
 
+        {/* AI MUSIC STUDIO TAB */}
+        {activeTab === 'music' && (
+          <MusicStudio currentUser={currentUser} usage={usage} />
+        )}
+
+        {/* 3D CYBERRUNNER GAME TAB */}
+        {activeTab === 'game' && (
+          <CyberRunnerGame />
+        )}
+
         {/* ADMIN DASHBOARD TAB */}
         {activeTab === 'admin' && currentUser?.role === 'admin' && (
           <AdminDashboard currentUser={currentUser} onClose={() => setActiveTab('chat')} />
         )}
 
-        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Voice, Images, Video, New */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-3 py-1.5 flex items-center justify-around shadow-lg">
+        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Images, Music, Game, Video */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-lg">
           {/* Chat Tab */}
           <button
             onClick={() => setActiveTab('chat')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
               activeTab === 'chat'
                 ? 'text-zinc-950 dark:text-white font-semibold'
                 : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -808,20 +863,37 @@ export default function App() {
             <span>Chat</span>
           </button>
 
-          {/* Live Voice Duplex Button - Elevated pulse */}
+          {/* Music Studio */}
           <button
-            onClick={() => setShowVoiceModal(true)}
-            className="flex flex-col items-center justify-center py-1 px-3.5 rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-[10px] shadow-md -mt-3.5 ring-4 ring-white dark:ring-[#181818] transition-all active:scale-95 cursor-pointer"
-            title="Start Real-Time Voice Conversation"
+            onClick={() => setActiveTab('music')}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+              activeTab === 'music'
+                ? 'text-purple-600 dark:text-purple-400 font-semibold'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
           >
-            <Mic className="w-4 h-4 mb-0.5 text-sky-400 dark:text-blue-600 animate-pulse" />
-            <span>Voice</span>
+            <Music className="w-4 h-4 mb-0.5" />
+            <span>Music</span>
+          </button>
+
+          {/* 3D Game Tab - Hero center */}
+          <button
+            onClick={() => setActiveTab('game')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl font-semibold text-[10px] shadow-md -mt-3.5 ring-4 ring-white dark:ring-[#181818] transition-all active:scale-95 cursor-pointer ${
+              activeTab === 'game'
+                ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-black'
+                : 'bg-zinc-900 text-white dark:bg-white dark:text-black'
+            }`}
+            title="Play 3D CyberRun Game"
+          >
+            <Gamepad2 className="w-4 h-4 mb-0.5 text-emerald-400 dark:text-emerald-600" />
+            <span>3D Game</span>
           </button>
 
           {/* Image Studio */}
           <button
             onClick={() => setActiveTab('images')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
               activeTab === 'images'
                 ? 'text-zinc-950 dark:text-white font-semibold'
                 : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -834,7 +906,7 @@ export default function App() {
           {/* Video Studio */}
           <button
             onClick={() => setActiveTab('video')}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
               activeTab === 'video'
                 ? 'text-zinc-950 dark:text-white font-semibold'
                 : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
@@ -842,19 +914,6 @@ export default function App() {
           >
             <Film className="w-4 h-4 mb-0.5" />
             <span>Video</span>
-          </button>
-
-          {/* New Chat */}
-          <button
-            onClick={() => {
-              setActiveTab('chat');
-              handleNewChat();
-            }}
-            className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[10px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
-            title="Start New Chat"
-          >
-            <Plus className="w-4 h-4 mb-0.5" />
-            <span>New</span>
           </button>
         </nav>
       </div>
@@ -906,6 +965,21 @@ export default function App() {
           setShowAuthModal(false);
           loadConversations();
           refreshUsage();
+        }}
+      />
+
+      {/* Unity Rewarded Ad Modal for Chat / General Credits */}
+      <UnityAdModal
+        isOpen={adModalOpen}
+        onClose={() => setAdModalOpen(false)}
+        mode="rewarded"
+        rewardType={adRewardType}
+        isAdmin={isAdmin}
+        onRewardClaimed={() => {
+          refreshUsage();
+          setStreamError(null);
+          setAdRewardToast('🎉 +2 Chat Messages added via Unity Ads! You can continue chatting now.');
+          setTimeout(() => setAdRewardToast(null), 6000);
         }}
       />
     </div>

@@ -88,7 +88,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
             <CoreGptLogo size={36} />
             <div>
               <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                <span>Install CoreGPT App</span>
+                <span>Install HYNEX AI App</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300">
                   Android & iOS
                 </span>
@@ -142,7 +142,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
               {isStandalone && (
                 <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5 text-xs text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>CoreGPT is running in native standalone application mode!</span>
+                  <span>HYNEX AI is running in native standalone application mode!</span>
                 </div>
               )}
 
@@ -191,7 +191,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
                         1-Tap Progressive Web App (PWA)
                       </p>
                       <p className="text-zinc-600 dark:text-zinc-400">
-                        Installs CoreGPT directly onto your Android phone or computer as a standalone app with its own home screen icon, instant launch, and offline caching.
+                        Installs HYNEX AI directly onto your Android phone or computer as a standalone app with its own home screen icon, instant launch, and offline caching.
                       </p>
                     </div>
                   </div>
@@ -204,12 +204,12 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
                     {installStatus === 'installed' ? (
                       <>
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        <span>CoreGPT Already Installed</span>
+                        <span>HYNEX AI Already Installed</span>
                       </>
                     ) : (
                       <>
                         <Download className="w-4 h-4" />
-                        <span>{deferredPrompt ? 'Install CoreGPT Now' : 'Add CoreGPT to Home Screen'}</span>
+                        <span>{deferredPrompt ? 'Install HYNEX AI Now' : 'Add HYNEX AI to Home Screen'}</span>
                       </>
                     )}
                   </button>
@@ -243,7 +243,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
                   <div className="flex items-start gap-2">
                     <span className="font-semibold text-zinc-900 dark:text-white">2.</span>
                     <span>
-                      <strong className="text-zinc-900 dark:text-white">iOS (iPhone/iPad):</strong> iOS does <strong className="underline">not</strong> support .apk files. Use the <strong className="text-zinc-900 dark:text-white">Direct Mobile Install</strong> tab above to add CoreGPT to your iOS Home Screen.
+                      <strong className="text-zinc-900 dark:text-white">iOS (iPhone/iPad):</strong> iOS does <strong className="underline">not</strong> support .apk files. Use the <strong className="text-zinc-900 dark:text-white">Direct Mobile Install</strong> tab above to add HYNEX AI to your iOS Home Screen.
                     </span>
                   </div>
                 </div>
@@ -279,7 +279,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-3.5 bg-zinc-50 dark:bg-white/[0.02] border-t border-zinc-100 dark:border-white/[0.06] flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-          <span>CoreGPT Mobile Edition</span>
+          <span>HYNEX AI Mobile Edition</span>
           <span>Founded by Umar Hani · Ahmadraza</span>
         </div>
       </div>

@@ -21,11 +21,11 @@ usageRouter.get('/', (req: AuthenticatedRequest, res: Response) => {
     const textLimit =
       user.role === 'admin'
         ? 999999
-        : typeof user.daily_quota_override === 'number'
+        : (typeof user.daily_quota_override === 'number'
         ? user.daily_quota_override
-        : defaultTextQuota;
+        : defaultTextQuota) + (usage.bonus_text_credits || 0);
 
-    const imageLimit = user.role === 'admin' ? 999999 : defaultImageQuota;
+    const imageLimit = user.role === 'admin' ? 999999 : defaultImageQuota + (usage.bonus_image_credits || 0);
 
     const textRemaining = Math.max(0, textLimit - usage.text_count);
     const imageRemaining = Math.max(0, imageLimit - usage.image_count);
@@ -37,9 +37,11 @@ usageRouter.get('/', (req: AuthenticatedRequest, res: Response) => {
       textCount: usage.text_count,
       textLimit,
       textRemaining,
+      bonusTextCredits: usage.bonus_text_credits || 0,
       imageCount: usage.image_count,
       imageLimit,
       imageRemaining,
+      bonusImageCredits: usage.bonus_image_credits || 0,
       resetsAt: midnight.toISOString(),
     });
   } catch (err: unknown) {

@@ -825,7 +825,7 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
 
       audio.onplay = () => {
         setState('speaking');
-        setStatusMessage('CoreGPT Live speaking...');
+        setStatusMessage('HYNEX AI Live speaking...');
       };
 
       audio.onended = () => {
@@ -894,8 +894,9 @@ export const VoiceConversationModal: React.FC<VoiceConversationModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm sm:text-base text-white tracking-tight">
-                  CoreGPT Live
+                <span className="font-extrabold text-sm sm:text-base text-white tracking-wider flex items-center gap-1">
+                  <span>HYNEX</span>
+                  <span className="text-emerald-400 font-black">AI Live</span>
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
                   <Sparkles className="w-2.5 h-2.5 text-cyan-400" />

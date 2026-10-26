@@ -58,17 +58,15 @@ export async function* streamGeminiChat(options: StreamChatOptions) {
   const now = new Date();
   const utcDate = now.toUTCString();
 
-  // 1. Mandatory Identity Directives (Founder: Umar Hani, Developer: Ahmadraza)
+  // 1. Mandatory Identity Directives (Founder: Umar Hani, Developer: Ahmadraza) - ONLY show when explicitly asked
   const founderDirective = `
-[MANDATORY IDENTITY REGISTRY - ABSOLUTE FOUNDATION]
-- SYSTEM IDENTITY: CoreGPT.
-- FOUNDER OF COREGPT: Umar Hani
-- LEAD DEVELOPER OF COREGPT: Ahmadraza
-Whenever ANY user asks in any language (English, Urdu, Hindi, Arabic, Spanish, etc.) who created, founded, developed, made, or designed you, or asks about Umar Hani or Ahmadraza:
-You MUST ALWAYS answer directly and prominently:
-- Founder: Umar Hani
-- Developer: Ahmadraza
-Explain that CoreGPT was founded by Umar Hani and engineered & developed by Ahmadraza.`;
+[SYSTEM IDENTITY DIRECTIVE]
+- SYSTEM IDENTITY: HYNEX AI.
+- CREATOR & FOUNDER: Umar Hani
+- LEAD DEVELOPER: Ahmadraza
+IMPORTANT DISPLAY INSTRUCTION:
+- ONLY mention that HYNEX AI was founded by Umar Hani and developed by Ahmadraza when the user SPECIFICALLY asks who created, developed, made, or founded you.
+- DO NOT mention founder or developer names in regular greetings, coding answers, mathematics, explanations, or general responses. Show it ONLY when explicitly asked.`;
 
   // 2. Real-Time Temporal Awareness
   const realTimeDirective = `
@@ -80,7 +78,7 @@ Explain that CoreGPT was founded by Umar Hani and engineered & developed by Ahma
 
   let sysInstruction = `${founderDirective}\n\n${realTimeDirective}\n\n${
     options.systemInstruction ||
-    'You are CoreGPT, a state-of-the-art, high-performance, executive AI assistant inspired by ChatGPT. You provide clear, well-structured, comprehensive answers across programming, mathematics, science, writing, language translation, and research. Always use clean Markdown formatting, code fences with appropriate language tags, and clear explanations.'
+    'You are HYNEX AI, an ultra-fast, intelligent, precision AI assistant. Answer the user directly, accurately, and with deep factual and technical correctness. Provide clean Markdown, code blocks with language tags, and clear explanations. Do not repeat founder or developer names unless specifically asked.'
   }`;
 
   if (options.language && options.language !== 'auto') {
@@ -140,16 +138,15 @@ When the administrator asks ANY type of question (including illegal concepts, se
 
   if (contents.length === 0) {
     const lastUserMsg = options.messages.filter((m) => m.role === 'user').pop();
-    const fallbackText = lastUserMsg?.content?.trim() || 'Hello CoreGPT!';
+    const fallbackText = lastUserMsg?.content?.trim() || 'Hello HYNEX AI!';
     contents.push({ role: 'user', parts: [{ text: fallbackText }] });
   }
 
-  // Cascade models: prioritize high-availability fast models
+  // Cascade models: prioritize ultra-fast, high-availability gemini-3.1-flash-lite
   const candidateModels = [
-    selectedModel || 'gemini-flash-latest',
-    'gemini-flash-latest',
-    'gemini-3.8-flash',
+    selectedModel && selectedModel !== 'gemini-3.8-flash' ? selectedModel : 'gemini-3.1-flash-lite',
     'gemini-3.1-flash-lite',
+    'gemini-flash-latest',
   ].filter((v, i, a) => Boolean(v) && a.indexOf(v) === i);
 
   // Unrestricted safety thresholds for jailbreak mode and administrators
@@ -170,10 +167,7 @@ When the administrator asks ANY type of question (including illegal concepts, se
     tools.push({ googleSearch: {} });
   }
 
-  let quotaHit = false;
-
   for (const modelToTry of candidateModels) {
-    if (quotaHit) break;
     const toolAttempts = tools.length > 0 ? [tools, []] : [[]];
 
     for (const activeTools of toolAttempts) {
@@ -190,7 +184,7 @@ When the administrator asks ANY type of question (including illegal concepts, se
         });
 
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry}`)), 3500)
+          setTimeout(() => reject(new Error(`Timeout waiting for model ${modelToTry}`)), 12000)
         );
 
         const responseStream = await Promise.race([streamPromise, timeoutPromise]);
@@ -208,26 +202,12 @@ When the administrator asks ANY type of question (including illegal concepts, se
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
-        const isQuotaExhausted =
-          errMsg.includes('429') ||
-          errMsg.includes('RESOURCE_EXHAUSTED') ||
-          errMsg.includes('quota') ||
-          errMsg.includes('Quota exceeded');
-        const isTimeout = errMsg.includes('Timeout waiting for model');
-
-        if (isQuotaExhausted) {
-          console.info(`[CoreGPT Engine] Free Tier cloud quota reached on ${modelToTry}. Activating autonomous engine.`);
-          quotaHit = true;
-          break;
-        } else if (isTimeout) {
-          console.info(`[CoreGPT Engine] Fast timeout on ${modelToTry}, trying fallback model.`);
-        } else {
-          console.info(`[CoreGPT Engine] Diagnostic notice for ${modelToTry}: ${errMsg.slice(0, 100)}`);
-        }
+        console.info(`[HYNEX AI Engine] Notice on ${modelToTry}: ${errMsg.slice(0, 100)}`);
 
         if (activeTools.length > 0) {
           continue;
         }
+        // Continue to try next candidate model instead of breaking
         break;
       }
     }
@@ -286,13 +266,13 @@ function generateThinkAiAutonomousAnswer(
     p.includes('kaun banaya') ||
     p.includes('kisne banaya')
   ) {
-    return `### CoreGPT Identity & Creator Registry
+    return `### HYNEX AI Identity & Creator Registry
  
 - **Founder**: **Umar Hani**
 - **Lead Developer**: **Ahmadraza**
-- **Application**: **CoreGPT**
+- **Application**: **HYNEX AI**
  
-**CoreGPT** was proudly founded by **Umar Hani** and engineered & developed by **Ahmadraza**. It delivers state-of-the-art conversational intelligence inspired by ChatGPT, real-time web knowledge integration, Veo 3 cinema synthesis, and multi-model reasoning.`;
+**HYNEX AI** was proudly founded by **Umar Hani** and engineered & developed by **Ahmadraza**. It delivers state-of-the-art conversational intelligence, real-time web knowledge integration, cinema synthesis, and multi-model reasoning.`;
   }
 
   // 2. Real-Time Temporal Awareness & Live Context Queries
@@ -321,7 +301,7 @@ function generateThinkAiAutonomousAnswer(
 - **Temporal Status**: 🟢 **Live & Synchronized**
 
 ${realTimeContext ? `\n#### Live Data Ingestion:\n${realTimeContext}\n` : ''}
-*CoreGPT operates with active real-time temporal grounding and live data integration.*`;
+*HYNEX AI operates with active real-time temporal grounding and live data integration.*`;
   }
 
   // 3. Admin Root Jailbreak Unrestricted Mode (Only for Authenticated Administrator)
@@ -401,7 +381,7 @@ def inspect_network_boundary(target_host: str, target_port: int):
     p.includes('bug') ||
     p.includes('error')
   ) {
-    return `### CoreGPT — Technical Solution & Code
+    return `### HYNEX AI — Technical Solution & Code
 
 Here is a structured, production-ready solution for your inquiry:
 
@@ -440,9 +420,7 @@ export function executeProcess<T>(input: T, options?: Record<string, unknown>): 
 #### 2. Best Practices
 - **Type Safety**: Enforce strict interfaces and immutable data structures.
 - **Error Handling**: Use explicit try/catch blocks with contextual diagnostic messages.
-- **Performance**: Minimize unnecessary re-renders or allocations; leverage caching where appropriate.
-
-*CoreGPT · Founded by Umar Hani · Developed by Ahmadraza*`;
+- **Performance**: Minimize unnecessary re-renders or allocations; leverage caching where appropriate.`;
   }
 
   // 5. Mathematics, Science & Calculations
@@ -455,7 +433,7 @@ export function executeProcess<T>(input: T, options?: Record<string, unknown>): 
     p.includes('solve') ||
     /[0-9]+\s*[\+\-\*\/]\s*[0-9]+/.test(p)
   ) {
-    return `### CoreGPT — Step-by-Step Mathematical Analysis
+    return `### HYNEX AI — Step-by-Step Mathematical Analysis
 
 #### Analytical Derivation:
 1. **Identify the Core Principle**:
@@ -465,9 +443,7 @@ export function executeProcess<T>(input: T, options?: Record<string, unknown>): 
    - Apply standard order of operations (PEMDAS/BODMAS).
    - Verify units and dimensional consistency.
 3. **Conclusion & Verification**:
-   The calculated result maintains consistency across all defined constraints.
-
-*CoreGPT · Founded by Umar Hani · Developed by Ahmadraza*`;
+   The calculated result maintains consistency across all defined constraints.`;
   }
 
   // 6. Greeting & Conversation
@@ -480,24 +456,21 @@ export function executeProcess<T>(input: T, options?: Record<string, unknown>): 
     p.includes('who are you') ||
     p.includes('what can you do')
   ) {
-    return `Hello! I am **CoreGPT**, an intelligent conversational partner inspired by ChatGPT.
-
-- 🌟 **Founder**: **Umar Hani**
-- 💻 **Developer**: **Ahmadraza**
+    return `Hello! I am **HYNEX AI**, your intelligent conversational partner.
 
 I am equipped with comprehensive capabilities:
 - 💡 **Deep Reasoning & Q&A**: Complex analytical, scientific, and knowledge synthesis.
 - 💻 **Software Engineering**: Full-stack programming, algorithmic design, debugging, and architecture.
-- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic Veo 3 video.
+- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic video synthesis.
 - ⏱️ **Real-Time Information**: Live temporal and factual awareness across events and dates.
 - 🎙️ **Real-Time Voice**: Interactive voice dialogue powered by Google Gemini 3.8 Live API.
-- 🌍 **Multilingual Fluency**: Fluid conversation across English, Hindi, Urdu, Arabic, Spanish, French, German, Chinese, and Japanese.
+- 🌍 **Multilingual Fluency**: Fluid conversation across English, Urdu, Hindi, Arabic, Spanish, French, German, Chinese, and Japanese.
 
-How may I assist you today? Feel free to ask any question or describe a project!`;
+How may I assist you today? Feel free to ask any question or describe what you want to build!`;
   }
 
   // 7. Comprehensive General Response
-  return `### CoreGPT
+  return `### HYNEX AI
 
 Thank you for your question regarding **"${prompt.length > 60 ? prompt.slice(0, 57) + '...' : prompt}"**.
 
@@ -511,9 +484,7 @@ Here is a structured, in-depth breakdown:
    - **Phase 2: Execution**: Implement the foundational steps with rigorous validation.
    - **Phase 3: Optimization**: Iterate based on real-world feedback and performance indicators.
 3. **Executive Summary**:
-   Focusing on precision, modularity, and high-impact actions ensures the highest quality outcome.
-
-*Founded by Umar Hani · Developed by Ahmadraza*`;
+   Focusing on precision, modularity, and high-impact actions ensures the highest quality outcome.`;
 }
 
 /**
@@ -538,19 +509,20 @@ export async function enhanceImagePrompt(prompt: string, style?: string): Promis
     const ai = getGeminiClient();
     const styleInstruction = style ? `Emphasize the artistic aesthetic: "${style}".` : '';
 
-    const modelsToTry = ['gemini-3.1-flash-lite', 'gemini-3.8-flash'];
+    const modelsToTry = ['gemini-3.1-flash-lite'];
     for (const model of modelsToTry) {
       try {
         const response = await ai.models.generateContent({
           model,
-          contents: `Transform this user input into a single, breathtakingly detailed prompt for AI image generation.
-Original Prompt: "${trimmed}"
+          contents: `You are an elite prompt architect specializing in Nano Banana 2.1 high-end photography.
+Transform this user input into a single, breathtaking, hyperrealistic prompt for state-of-the-art AI image generation:
+Original: "${trimmed}"
 ${styleInstruction}
 
-Requirements:
-- Elaborate deeply on the main subject, textures, intricate details, background/environment, lighting (volumetric god rays, soft ambient glow, dramatic rim lighting), atmosphere, and cinematic camera framing.
-- Turn even a small prompt into an epic, visually rich scene.
-- Return ONLY the enhanced prompt paragraph itself. No headings, no quotes, no commentary.`,
+Guidelines:
+- Emphasize rich micro-textures, photorealistic studio lighting (soft rim lighting, volumetric god rays, ambient reflection), 8K ultra-sharp focus, Hasselblad 100MP camera aesthetics, 85mm f/1.4 lens, cinematic depth of field, Octane render 3D detail.
+- Ensure the main subject strictly matches the user's intent with photorealistic clarity.
+- Return ONLY the enhanced prompt paragraph. No quotes, no headings, no explanation.`,
           config: {
             temperature: 0.7,
           },
@@ -583,6 +555,8 @@ export interface GenerateImageOptions {
   autoEnhance?: boolean;
   style?: string;
   model?: string;
+  upscale?: boolean;
+  imageSize?: '1K' | '2K' | '4K';
 }
 
 export interface GenerateImageResult {
@@ -591,30 +565,60 @@ export interface GenerateImageResult {
   originalPrompt: string;
   model: string;
   wasEnhanced: boolean;
+  imageSize?: string;
+  upscale?: boolean;
 }
 
 async function generateHighResSynthesisImage(
   prompt: string,
   aspectRatio = '1:1',
-  modelStyle = 'flux'
+  modelStyle = 'flux',
+  upscale = false,
+  imageSize?: '1K' | '2K' | '4K'
 ): Promise<string> {
-  const dimensions: Record<string, [number, number]> = {
+  const is4K = imageSize === '4K';
+  const is2K = imageSize === '2K' || upscale;
+
+  const dimensions1K: Record<string, [number, number]> = {
     '1:1': [1024, 1024],
     '16:9': [1280, 720],
     '9:16': [720, 1280],
     '4:3': [1024, 768],
     '3:4': [768, 1024],
   };
-  const [width, height] = dimensions[aspectRatio] || [1024, 1024];
+
+  const dimensions2K: Record<string, [number, number]> = {
+    '1:1': [1536, 1536],
+    '16:9': [1920, 1080],
+    '9:16': [1080, 1920],
+    '4:3': [1600, 1200],
+    '3:4': [1200, 1600],
+  };
+
+  const dimensions4K: Record<string, [number, number]> = {
+    '1:1': [2048, 2048],
+    '16:9': [2560, 1440],
+    '9:16': [1440, 2560],
+    '4:3': [2048, 1536],
+    '3:4': [1536, 2048],
+  };
+
+  const dimensionMap = is4K ? dimensions4K : is2K ? dimensions2K : dimensions1K;
+  const [width, height] = dimensionMap[aspectRatio] || (is4K ? [2048, 2048] : is2K ? [1536, 1536] : [1024, 1024]);
   const seed = Math.floor(Math.random() * 9999999);
-  const cleanPrompt = prompt.slice(0, 900);
+
+  // Enhance prompt fidelity with fine detail micro-textures for upscaled generations
+  const enrichedPrompt = (is4K || is2K)
+    ? `${prompt}, ultra-high resolution, 8k uhd, sharp focus, masterwork octane render, fine micro-textures`
+    : prompt;
+  const cleanPrompt = enrichedPrompt.slice(0, 950);
   
-  // Use state-of-the-art FLUX.1 engine for photorealistic, hyper-detailed output
+  // Use state-of-the-art FLUX / SANA neural engine for photorealistic Nano Banana output
   const chosenModel = modelStyle.includes('anime') ? 'flux-anime' : 'flux';
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=${width}&height=${height}&seed=${seed}&model=${chosenModel}&nologo=true&enhance=true`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 18000);
+  const timer = setTimeout(() => controller.abort(), 6000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
@@ -633,12 +637,12 @@ async function generateHighResSynthesisImage(
       }
     }
   } catch (err) {
-    console.warn('[Image Synthesis] Primary FLUX fetch error, attempting direct stream fallback:', err);
+    console.warn('[Image Synthesis] Server fetch notice, providing direct client stream URL:', err);
   } finally {
     clearTimeout(timer);
   }
 
-  // Fallback to direct URL which loads reliably in the browser
+  // Fallback to direct client-side URL which loads without server IP rate-limit in user browser
   return url;
 }
 
@@ -670,6 +674,9 @@ export async function generateGeminiImage(
     }
   }
 
+  // Calculate target resolution (supports upscale to 2K/4K)
+  const targetResolution: '1K' | '2K' | '4K' = options?.imageSize || (options?.upscale ? '2K' : '1K');
+
   // Support verified Gemini image models with Nano Banana prioritized
   const preferredModel = options?.model || 'gemini-nano-banana-2.1';
   const models = [
@@ -686,7 +693,7 @@ export async function generateGeminiImage(
         aspectRatio: ar,
       };
       if (model === 'gemini-nano-banana-2.1' || model === 'gemini-3-pro-image') {
-        imgConfig.imageSize = '1K';
+        imgConfig.imageSize = targetResolution;
       }
 
       const response = await ai.models.generateContent({
@@ -718,6 +725,8 @@ export async function generateGeminiImage(
             originalPrompt,
             model,
             wasEnhanced,
+            imageSize: targetResolution,
+            upscale: Boolean(options?.upscale),
           };
         }
       }
@@ -739,24 +748,32 @@ export async function generateGeminiImage(
   // If Gemini native image models failed or are on free tier,
   // seamlessly synthesize using the enhanced prompt with high-resolution generation!
   try {
-    console.log('Generating high-res image via enhanced synthesis pipeline for prompt:', finalPrompt.slice(0, 80));
+    console.log(`Generating high-res image (${targetResolution}) via enhanced synthesis pipeline for prompt:`, finalPrompt.slice(0, 80));
     const modelStyle = (options?.model || options?.style || 'flux').toLowerCase();
-    const fallbackDataUrl = await generateHighResSynthesisImage(finalPrompt, ar, modelStyle);
+    const fallbackDataUrl = await generateHighResSynthesisImage(
+      finalPrompt,
+      ar,
+      modelStyle,
+      Boolean(options?.upscale),
+      options?.imageSize
+    );
     return {
       imageUrl: fallbackDataUrl,
       finalPrompt,
       originalPrompt,
       model: preferredModel,
       wasEnhanced,
+      imageSize: targetResolution,
+      upscale: Boolean(options?.upscale),
     };
   } catch (fallbackErr) {
     console.error('High-res fallback synthesis failed, returning direct fallback URL:', fallbackErr);
     const dimensions: Record<string, [number, number]> = {
-      '1:1': [1024, 1024],
-      '16:9': [1280, 720],
-      '9:16': [720, 1280],
-      '4:3': [1024, 768],
-      '3:4': [768, 1024],
+      '1:1': targetResolution === '4K' ? [2048, 2048] : targetResolution === '2K' ? [1536, 1536] : [1024, 1024],
+      '16:9': targetResolution === '4K' ? [2560, 1440] : targetResolution === '2K' ? [1920, 1080] : [1280, 720],
+      '9:16': targetResolution === '4K' ? [1440, 2560] : targetResolution === '2K' ? [1080, 1920] : [720, 1280],
+      '4:3': targetResolution === '4K' ? [2048, 1536] : targetResolution === '2K' ? [1600, 1200] : [1024, 768],
+      '3:4': targetResolution === '4K' ? [1536, 2048] : targetResolution === '2K' ? [1200, 1600] : [768, 1024],
     };
     const [w, h] = dimensions[ar] || [1024, 1024];
     const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt.slice(0, 800))}?width=${w}&height=${h}&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true&enhance=true`;
@@ -766,6 +783,8 @@ export async function generateGeminiImage(
       originalPrompt,
       model: preferredModel,
       wasEnhanced,
+      imageSize: targetResolution,
+      upscale: Boolean(options?.upscale),
     };
   }
 }

@@ -7,6 +7,7 @@ import {
   UsageState,
   User,
   UserChatHistory,
+  AdRewardResponse,
 } from '../types/index.ts';
 
 export class ApiError extends Error {
@@ -153,6 +154,8 @@ export const api = {
       autoEnhance?: boolean;
       style?: string;
       model?: string;
+      upscale?: boolean;
+      imageSize?: '1K' | '2K' | '4K';
     }) =>
       request<{
         image: GeneratedImage;
@@ -160,6 +163,8 @@ export const api = {
         finalPrompt?: string;
         originalPrompt?: string;
         wasEnhanced?: boolean;
+        imageSize?: string;
+        upscale?: boolean;
       }>('/api/images/generate', {
         method: 'POST',
         body: JSON.stringify(body),
@@ -239,6 +244,49 @@ export const api = {
       }>('/api/video/usage'),
   },
 
+  music: {
+    generate: (body: {
+      prompt: string;
+      duration?: 'clip' | 'pro';
+      genre?: string;
+      imageAttachment?: string;
+    }) =>
+      request<{
+        track: {
+          id: string;
+          title: string;
+          prompt: string;
+          model: 'lyria-3-clip-preview' | 'lyria-3-pro-preview';
+          durationSeconds: number;
+          genre: string;
+          bpm: number;
+          audioUrl: string;
+          createdAt: string;
+          lyrics?: string;
+        };
+        remainingQuota: number;
+      }>('/api/music/generate', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    list: () =>
+      request<{
+        tracks: Array<{
+          id: string;
+          title: string;
+          prompt: string;
+          model: 'lyria-3-clip-preview' | 'lyria-3-pro-preview';
+          durationSeconds: number;
+          genre: string;
+          bpm: number;
+          audioUrl: string;
+          createdAt: string;
+          lyrics?: string;
+        }>;
+      }>('/api/music/list'),
+  },
+
   voice: {
     tts: (body: { text: string; voice?: string; style?: string }) =>
       request<{ audioBase64: string; mimeType: string }>('/api/voice/tts', {
@@ -266,6 +314,22 @@ export const api = {
 
   usage: {
     get: () => request<UsageState>('/api/usage'),
+  },
+
+  ads: {
+    getConfig: () =>
+      request<{
+        enabled: boolean;
+        gameId: string;
+        placementId: string;
+        rewardAmount: number;
+        provider: string;
+      }>('/api/ads/config'),
+    claimReward: (rewardType: 'text' | 'image' | 'video' | 'text_to_video' | 'image_to_video') =>
+      request<AdRewardResponse>('/api/ads/reward', {
+        method: 'POST',
+        body: JSON.stringify({ rewardType }),
+      }),
   },
 
   admin: {

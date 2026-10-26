@@ -114,12 +114,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleExportMarkdown = () => {
-    let md = `# CoreGPT - Chat History Export\nGenerated: ${new Date().toLocaleString()}\n\n---\n\n`;
+    let md = `# HYNEX AI - Chat History Export\nGenerated: ${new Date().toLocaleString()}\n\n---\n\n`;
     for (const c of conversations) {
       md += `## ${c.title}\n*Model: ${c.model} | Created: ${c.created_at}*\n\n`;
       if (c.messages && c.messages.length > 0) {
         for (const m of c.messages) {
-          md += `### ${m.role === 'user' ? 'User' : 'CoreGPT'}\n${m.content}\n\n`;
+          md += `### ${m.role === 'user' ? 'User' : 'HYNEX AI'}\n${m.content}\n\n`;
         }
       }
       md += `---\n\n`;
@@ -129,7 +129,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute(
       'download',
-      `coregpt-chats-${new Date().toISOString().slice(0, 10)}.md`
+      `hynex-ai-chats-${new Date().toISOString().slice(0, 10)}.md`
     );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
@@ -160,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="flex items-center gap-2.5">
             <Palette className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
             <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              CoreGPT Preferences
+              HYNEX AI Preferences
             </h3>
           </div>
           <button
@@ -184,10 +184,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <ThinkAiLogo size={42} />
               <div>
                 <span className="font-semibold block text-zinc-900 dark:text-zinc-100 text-xs">
-                  CoreGPT Official Emblem
+                  HYNEX AI Official Emblem
                 </span>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Black & White Logo · Founded by Umar Hani · Developed by Ahmadraza
+                  Wolf Silhouette Logo · Founded by Umar Hani · Developed by Ahmadraza
                 </span>
               </div>
             </div>

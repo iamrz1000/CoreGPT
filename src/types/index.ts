@@ -56,10 +56,31 @@ export interface UsageState {
   textCount: number;
   textLimit: number;
   textRemaining: number;
+  bonusTextCredits?: number;
   imageCount: number;
   imageLimit: number;
   imageRemaining: number;
+  bonusImageCredits?: number;
   resetsAt: string;
+}
+
+export interface AdRewardResponse {
+  success: boolean;
+  isAdmin: boolean;
+  gameId?: string;
+  rewardType?: string;
+  creditsGranted: number;
+  message: string;
+  videoUsage?: {
+    isAdmin: boolean;
+    textToVideoCount: number;
+    textToVideoLimit: number;
+    textToVideoRemaining: number;
+    imageToVideoCount: number;
+    imageToVideoLimit: number;
+    imageToVideoRemaining: number;
+    resetsAt: string;
+  };
 }
 
 export interface GeneratedImage {

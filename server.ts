@@ -16,6 +16,8 @@ import { voiceRouter } from './src/server/routes/voiceRoutes.ts';
 import { adminRouter } from './src/server/routes/adminRoutes.ts';
 import { usageRouter } from './src/server/routes/usageRoutes.ts';
 import { videoRouter } from './src/server/routes/videoRoutes.ts';
+import { adRouter } from './src/server/routes/adRoutes.ts';
+import { musicRouter } from './src/server/routes/musicRoutes.ts';
 import { setupLiveWebSocket } from './src/server/live.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -71,7 +73,10 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount API routes
+app.use('/assets/music', express.static(path.resolve(__dirname, 'public/assets/music')));
 app.use('/api/auth', authRouter);
+app.use('/api/ads', adRouter);
+app.use('/api/music', musicRouter);
 app.use('/api/video', videoRouter);
 app.use('/api/images', imageRouter);
 app.use('/api/voice', voiceRouter);

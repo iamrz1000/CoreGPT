@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api, ApiError } from '../services/api.ts';
 import { CoreGptWatermark } from './CoreGptWatermark.tsx';
+import { UnityAdModal } from './UnityAdModal.tsx';
+import { AdRewardPromptCard } from './AdRewardPromptCard.tsx';
 import {
   Film,
   Video,
@@ -57,6 +59,9 @@ export const VideoStudio: React.FC = () => {
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoUsage, setVideoUsage] = useState<VideoUsageInfo | null>(null);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [adModalOpen, setAdModalOpen] = useState(false);
+  const [adModalMode, setAdModalMode] = useState<'interstitial' | 'rewarded'>('interstitial');
+  const [adRewardSuccess, setAdRewardSuccess] = useState<string | null>(null);
 
 
   const loadUsage = async () => {
@@ -250,6 +255,12 @@ export const VideoStudio: React.FC = () => {
         setPollingId(newVid.id);
       }
       loadUsage();
+
+      // Show Unity Ads interstitial after video generation for normal users
+      if (!videoUsage?.isAdmin) {
+        setAdModalMode('interstitial');
+        setAdModalOpen(true);
+      }
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -280,7 +291,7 @@ export const VideoStudio: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
               <Film className="w-4 h-4 text-zinc-900 dark:text-white" />
-              <span>CoreGPT Generative Cinema & Animation</span>
+              <span>HYNEX AI Generative Cinema & Animation</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
               Generative Cinema & Animation
@@ -421,6 +432,28 @@ export const VideoStudio: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Show Rewarded Ad Option when limit reached for normal users */}
+              {!videoUsage?.isAdmin && (isTextQuotaExhausted || isImageQuotaExhausted) && (
+                <div className="pt-2">
+                  <AdRewardPromptCard
+                    type="video"
+                    isAdmin={videoUsage?.isAdmin}
+                    onWatchAd={() => {
+                      setAdModalMode('rewarded');
+                      setAdModalOpen(true);
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Success badge when reward claimed */}
+              {adRewardSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>{adRewardSuccess}</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -697,7 +730,7 @@ export const VideoStudio: React.FC = () => {
                       </button>
                       <a
                         href={activeVideo.videoUrl}
-                        download="coregpt-video.mp4"
+                        download="hynex-video.mp4"
                         target="_blank"
                         rel="noreferrer"
                         className="py-1 px-3 rounded-lg bg-zinc-900 hover:bg-black text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 text-[11px] font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
@@ -725,7 +758,7 @@ export const VideoStudio: React.FC = () => {
                       <div className="space-y-1">
                         <p className="text-sm font-semibold">Video Render Ready</p>
                         <p className="text-xs text-zinc-400 max-w-sm">
-                          Your synthesized CoreGPT video is ready. Stream or download it directly.
+                          Your synthesized HYNEX AI video is ready. Stream or download it directly.
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -741,7 +774,7 @@ export const VideoStudio: React.FC = () => {
                         </button>
                         <a
                           href={activeVideo.videoUrl}
-                          download="coregpt-video.mp4"
+                          download="hynex-video.mp4"
                           className="py-1.5 px-3 rounded-lg bg-zinc-800 text-white text-xs font-medium flex items-center gap-1.5"
                         >
                           <Download className="w-3.5 h-3.5" />
@@ -854,6 +887,21 @@ export const VideoStudio: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Unity Ads Modal for Normal Users */}
+      <UnityAdModal
+        isOpen={adModalOpen}
+        onClose={() => setAdModalOpen(false)}
+        mode={adModalMode}
+        rewardType={mode === 'image' ? 'image_to_video' : 'text_to_video'}
+        isAdmin={videoUsage?.isAdmin}
+        onRewardClaimed={() => {
+          loadUsage();
+          setError(null);
+          setAdRewardSuccess('🎉 +2 Video Generations added via Unity Ads!');
+          setTimeout(() => setAdRewardSuccess(null), 6000);
+        }}
+      />
     </div>
   );
 };

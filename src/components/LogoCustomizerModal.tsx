@@ -37,9 +37,9 @@ export const LogoCustomizerModal: React.FC<LogoCustomizerModalProps> = ({
   const presets = [
     {
       id: 'default',
-      name: 'CoreGPT Official Emblem (Black & White)',
-      desc: 'Minimalist OpenAI-style monochrome knot with star and wordmark',
-      url: '/coregpt-logo.png',
+      name: 'HYNEX AI Official Wolf Emblem (Current)',
+      desc: 'Signature geometric wolf silhouette with neon green cybernetic eye',
+      url: '/assets/aistudio/867039973_1145203551266684_2426743392755728897_n_0f64f4a3.jpg',
     },
     {
       id: 'gold-crown',
@@ -133,10 +133,10 @@ export const LogoCustomizerModal: React.FC<LogoCustomizerModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">
-                CoreGPT Emblem & Branding
+                HYNEX AI Emblem & Branding
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Official Black & White Emblem (Founded by Umar Hani · Developed by Ahmadraza)
+                Official Wolf Emblem (Founded by Umar Hani · Developed by Ahmadraza)
               </p>
             </div>
           </div>

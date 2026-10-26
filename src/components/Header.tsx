@@ -61,31 +61,31 @@ export const Header: React.FC<HeaderProps> = ({
   const standardModels = [
     {
       id: 'gemini-3.1-flash-lite',
-      name: 'CoreGPT 4o',
+      name: 'HYNEX 4o',
       tag: 'Fast & Versatile',
       icon: Zap,
     },
     {
       id: 'gemini-flash-latest',
-      name: 'CoreGPT Turbo',
+      name: 'HYNEX Turbo',
       tag: 'High Throughput',
       icon: Sparkles,
     },
     {
       id: 'gemini-3.8-flash',
-      name: 'CoreGPT Pro',
+      name: 'HYNEX Pro',
       tag: 'Deep Reasoning',
       icon: BrainCircuit,
     },
     {
       id: 'gemini-3.8-live',
-      name: 'CoreGPT Voice Duplex',
+      name: 'HYNEX Voice Duplex',
       tag: 'Real-Time Audio',
       icon: Radio,
     },
     {
       id: 'gemini-nano-banana-2.1',
-      name: 'CoreGPT Vision & Art',
+      name: 'HYNEX Vision & Art',
       tag: 'Visual Synthesis',
       icon: Wand2,
     },
@@ -94,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
   const adminJailbreakModels = [
     {
       id: 'gemini-3.1-flash-lite',
-      name: '⚡ CoreGPT 4o Root (Unrestricted)',
+      name: '⚡ HYNEX 4o Root (Unrestricted)',
       tag: 'Admin Root Bypass',
       icon: Zap,
     },
@@ -118,13 +118,13 @@ export const Header: React.FC<HeaderProps> = ({
     },
     {
       id: 'gemini-3.8-live',
-      name: '🎙️ CoreGPT Voice Duplex',
+      name: '🎙️ HYNEX Voice Duplex',
       tag: 'Real-Time Audio',
       icon: Radio,
     },
     {
       id: 'gemini-nano-banana-2.1',
-      name: '🎨 CoreGPT Vision & Art Root',
+      name: '🎨 HYNEX Vision & Art Root',
       tag: 'Unrestricted Art Synthesis',
       icon: Wand2,
     },
@@ -148,13 +148,16 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div
             onClick={onOpenLogoModal}
-            className="flex items-center gap-2 cursor-pointer group select-none py-1 px-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shrink-0"
-            title="CoreGPT — Founded by Umar Hani · Developed by Ahmadraza"
+            className="flex items-center gap-2 cursor-pointer group select-none py-1 px-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors shrink-0"
+            title="HYNEX AI — Founded by Umar Hani · Developed by Ahmadraza"
           >
-            <CoreGptLogo size={24} />
-            <span className="font-bold tracking-tight text-zinc-900 dark:text-white text-sm sm:text-base">
-              CoreGPT
-            </span>
+            <CoreGptLogo size={26} />
+            <div className="flex items-center gap-1 font-black tracking-wider text-sm sm:text-base">
+              <span className="text-zinc-900 dark:text-white">HYNEX</span>
+              <span className="text-emerald-500 dark:text-emerald-400 font-extrabold text-xs sm:text-sm px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                AI
+              </span>
+            </div>
           </div>
 
           {/* Model Selector (Desktop View - sm and above) */}
@@ -257,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenInstallModal}
               className="hidden lg:flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-zinc-300 dark:border-white/15 bg-transparent hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-zinc-200 text-xs font-medium transition-colors cursor-pointer"
-              title="Install CoreGPT on Android or iOS"
+              title="Install HYNEX AI on Android or iOS"
             >
               <Smartphone className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-300" />
               <span className="text-[11px]">Install</span>

@@ -40,7 +40,16 @@ imageRouter.post('/enhance-prompt', async (req: AuthenticatedRequest, res: Respo
 imageRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
-    const { prompt, aspectRatio = '1:1', conversationId, autoEnhance = true, style, model } = req.body;
+    const {
+      prompt,
+      aspectRatio = '1:1',
+      conversationId,
+      autoEnhance = true,
+      style,
+      model,
+      upscale = true,
+      imageSize = '2K',
+    } = req.body;
 
     const isEnabled = db.getSetting('image_generation_enabled', 'true') === 'true';
     if (!isEnabled && user.role !== 'admin') {
@@ -67,6 +76,8 @@ imageRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) =
       autoEnhance,
       style,
       model,
+      upscale: Boolean(upscale),
+      imageSize: (imageSize === '4K' || imageSize === '2K' || imageSize === '1K') ? imageSize : (upscale ? '2K' : '1K'),
     });
 
     const savedImage = db.saveGeneratedImage(
@@ -98,6 +109,8 @@ imageRouter.post('/generate', async (req: AuthenticatedRequest, res: Response) =
       finalPrompt: result.finalPrompt,
       originalPrompt: result.originalPrompt,
       wasEnhanced: result.wasEnhanced,
+      imageSize: result.imageSize,
+      upscale: result.upscale,
     });
   } catch (err: unknown) {
     console.error('Image generation error:', err);

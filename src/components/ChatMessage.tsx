@@ -178,8 +178,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       {/* Message Body & Actions */}
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold text-zinc-900 dark:text-white">
-            CoreGPT
+          <span className="font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-1">
+            <span>HYNEX</span>
+            <span className="text-emerald-500 font-extrabold text-[10px] px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20">AI</span>
           </span>
           {message.model && (
             <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
@@ -194,7 +195,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <div className="relative overflow-hidden bg-black/10">
               <img
                 src={message.image_url}
-                alt="Generated with CoreGPT"
+                alt="Generated with HYNEX AI"
                 className="w-full h-auto object-cover max-h-[440px] cursor-pointer transition-transform duration-300 group-hover/img:scale-[1.01]"
                 referrerPolicy="no-referrer"
                 onClick={() => setShowLightbox(true)}
@@ -252,7 +253,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             onClick={handlePlayTTS}
             disabled={audioLoading}
             className="p-1.5 rounded-lg hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
-            title={isPlayingAudio ? 'Stop speaking' : 'Read aloud with CoreGPT Voice'}
+            title={isPlayingAudio ? 'Stop speaking' : 'Read aloud with HYNEX AI Voice'}
           >
             {audioLoading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-500" />

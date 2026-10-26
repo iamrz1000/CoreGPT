@@ -50,9 +50,9 @@ export async function getRealTimeInformation(query: string): Promise<RealTimeCon
     lowerQuery.includes('who created')
   ) {
     infoParts.push(
-      `Verified Identity Registry: Founder of CoreGPT is Umar Hani. Lead Developer of CoreGPT is Ahmadraza.`
+      `Verified Identity Registry: Founder of HYNEX AI is Umar Hani. Lead Developer of HYNEX AI is Ahmadraza.`
     );
-    sources.push('CoreGPT Identity Registry');
+    sources.push('HYNEX AI Identity Registry');
   }
 
   // 2. Weather real-time query only if explicitly inquired (with tight 900ms budget)

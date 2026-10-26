@@ -10,9 +10,9 @@ export interface LogoProps {
   clickable?: boolean;
 }
 
-const DEFAULT_COREGPT_LOGO = '/coregpt-logo.png';
+const DEFAULT_HYNEX_LOGO = '/assets/aistudio/867039973_1145203551266684_2426743392755728897_n_0f64f4a3.jpg';
 
-export const CoreGptLogo: React.FC<LogoProps> = ({
+export const HynexAiLogo: React.FC<LogoProps> = ({
   size = 'md',
   showText = false,
   className = '',
@@ -23,10 +23,13 @@ export const CoreGptLogo: React.FC<LogoProps> = ({
   const [activeLogo, setActiveLogo] = useState<string>(() => {
     if (customLogoUrl) return customLogoUrl;
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('coregpt_custom_logo') || localStorage.getItem('think_ai_custom_logo');
-      if (stored) return stored;
+      const stored =
+        localStorage.getItem('hynex_custom_logo') ||
+        localStorage.getItem('coregpt_custom_logo') ||
+        localStorage.getItem('think_ai_custom_logo');
+      if (stored && !stored.includes('coregpt-logo') && !stored.includes('think_ai')) return stored;
     }
-    return DEFAULT_COREGPT_LOGO;
+    return DEFAULT_HYNEX_LOGO;
   });
 
   useEffect(() => {
@@ -36,14 +39,23 @@ export const CoreGptLogo: React.FC<LogoProps> = ({
     }
 
     const syncLogo = () => {
-      const stored = localStorage.getItem('coregpt_custom_logo') || localStorage.getItem('think_ai_custom_logo');
-      setActiveLogo(stored || DEFAULT_COREGPT_LOGO);
+      const stored =
+        localStorage.getItem('hynex_custom_logo') ||
+        localStorage.getItem('coregpt_custom_logo') ||
+        localStorage.getItem('think_ai_custom_logo');
+      if (stored && !stored.includes('coregpt-logo') && !stored.includes('think_ai')) {
+        setActiveLogo(stored);
+      } else {
+        setActiveLogo(DEFAULT_HYNEX_LOGO);
+      }
     };
 
+    window.addEventListener('hynex_logo_change', syncLogo);
     window.addEventListener('coregpt_logo_change', syncLogo);
     window.addEventListener('think_ai_logo_change', syncLogo);
     window.addEventListener('storage', syncLogo);
     return () => {
+      window.removeEventListener('hynex_logo_change', syncLogo);
       window.removeEventListener('coregpt_logo_change', syncLogo);
       window.removeEventListener('think_ai_logo_change', syncLogo);
       window.removeEventListener('storage', syncLogo);
@@ -81,7 +93,7 @@ export const CoreGptLogo: React.FC<LogoProps> = ({
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={`inline-flex items-center gap-2.5 ${isClickable ? 'cursor-pointer select-none group' : ''} ${className}`}
-      title={isClickable ? 'CoreGPT Logo' : 'CoreGPT'}
+      title={isClickable ? 'HYNEX AI Logo' : 'HYNEX AI'}
     >
       {/* Emblem container */}
       <div
@@ -90,17 +102,12 @@ export const CoreGptLogo: React.FC<LogoProps> = ({
       >
         <img
           src={activeLogo}
-          alt="CoreGPT Logo"
-          className={`w-full h-full select-none ${
-            activeLogo === DEFAULT_COREGPT_LOGO && pixelSize <= 48
-              ? 'object-cover object-[center_32%] scale-[1.28]'
-              : 'object-contain'
-          }`}
+          alt="HYNEX AI Logo"
+          className="w-full h-full select-none object-cover"
           onError={(e) => {
-            // Fallback to default local asset if external storage path fails
             const target = e.currentTarget;
-            if (target.src !== DEFAULT_COREGPT_LOGO) {
-              target.src = DEFAULT_COREGPT_LOGO;
+            if (target.src !== DEFAULT_HYNEX_LOGO) {
+              target.src = DEFAULT_HYNEX_LOGO;
             }
           }}
         />
@@ -108,15 +115,20 @@ export const CoreGptLogo: React.FC<LogoProps> = ({
 
       {/* Brand Wordmark */}
       {showText && (
-        <div className="flex items-center tracking-tight font-bold select-none text-black dark:text-white">
-          <span className="text-base md:text-lg tracking-tight">Core</span>
-          <span className="text-base md:text-lg font-light text-zinc-500 dark:text-zinc-400 ml-0.5">GPT</span>
+        <div className="flex items-center tracking-tight select-none">
+          <span className="text-base md:text-lg font-black tracking-wider text-zinc-900 dark:text-white">
+            HYNEX
+          </span>
+          <span className="text-base md:text-lg font-bold text-emerald-500 dark:text-emerald-400 ml-1">
+            AI
+          </span>
         </div>
       )}
     </div>
   );
 };
 
-// Backwards-compatible alias so existing imports don't break
-export const ThinkAiLogo = CoreGptLogo;
-export default CoreGptLogo;
+// Aliases for seamless backwards compatibility
+export const CoreGptLogo = HynexAiLogo;
+export const ThinkAiLogo = HynexAiLogo;
+export default HynexAiLogo;

@@ -55,6 +55,10 @@ export interface UsageRecord {
   image_count: number;
   text_to_video_count?: number;
   image_to_video_count?: number;
+  bonus_text_credits?: number;
+  bonus_image_credits?: number;
+  bonus_text_to_video_credits?: number;
+  bonus_image_to_video_credits?: number;
   voice_seconds: number;
   created_at: string;
   updated_at: string;
@@ -602,7 +606,7 @@ class DatabaseService {
       return { allowed: true, remaining: 999999, limit: 999999, resetsAt };
     }
 
-    // Determine limit
+    // Determine limit (including bonus credits earned from Unity Ads)
     let limit = 20;
     let current = 0;
     if (type === 'text') {
@@ -612,18 +616,19 @@ class DatabaseService {
         const setting = this.getSetting('default_user_daily_quota', '20');
         limit = parseInt(setting, 10) || 20;
       }
+      limit += (usage.bonus_text_credits || 0);
       current = usage.text_count;
     } else if (type === 'image') {
       const setting = this.getSetting('default_image_daily_quota', '5');
-      limit = parseInt(setting, 10) || 5;
+      limit = (parseInt(setting, 10) || 5) + (usage.bonus_image_credits || 0);
       current = usage.image_count;
     } else if (type === 'text_to_video') {
       const setting = this.getSetting('default_text_to_video_daily_quota', '2');
-      limit = parseInt(setting, 10) || 2;
+      limit = (parseInt(setting, 10) || 2) + (usage.bonus_text_to_video_credits || 0);
       current = usage.text_to_video_count;
     } else if (type === 'image_to_video') {
       const setting = this.getSetting('default_image_to_video_daily_quota', '2');
-      limit = parseInt(setting, 10) || 2;
+      limit = (parseInt(setting, 10) || 2) + (usage.bonus_image_to_video_credits || 0);
       current = usage.image_to_video_count;
     }
 
@@ -642,14 +647,69 @@ class DatabaseService {
     return { allowed: true, remaining: limit - (current + 1), limit, resetsAt };
   }
 
+  grantAdRewardCredits(
+    userId: string,
+    type: 'text' | 'image' | 'video' | 'text_to_video' | 'image_to_video',
+    amount = 2
+  ) {
+    const user = this.getUserById(userId);
+    if (!user) throw new Error('User not found');
+    if (user.role === 'admin') {
+      return {
+        success: true,
+        isAdmin: true,
+        type,
+        amountAdded: 0,
+        message: 'Admin accounts have unlimited access without ads.',
+      };
+    }
+
+    const usage = this.getUsageToday(userId);
+    usage.bonus_text_credits = usage.bonus_text_credits || 0;
+    usage.bonus_image_credits = usage.bonus_image_credits || 0;
+    usage.bonus_text_to_video_credits = usage.bonus_text_to_video_credits || 0;
+    usage.bonus_image_to_video_credits = usage.bonus_image_to_video_credits || 0;
+
+    if (type === 'text') {
+      usage.bonus_text_credits += amount;
+    } else if (type === 'image') {
+      usage.bonus_image_credits += amount;
+    } else if (type === 'text_to_video') {
+      usage.bonus_text_to_video_credits += amount;
+    } else if (type === 'image_to_video') {
+      usage.bonus_image_to_video_credits += amount;
+    } else if (type === 'video') {
+      usage.bonus_text_to_video_credits += amount;
+      usage.bonus_image_to_video_credits += amount;
+    }
+
+    usage.updated_at = new Date().toISOString();
+    this.persist();
+
+    return {
+      success: true,
+      isAdmin: false,
+      type,
+      amountAdded: amount,
+      bonusTextCredits: usage.bonus_text_credits,
+      bonusImageCredits: usage.bonus_image_credits,
+      bonusTextToVideoCredits: usage.bonus_text_to_video_credits,
+      bonusImageToVideoCredits: usage.bonus_image_to_video_credits,
+      message: `Granted ${amount} bonus credits for ${type}!`,
+    };
+  }
+
   getVideoUsage(userId: string) {
     const user = this.getUserById(userId);
     if (!user) throw new Error('User not found');
     const usage = this.getUsageToday(userId);
     const isAdmin = user.role === 'admin';
 
-    const textToVideoLimit = isAdmin ? 999999 : (parseInt(this.getSetting('default_text_to_video_daily_quota', '2'), 10) || 2);
-    const imageToVideoLimit = isAdmin ? 999999 : (parseInt(this.getSetting('default_image_to_video_daily_quota', '2'), 10) || 2);
+    const baseTextLimit = parseInt(this.getSetting('default_text_to_video_daily_quota', '2'), 10) || 2;
+    const baseImageLimit = parseInt(this.getSetting('default_image_to_video_daily_quota', '2'), 10) || 2;
+
+    const textToVideoLimit = isAdmin ? 999999 : baseTextLimit + (usage.bonus_text_to_video_credits || 0);
+    const imageToVideoLimit = isAdmin ? 999999 : baseImageLimit + (usage.bonus_image_to_video_credits || 0);
 
     const textToVideoCount = usage.text_to_video_count || 0;
     const imageToVideoCount = usage.image_to_video_count || 0;
