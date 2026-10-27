@@ -18,7 +18,7 @@
       "status": "active",
       "id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "created_at": "2026-10-18T07:24:12.828Z",
-      "updated_at": "2026-10-26T13:03:37.849Z"
+      "updated_at": "2026-10-27T12:40:43.791Z"
     },
     {
       "id": "admin-umarhani2000",
@@ -28,7 +28,73 @@
       "role": "admin",
       "status": "active",
       "created_at": "2026-10-23T17:52:44.983Z",
-      "updated_at": "2026-10-26T13:03:37.849Z"
+      "updated_at": "2026-10-27T12:40:43.791Z"
+    },
+    {
+      "email": "creator_test_1793094108099@hynex.ai",
+      "display_name": "Creator A",
+      "password_hash": "$2b$10$PrP40nICeI5uBZt5KFCJguIODYAgxSxVBMUCR/mBLsE.BV47B84ca",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "d5e4bec8-2170-4b7d-97e5-9f83b80ec8fa",
+      "created_at": "2026-10-27T09:41:48.227Z",
+      "updated_at": "2026-10-27T09:41:48.227Z"
+    },
+    {
+      "email": "other_test_1793094108241@hynex.ai",
+      "display_name": "Creator B",
+      "password_hash": "$2b$10$OG7wzwSMGB1bJ7RuUv0aQOkgwD1mGOLNtDdNzRojhG4YdG2RBKA3C",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "effd44dc-ed8c-46f4-afd3-470f0ee3e2dc",
+      "created_at": "2026-10-27T09:41:48.344Z",
+      "updated_at": "2026-10-27T09:41:48.344Z"
+    },
+    {
+      "email": "creator_test_1793094116485@hynex.ai",
+      "display_name": "Creator A",
+      "password_hash": "$2b$10$PuOsz77/nldlXcTKE4ilSee/m4z8whz.MZm/s0Yv/fUqXc./MSXNa",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "af5e4564-fe04-48b1-922a-8cb9b9924b9b",
+      "created_at": "2026-10-27T09:41:56.751Z",
+      "updated_at": "2026-10-27T09:41:56.751Z"
+    },
+    {
+      "email": "creator_test_1793094135629@hynex.ai",
+      "display_name": "Creator A",
+      "password_hash": "$2b$10$Pweyhxl7cdcXkrJ.0uP4Uuex2kbKwFQ.g6q0qOYrQqP1mHMaDZC2K",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "25f85a34-a5e4-47b8-a710-bde217571b02",
+      "created_at": "2026-10-27T09:42:15.783Z",
+      "updated_at": "2026-10-27T09:42:15.783Z"
+    },
+    {
+      "email": "other_test_1793094135798@hynex.ai",
+      "display_name": "Creator B",
+      "password_hash": "$2b$10$mCrZQbQ4E5W2USLIYElwJut4jvhLq4Z04i2mU9ki/x2rCp4yYV/NW",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "b9ddab59-5062-45ac-b497-f0a2dba8305c",
+      "created_at": "2026-10-27T09:42:15.910Z",
+      "updated_at": "2026-10-27T09:42:15.910Z"
+    },
+    {
+      "email": "script_test_1793094153839@hynex.ai",
+      "display_name": "Director Hynex",
+      "password_hash": "$2b$10$uCitZqaWlopEeflfSLc.W.BKe/PdycshLtg5Irkaxx5AkYSZ/c8w.",
+      "role": "user",
+      "status": "active",
+      "auth_provider": "password",
+      "id": "db91514c-2d17-49db-941f-7d59f6b3238d",
+      "created_at": "2026-10-27T09:42:34.070Z",
+      "updated_at": "2026-10-27T09:42:34.070Z"
     }
   ],
   "sessions": [
@@ -58,9 +124,73 @@
       "user_agent": "curl/7.88.1",
       "expires_at": "2026-11-25T13:04:18.268Z",
       "created_at": "2026-10-26T13:04:18.268Z"
+    },
+    {
+      "id": "4e0ffc43-6cbf-400c-9dc4-fb4b1a06f68a",
+      "user_id": "d5e4bec8-2170-4b7d-97e5-9f83b80ec8fa",
+      "token_hash": "6a96338de512d26aadb8d16880b0836d9f70fd7f96996078d327ae201efda6f1",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:41:48.234Z",
+      "created_at": "2026-10-27T09:41:48.234Z"
+    },
+    {
+      "id": "32d98d5e-54b1-479b-ae6f-043b6c3e61c5",
+      "user_id": "effd44dc-ed8c-46f4-afd3-470f0ee3e2dc",
+      "token_hash": "91c459e3c0136a9ed387954ad464d81cc0f7f9624f7bea5ada1a86ba63540dbb",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:41:48.349Z",
+      "created_at": "2026-10-27T09:41:48.349Z"
+    },
+    {
+      "id": "26fbddae-6087-4671-9d89-d76ade0f1ea2",
+      "user_id": "af5e4564-fe04-48b1-922a-8cb9b9924b9b",
+      "token_hash": "e345dfefbb060ba991b37e655d44d6a12644d36c1dd98eecead8e32b19edf957",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:41:56.755Z",
+      "created_at": "2026-10-27T09:41:56.755Z"
+    },
+    {
+      "id": "1d16b40e-33e7-404a-a890-924ac9a557c3",
+      "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
+      "token_hash": "1344616305feb3724bb728e93d5942f23a0e568750222b06690e491dde879eea",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:42:15.791Z",
+      "created_at": "2026-10-27T09:42:15.791Z"
+    },
+    {
+      "id": "161865c3-ea35-4307-9bcb-530f794ee561",
+      "user_id": "b9ddab59-5062-45ac-b497-f0a2dba8305c",
+      "token_hash": "30c86a7ecb5150167288317d9be88320c74711809e4af6ef117f632787c14134",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:42:15.915Z",
+      "created_at": "2026-10-27T09:42:15.915Z"
+    },
+    {
+      "id": "747264f3-d0c5-473e-af75-1d0e2ce59e8d",
+      "user_id": "db91514c-2d17-49db-941f-7d59f6b3238d",
+      "token_hash": "95a670ce4b0dfff0891e39c41ca9831d929c125cb6c03b167f742eb270f16bab",
+      "ip_address": "127.0.0.1",
+      "user_agent": "node",
+      "expires_at": "2026-11-03T09:42:34.076Z",
+      "created_at": "2026-10-27T09:42:34.076Z"
     }
   ],
   "conversations": [
+    {
+      "id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "user_id": "admin-umarhani2000",
+      "title": "hii",
+      "model": "gemini-3.1-flash-lite",
+      "system_prompt": "",
+      "is_archived": false,
+      "created_at": "2026-10-27T12:32:26.022Z",
+      "updated_at": "2026-10-27T12:34:13.245Z"
+    },
     {
       "id": "682f1614-dab5-43c9-9725-41e1b1050bab",
       "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
@@ -204,6 +334,70 @@
       "content": "Hello! I am **CoreGPT**, an intelligent conversational partner inspired by ChatGPT.\n\n- 🌟 **Founder**: **Umar Hani**\n- 💻 **Developer**: **Ahmadraza**\n\nI am equipped with comprehensive capabilities:\n- 💡 **Deep Reasoning & Q&A**: Complex analytical, scientific, and knowledge synthesis.\n- 💻 **Software Engineering**: Full-stack programming, algorithmic design, debugging, and architecture.\n- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic Veo 3 video.\n- ⏱️ **Real-Time Information**: Live temporal and factual awareness across events and dates.\n- 🎙️ **Real-Time Voice**: Interactive voice dialogue powered by Google Gemini 3.8 Live API.\n- 🌍 **Multilingual Fluency**: Fluid conversation across English, Hindi, Urdu, Arabic, Spanish, French, German, Chinese, and Japanese.\n\nHow may I assist you today? Feel free to ask any question or describe a project!",
       "model": "gemini-3.1-flash-lite",
       "created_at": "2026-10-23T17:56:32.327Z"
+    },
+    {
+      "id": "5f49a2ba-9282-4af1-87c9-77bc43b7dee0",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "user",
+      "content": "hii",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:32:26.028Z"
+    },
+    {
+      "id": "387528ab-a232-418e-926b-02849fa7ced6",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "assistant",
+      "content": "Hello. I am HYNEX AI. How can I assist you today?",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:32:27.401Z"
+    },
+    {
+      "id": "c883c641-9507-43aa-bbb9-1dd44ed1ae48",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "user",
+      "content": "who is make you",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:32:39.044Z"
+    },
+    {
+      "id": "21681ddc-044d-4fd0-afd3-5d6b8e095a7b",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "assistant",
+      "content": "I was founded by Umar Hani and developed by Ahmadraza. How can I assist you further?",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:32:40.747Z"
+    },
+    {
+      "id": "4e08aa77-00e5-4710-b36e-f980d6796722",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "user",
+      "content": "make documentry on light",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:33:02.143Z"
+    },
+    {
+      "id": "373245b8-a2b1-4429-893b-cde4a0442e7d",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "assistant",
+      "content": "# Documentary Title: The Architecture of Photons: A Journey Through Light\n\n## Episode 1: The Electromagnetic Tapestry\nLight is not merely the illumination we perceive; it is the fundamental bridge between the subatomic world and the vast scales of the cosmos. As an electromagnetic wave, light occupies a sliver of the spectrum known as the **Visible Spectrum**—ranging from approximately 380 to 750 nanometers.\n\n*   **The Wave-Particle Duality:** Quantum mechanics dictates that light behaves simultaneously as a wave (propagating through space) and as a particle (the photon).\n*   **The Universal Speed Limit:** In a vacuum, light travels at exactly $299,792,458$ meters per second ($c$). This constant is the bedrock of Einstein’s Theory of Special Relativity, dictating that as one approaches the speed of light, time dilates and mass increases.\n\n## Episode 2: The Solar Forge\nThe light we experience daily begins at the heart of our star. \n*   **Nuclear Fusion:** In the core of the Sun, hydrogen nuclei fuse into helium, releasing massive amounts of energy in the form of gamma rays.\n*   **The Random Walk:** These photons do not travel directly to the surface. They bounce through the Sun’s radiative zone in a process called a \"random walk,\" taking upwards of 100,000 years to reach the photosphere.\n*   **The Journey Home:** Once they escape the Sun’s surface, they traverse the 93 million miles of vacuum in just 8 minutes and 20 seconds to reach Earth.\n\n## Episode 3: The Optics of Perception\nHuman vision is a biological marvel of photon detection.\n1.  **Refraction:** Light enters the cornea, which acts as a lens, bending the rays to focus them onto the retina.\n2.  **Photoreception:** Rods and cones convert photonic energy into electrochemical signals. \n    *   **Rods:** High sensitivity, low resolution (night vision).\n    *   **Cones:** Low sensitivity, high resolution, color processing (RGB).\n3.  **Neural Processing:** The optic nerve transmits these signals to the visual cortex, where the brain reconstructs the \"image\" of reality.\n\n## Episode 4: Light in the Modern Era (Technological Mastery)\nWe have moved from merely observing light to manipulating it:\n*   **Fiber Optics:** Using Total Internal Reflection to trap light within glass filaments, allowing data to travel at near-light speed across oceans.\n*   **Lasers (Light Amplification by Stimulated Emission of Radiation):** Creating coherent, monochromatic beams. This technology powers everything from precise surgical instruments to the high-speed data transmission of the modern internet.\n*   **Quantum Entanglement:** Current research into photonic quantum computing aims to use light particles to perform calculations exponentially faster than silicon-based transistors.\n\n## Episode 5: The End of Light\nIn the far future, the universe will undergo a transition. As stars exhaust their fuel, the cosmos will dim. \n*   **Heat Death:** Entropy will maximize, and the era of stars will end. \n*   **The Last Photons:** Only the decay of black holes and the faint glow of diffuse background radiation will remain, marking the transition from a universe of light to a universe of absolute, cold equilibrium.\n\n***\n\n**Director's Note:** Light is the primary medium through which we acquire information about the universe. Every star we see is a historical document, a message sent from the past, traveling across the void to reach our eyes in the present.",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:33:06.426Z"
+    },
+    {
+      "id": "1cdac94c-6ed4-40a7-b783-e3bb60338731",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "user",
+      "content": "make documentry video on light",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:34:05.459Z"
+    },
+    {
+      "id": "0d0f81e0-e4db-4872-959c-ef514b9cf50c",
+      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
+      "role": "assistant",
+      "content": "As an AI, I cannot render a high-definition video file directly; however, I can provide a **professional-grade production script and storyboard** that you can use with AI video generation tools (like Sora, Kling, Luma Dream Machine, or Runway Gen-3) and text-to-speech software to create a compelling documentary.\n\n---\n\n# Documentary Script: \"The Infinite Velocity\"\n\n**Duration:** 3:00 Minutes\n**Tone:** Cinematic, Scientific, Awe-inspiring\n\n### [0:00 - 0:30] Introduction: The Silent Messenger\n*   **Visual:** Macro shot of a single candle flame in a pitch-black room. Slowly zoom into the flame until it dissolves into a high-energy animation of oscillating sine waves.\n*   **Audio (Voiceover):** \"It is the fastest thing in the universe. It carries the history of galaxies across the void. It is the language of the cosmos. It is light.\"\n\n### [0:30 - 1:15] The Quantum Paradox\n*   **Visual:** CGI animation showing a \"Double-Slit Experiment.\" Particles are fired at a barrier; they pass through as waves, creating an interference pattern. Transition to a close-up of a photon striking a sensor.\n*   **Audio (Voiceover):** \"Is it a wave? Is it a particle? The quantum realm defies our intuition. Light exists in a state of superposition until observed—a ghost that only becomes real when we look at it.\"\n\n### [1:15 - 2:00] The Solar Forge\n*   **Visual:** Intense, turbulent surface of the Sun. Slow-motion coronal mass ejections. Transition to a photon escaping the photosphere and flying through the dark vacuum of space.\n*   **Audio (Voiceover):** \"Born in the crushing pressure of a stellar core, a single photon begins a ten-thousand-year journey to the surface. Once free, it crosses the vast silence of space in just eight minutes, arriving here to fuel the engine of life itself.\"\n\n### [2:00 - 2:40] Harnessing the Spectrum\n*   **Visual:** Fast-cut montage: A fiber optic cable glowing neon blue, a laser surgical procedure, a prism splitting white light into a rainbow, and a deep-space telescope image (James Webb style).\n*   **Audio (Voiceover):** \"We have learned to tame the light. We trap it in glass to carry our voices across oceans. We focus it to heal the human body. We use it as a probe to peer back to the very dawn of time.\"\n\n### [2:40 - 3:00] Outro: The Eternal Glow\n*   **Visual:** A cinematic pan across a star-studded sky. The camera pulls back until the stars become streaks of light, then fades to a soft, warm glow.\n*   **Audio (Voiceover):** \"Every star you see is a ghost of the past. As we look into the light, we are looking into time itself. And as long as there is light, the universe will continue to tell its story.\"\n\n---\n\n## Production Pipeline Recommendations\n\nTo turn this script into a video, I recommend the following workflow:\n\n1.  **Voiceover Generation:** Use **ElevenLabs**. Use a voice profile like \"Marcus\" or \"Brian\" for a professional, deep, documentary-style narration.\n2.  **Visual Generation:**\n    *   **Luma Dream Machine / Runway Gen-3:** Use the prompts derived from the \"Visual\" sections above. \n    *   *Example Prompt:* \"Cinematic macro shot of a candle flame flickering in a dark room, high detail, 4k, slow motion.\"\n3.  **Music:** Search for \"Cinematic Ambient Science Documentary\" on royalty-free sites like **Epidemic Sound** or **Artlist**. Look for tracks featuring orchestral swells and deep synth pads.\n4.  **Editing:** Use **DaVinci Resolve** (Free version is powerful enough). Layer the voiceover, add the generated clips, and use \"Cross-Dissolve\" transitions to maintain a smooth, flowing pace.\n\n**Would you like me to expand on any specific scientific section, or would you like me to write the technical prompts for an AI video generator based on these scenes?**",
+      "model": "gemini-3.1-flash-lite",
+      "created_at": "2026-10-27T12:34:13.245Z"
     }
   ],
   "usage_records": [
@@ -262,6 +456,28 @@
       "updated_at": "2026-10-26T13:04:28.860Z",
       "text_to_video_count": 0,
       "image_to_video_count": 0
+    },
+    {
+      "id": "94d3f49e-e3c7-432d-9703-61bd60ecb481",
+      "user_id": "admin-umarhani2000",
+      "date": "2026-10-27",
+      "text_count": 4,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-27T11:56:39.341Z",
+      "updated_at": "2026-10-27T12:34:05.454Z",
+      "text_to_video_count": 0,
+      "image_to_video_count": 0
+    },
+    {
+      "id": "7f0ad09e-77f1-485c-be26-9a5e93878e1b",
+      "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
+      "date": "2026-10-27",
+      "text_count": 0,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-27T12:41:01.147Z",
+      "updated_at": "2026-10-27T12:41:01.147Z"
     }
   ],
   "generated_images": [
@@ -384,6 +600,15 @@
   },
   "password_reset_tokens": [],
   "admin_audit_logs": [
+    {
+      "id": "21159e4a-6adc-4315-bf38-3c0a2cdacbd3",
+      "admin_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
+      "admin_email": "faqruddin00000@gmail.com",
+      "action": "ADMIN_MASTER_LOGIN",
+      "details": "Administrator authenticated with master clearance (MH04MQ6421)",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-27T12:40:52.630Z"
+    },
     {
       "id": "b5539182-ab6f-4dab-8d26-a0a74a95406e",
       "admin_id": "facae633-a191-4c00-a1c2-13759fc2368d",
@@ -573,5 +798,260 @@
       "ip_address": "127.0.0.1",
       "created_at": "2026-10-18T06:24:00.283Z"
     }
-  ]
+  ],
+  "projects": [
+    {
+      "id": "proj_1793094135927_4b63d72b",
+      "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
+      "title": "Quantum Horizon",
+      "description": "Deep space anomaly expedition",
+      "category": "film",
+      "status": "draft",
+      "character_refs": [],
+      "scenes": [],
+      "script": "",
+      "created_at": "2026-10-27T09:42:15.927Z",
+      "updated_at": "2026-10-27T09:42:15.927Z"
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem_1793094135944_d35ca213",
+      "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
+      "project_id": "proj_1793094135927_4b63d72b",
+      "category": "style",
+      "key": "Director Aesthetic",
+      "value": "Kubrick inspired symmetry and cold blue lighting",
+      "source": "user",
+      "created_at": "2026-10-27T09:42:15.944Z",
+      "updated_at": "2026-10-27T09:42:15.944Z"
+    }
+  ],
+  "agent_tasks": [
+    {
+      "id": "task_1793094140527_ee77c7b3",
+      "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
+      "project_id": "proj_1793094135927_4b63d72b",
+      "title": "Clear and wipe all previous memory records",
+      "goal": "Clear and wipe all previous memory records",
+      "status": "planned",
+      "steps": [
+        {
+          "id": "step_1793094140527_1",
+          "step_number": 1,
+          "title": "Retrieve existing memory keys",
+          "status": "pending",
+          "tool_name": "memory_ops",
+          "tool_input": {
+            "action": "retrieve",
+            "key": "all_keys"
+          }
+        },
+        {
+          "id": "step_1793094140527_2",
+          "step_number": 2,
+          "title": "Wipe all memory records",
+          "status": "pending",
+          "tool_name": "memory_ops",
+          "tool_input": {
+            "action": "store",
+            "key": "clear_all",
+            "value": "null"
+          }
+        }
+      ],
+      "requires_confirmation": false,
+      "confirmation_action": {
+        "type": "consequential_execution",
+        "description": "This task involves significant or irreversible changes based on: \"Clear and wipe all previous memory records\"",
+        "payload": {
+          "goal": "Clear and wipe all previous memory records",
+          "projectId": "proj_1793094135927_4b63d72b"
+        }
+      },
+      "is_confirmed": true,
+      "result": null,
+      "error": null,
+      "created_at": "2026-10-27T09:42:20.527Z",
+      "updated_at": "2026-10-27T09:42:20.546Z"
+    }
+  ],
+  "user_files": [],
+  "creator_dnas": [
+    {
+      "id": "dna_1793104083846_558f89",
+      "user_id": "guest_user",
+      "name": "Ahmad & Umar Cinematic Studio",
+      "niche": "AI & Futuristic Tech",
+      "target_audience": "Innovators & Founders",
+      "language": "en",
+      "writing_style": "High-signal, punchy, visionary",
+      "visual_style": "Cinematic 8K neon noir",
+      "brand_colors": [
+        "#06b6d4",
+        "#a855f7"
+      ],
+      "typography": "Modern Sans-Serif",
+      "aspect_ratio": "16:9",
+      "caption_preferences": "Minimalist bold subtitles",
+      "character_refs": [],
+      "is_default": true,
+      "created_at": "2026-10-27T12:28:03.845Z",
+      "updated_at": "2026-10-27T12:28:03.845Z"
+    }
+  ],
+  "workflows": [],
+  "workflow_executions": [],
+  "collab_members": [],
+  "project_comments": [],
+  "mini_apps": [],
+  "shared_pages": [],
+  "community_templates": [
+    {
+      "id": "tpl_youtube_faceless",
+      "title": "Faceless YouTube Documentary Creator",
+      "description": "Complete pipeline for generating an engaging 60-second historical or scientific video short with scripts, visuals, subtitles, and reel assembly.",
+      "category": "YouTube",
+      "creator_name": "Hynex Media Labs",
+      "tools": [
+        "Gemini 3.1 Flash",
+        "Nano Banana 2.1",
+        "Veo 3",
+        "FFmpeg Stitcher"
+      ],
+      "inputs": [
+        {
+          "key": "topic",
+          "label": "Video Subject / Mystery",
+          "type": "text",
+          "default": "The Apollo 11 Guidance Computer Glitch"
+        },
+        {
+          "key": "target_length",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 60
+        }
+      ],
+      "outputs": [
+        "Screenplay",
+        "Scene Keyframes",
+        "Animated Video Clips",
+        "SRT Subtitles",
+        "Stitched Reel"
+      ],
+      "config": {
+        "targetSceneCount": 4,
+        "aspectRatio": "9:16",
+        "style": "Cinematic Documentary"
+      },
+      "clone_count": 346,
+      "is_official": true,
+      "created_at": "2026-10-27T12:27:16.852Z"
+    },
+    {
+      "id": "tpl_brand_launch",
+      "title": "One-Prompt Brand Launch Suite",
+      "description": "Generates brand identity, logo concepts, landing page copy, product descriptions, marketing campaigns, and video teaser prompts.",
+      "category": "Marketing",
+      "creator_name": "Hynex Strategy Group",
+      "tools": [
+        "Gemini 3.1 Flash Lite",
+        "TruthCheck Grounding",
+        "Nano Banana 2.1"
+      ],
+      "inputs": [
+        {
+          "key": "brand_idea",
+          "label": "Brand Concept & Target Market",
+          "type": "text",
+          "default": "Ergonomic bamboo smart desk for remote workers"
+        },
+        {
+          "key": "tone",
+          "label": "Brand Voice",
+          "type": "select",
+          "default": "Premium, modern, mindful"
+        }
+      ],
+      "outputs": [
+        "Brand Guide",
+        "Logo Prompts",
+        "Web Copy",
+        "3 Product Summaries",
+        "Social Posts",
+        "Launch Calendar"
+      ],
+      "config": {
+        "deliverablesCount": 6,
+        "autoDependencyLink": true
+      },
+      "clone_count": 518,
+      "is_official": true,
+      "created_at": "2026-10-27T12:27:16.852Z"
+    },
+    {
+      "id": "tpl_academic_factcheck",
+      "title": "TruthCheck Research & Claim Verification",
+      "description": "Extracts empirical claims from any text or research paper, cross-references live search sources, and produces a factual verification matrix.",
+      "category": "Research",
+      "creator_name": "Hynex Verification Engine",
+      "tools": [
+        "TruthCheck Engine",
+        "Google Search Grounding"
+      ],
+      "inputs": [
+        {
+          "key": "source_text",
+          "label": "Claim or Document Text",
+          "type": "textarea",
+          "default": "Quantum dot solar cells have achieved 45% laboratory efficiency."
+        }
+      ],
+      "outputs": [
+        "Claim Breakdown",
+        "Evidence Comparison",
+        "Conflicting Sources Report",
+        "Citation Links"
+      ],
+      "config": {
+        "searchDepth": "deep"
+      },
+      "clone_count": 289,
+      "is_official": true,
+      "created_at": "2026-10-27T12:27:16.852Z"
+    },
+    {
+      "id": "tpl_game_character_dna",
+      "title": "RPG Character Lore & Visual DNA Matrix",
+      "description": "Builds deep character profiles with visual traits, costume specs, backstory arcs, dialogue mannerisms, and reference portraits.",
+      "category": "Design",
+      "creator_name": "Hynex Creative Studio",
+      "tools": [
+        "Creator DNA",
+        "Nano Banana 2.1 (2K Upscale)"
+      ],
+      "inputs": [
+        {
+          "key": "character_concept",
+          "label": "Character Archetype",
+          "type": "text",
+          "default": "Cyber-shaman wandering neon ruins"
+        }
+      ],
+      "outputs": [
+        "Lore Bio",
+        "Visual Trait Guide",
+        "Color Palette",
+        "Consistency Anchor Prompts"
+      ],
+      "config": {
+        "autoApplyToProject": true
+      },
+      "clone_count": 412,
+      "is_official": true,
+      "created_at": "2026-10-27T12:27:16.852Z"
+    }
+  ],
+  "truthcheck_reports": []
 }

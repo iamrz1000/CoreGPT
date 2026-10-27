@@ -17,6 +17,15 @@ import {
   Download,
   Music,
   Gamepad2,
+  Brain,
+  FolderKanban,
+  Cpu,
+  Globe2,
+  ShieldCheck,
+  Sparkles,
+  GitFork,
+  Boxes,
+  LayoutTemplate,
 } from 'lucide-react';
 import { Conversation, User, UsageState } from '../types/index.ts';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
@@ -31,13 +40,20 @@ interface SidebarProps {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   currentUser: User | null;
-  activeTab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'admin';
-  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'admin') => void;
+  activeTab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin';
+  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin') => void;
   usage: UsageState | null;
   onOpenSettings: () => void;
   onLogout: () => void;
   onOpenLogoModal?: () => void;
   onOpenInstallModal?: () => void;
+  onOpenMemories?: () => void;
+  onOpenCreatorDNA?: () => void;
+  onOpenWorkflows?: () => void;
+  onOpenMiniApps?: () => void;
+  onOpenTemplates?: () => void;
+  onOpenOnePrompt?: () => void;
+  onOpenTruthCheck?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -57,6 +73,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   onOpenLogoModal,
   onOpenInstallModal,
+  onOpenMemories,
+  onOpenCreatorDNA,
+  onOpenWorkflows,
+  onOpenMiniApps,
+  onOpenTemplates,
+  onOpenOnePrompt,
+  onOpenTruthCheck,
 }) => {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -185,6 +208,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
+            {/* Creator Studio & Project Hub Section */}
+            <div className="grid grid-cols-3 gap-1 p-0.5 bg-purple-500/10 rounded-lg border border-purple-500/20 text-xs">
+              <button
+                onClick={() => onTabChange('creator')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'creator'
+                    ? 'bg-purple-600 text-white shadow-2xs font-semibold'
+                    : 'text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-white'
+                }`}
+                title="Hynex Creator Studio"
+              >
+                <Film className="w-3 h-3 text-purple-400" />
+                <span>Creator</span>
+              </button>
+              <button
+                onClick={() => onTabChange('projects')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'projects'
+                    ? 'bg-purple-600 text-white shadow-2xs font-semibold'
+                    : 'text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-white'
+                }`}
+                title="Project Hub"
+              >
+                <FolderKanban className="w-3 h-3 text-purple-400" />
+                <span>Projects</span>
+              </button>
+              <button
+                onClick={() => onTabChange('agent')}
+                className={`flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                  activeTab === 'agent'
+                    ? 'bg-purple-600 text-white shadow-2xs font-semibold'
+                    : 'text-purple-600 dark:text-purple-300 hover:text-purple-700 dark:hover:text-white'
+                }`}
+                title="Hynex Autonomous Agent"
+              >
+                <Cpu className="w-3 h-3 text-purple-400" />
+                <span>Agent</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
               <button
                 onClick={() => onTabChange('music')}
@@ -209,6 +272,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span>3D Game</span>
               </button>
             </div>
+
+            {/* Hynex Innovation Ecosystem */}
+            <div className="grid grid-cols-3 gap-1 p-0.5 bg-cyan-500/10 rounded-lg border border-cyan-500/20 text-xs">
+              {onOpenOnePrompt && (
+                <button
+                  onClick={onOpenOnePrompt}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-cyan-600 dark:text-cyan-300 hover:text-cyan-700 dark:hover:text-white transition-colors"
+                  title="One-Prompt Universe: Autonomous goal to multi-deliverable plan"
+                >
+                  <Globe2 className="w-3 h-3 text-cyan-400" />
+                  <span>One-Prompt</span>
+                </button>
+              )}
+              {onOpenTruthCheck && (
+                <button
+                  onClick={onOpenTruthCheck}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-cyan-600 dark:text-cyan-300 hover:text-cyan-700 dark:hover:text-white transition-colors"
+                  title="TruthCheck: Grounded factual audit"
+                >
+                  <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                  <span>TruthCheck</span>
+                </button>
+              )}
+              {onOpenCreatorDNA && (
+                <button
+                  onClick={onOpenCreatorDNA}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-cyan-600 dark:text-cyan-300 hover:text-cyan-700 dark:hover:text-white transition-colors"
+                  title="Creator DNA: Brand personas & style consistency"
+                >
+                  <Sparkles className="w-3 h-3 text-purple-400" />
+                  <span>Creator DNA</span>
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-1 p-0.5 bg-slate-500/10 rounded-lg border border-slate-500/20 text-xs">
+              {onOpenWorkflows && (
+                <button
+                  onClick={onOpenWorkflows}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+                  title="Workflow Recorder & Runner"
+                >
+                  <GitFork className="w-3 h-3 text-blue-400" />
+                  <span>Workflows</span>
+                </button>
+              )}
+              {onOpenMiniApps && (
+                <button
+                  onClick={onOpenMiniApps}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+                  title="Hynex Mini Apps Builder"
+                >
+                  <Boxes className="w-3 h-3 text-amber-400" />
+                  <span>Mini-Apps</span>
+                </button>
+              )}
+              {onOpenTemplates && (
+                <button
+                  onClick={onOpenTemplates}
+                  className="flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[10px] font-semibold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+                  title="Community Templates"
+                >
+                  <LayoutTemplate className="w-3 h-3 text-emerald-400" />
+                  <span>Templates</span>
+                </button>
+              )}
+            </div>
+
+            {/* Memory Engine Quick Trigger */}
+            {onOpenMemories && (
+              <button
+                onClick={onOpenMemories}
+                className="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg border border-zinc-200 dark:border-white/10 hover:border-purple-500/30 bg-zinc-100/70 dark:bg-[#1f1f1f] hover:bg-purple-500/5 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-purple-500" />
+                  <span>Hynex Memory Engine</span>
+                </div>
+                <span className="text-[10px] font-mono text-zinc-400 bg-zinc-200 dark:bg-white/10 px-1.5 py-0.2 rounded">
+                  Isolated
+                </span>
+              </button>
+            )}
           </div>
         </div>
 

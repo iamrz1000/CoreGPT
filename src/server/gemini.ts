@@ -617,32 +617,7 @@ async function generateHighResSynthesisImage(
   const chosenModel = modelStyle.includes('anime') ? 'flux-anime' : 'flux';
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=${width}&height=${height}&seed=${seed}&model=${chosenModel}&nologo=true&enhance=true`;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 6000);
-  try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        Accept: 'image/avif,image/webp,image/apng,image/jpeg,image/*,*/*;q=0.8',
-      },
-    });
-
-    if (res.ok) {
-      const contentType = res.headers.get('content-type') || 'image/jpeg';
-      const buffer = Buffer.from(await res.arrayBuffer());
-      if (buffer.length > 5000) {
-        return `data:${contentType};base64,${buffer.toString('base64')}`;
-      }
-    }
-  } catch (err) {
-    console.warn('[Image Synthesis] Server fetch notice, providing direct client stream URL:', err);
-  } finally {
-    clearTimeout(timer);
-  }
-
-  // Fallback to direct client-side URL which loads without server IP rate-limit in user browser
+  // Return direct high-speed client stream URL: eliminates server memory buffering and timeout aborts
   return url;
 }
 

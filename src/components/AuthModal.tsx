@@ -169,6 +169,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onSuccess, onClose
         confirmPassword,
         acceptTerms,
       });
+      setAuthToken(res.token);
       onSuccess(res.user);
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);

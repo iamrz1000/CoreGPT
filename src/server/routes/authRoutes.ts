@@ -11,6 +11,9 @@ import {
   validateEmail,
   validatePasswordStrength,
   verifyPassword,
+  SESSION_COOKIE_NAME,
+  getSessionCookieOptions,
+  getClearCookieOptions,
 } from '../auth.ts';
 import { db } from '../db.ts';
 
@@ -72,13 +75,8 @@ authRouter.post('/signup', async (req, res: Response) => {
     const tokenHash = hashToken(token);
     db.createSession(user.id, tokenHash, req.ip, req.headers['user-agent'] as string, 7);
 
-    // Set HTTP-only partitioned cookie compatible with iframes
-    res.cookie('nextgen_session', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Set HTTP-only secure cookie with path / for persistent sessions
+    res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(7));
 
     if (role === 'admin') {
       db.logAdminAction(
@@ -183,12 +181,7 @@ authRouter.post('/login', async (req, res: Response) => {
     const tokenHash = hashToken(token);
     db.createSession(user.id, tokenHash, clientIp, req.headers['user-agent'] as string, expiryDays);
 
-    res.cookie('nextgen_session', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: expiryDays * 24 * 60 * 60 * 1000,
-    });
+    res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(expiryDays));
 
     return res.json({
       message: 'Logged in successfully',
@@ -262,12 +255,7 @@ authRouter.post('/google', async (req, res: Response) => {
     const tokenHash = hashToken(token);
     db.createSession(user.id, tokenHash, req.ip, req.headers['user-agent'] as string, 30);
 
-    res.cookie('nextgen_session', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(30));
 
     return res.json({
       message: 'Signed in with Google successfully',
@@ -322,12 +310,7 @@ authRouter.post('/admin-login', async (req, res: Response) => {
     const tokenHash = hashToken(token);
     db.createSession(user.id, tokenHash, clientIp, req.headers['user-agent'] as string, 30);
 
-    res.cookie('nextgen_session', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(30));
 
     db.logAdminAction(
       user.email,
@@ -356,11 +339,11 @@ authRouter.post('/admin-login', async (req, res: Response) => {
 
 // POST /api/auth/logout
 authRouter.post('/logout', (req, res: Response) => {
-  const token = req.cookies?.nextgen_session;
+  const token = req.cookies?.[SESSION_COOKIE_NAME];
   if (token) {
     db.deleteSession(hashToken(token));
   }
-  res.clearCookie('nextgen_session');
+  res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
   return res.json({ message: 'Logged out successfully' });
 });
 
@@ -450,7 +433,7 @@ authRouter.delete('/account', requireAuth, (req: AuthenticatedRequest, res: Resp
   try {
     const userId = req.user!.id;
     db.deleteUser(userId);
-    res.clearCookie('nextgen_session');
+    res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
     return res.json({ message: 'Account and associated data deleted successfully.' });
   } catch (err) {
     console.error('Account delete error:', err);

@@ -18,12 +18,26 @@ import { usageRouter } from './src/server/routes/usageRoutes.ts';
 import { videoRouter } from './src/server/routes/videoRoutes.ts';
 import { adRouter } from './src/server/routes/adRoutes.ts';
 import { musicRouter } from './src/server/routes/musicRoutes.ts';
+import { creatorStudioRouter } from './src/server/routes/creatorStudioRoutes.ts';
+import { projectRouter } from './src/server/routes/projectRoutes.ts';
+import { memoryRouter } from './src/server/routes/memoryRoutes.ts';
+import { agentRouter } from './src/server/routes/agentRoutes.ts';
+import { truthCheckRouter } from './src/server/routes/truthCheckRoutes.ts';
+import { creatorDnaRouter } from './src/server/routes/creatorDnaRoutes.ts';
+import { workflowRouter } from './src/server/routes/workflowRoutes.ts';
+import { collabRouter } from './src/server/routes/collabRoutes.ts';
+import { miniAppRouter } from './src/server/routes/miniAppRoutes.ts';
+import { shareRouter } from './src/server/routes/shareRoutes.ts';
+import { templateRouter } from './src/server/routes/templateRoutes.ts';
+import { onePromptRouter } from './src/server/routes/onePromptRoutes.ts';
+import { researchRouter } from './src/server/routes/researchRoutes.ts';
 import { setupLiveWebSocket } from './src/server/live.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = 3000;
 const server = http.createServer(app);
 
@@ -31,11 +45,35 @@ const server = http.createServer(app);
 const liveWss = new WebSocketServer({ noServer: true });
 setupLiveWebSocket(liveWss);
 
-const hmrWss = new WebSocketServer({ noServer: true });
+const hmrWss = new WebSocketServer({
+  noServer: true,
+  handleProtocols: (protocols) => {
+    if (protocols.has('vite-hmr')) return 'vite-hmr';
+    const first = protocols.values().next().value;
+    return first || false;
+  },
+});
+
 hmrWss.on('connection', (socket) => {
   try {
     socket.send(JSON.stringify({ type: 'connected' }));
   } catch {}
+
+  const pingInterval = setInterval(() => {
+    try {
+      if (socket.readyState === 1) { // 1 = OPEN
+        socket.ping();
+      } else {
+        clearInterval(pingInterval);
+      }
+    } catch {
+      clearInterval(pingInterval);
+    }
+  }, 25000);
+
+  socket.on('close', () => {
+    clearInterval(pingInterval);
+  });
 });
 
 server.on('upgrade', (request, socket, head) => {
@@ -78,6 +116,19 @@ app.use('/api/auth', authRouter);
 app.use('/api/ads', adRouter);
 app.use('/api/music', musicRouter);
 app.use('/api/video', videoRouter);
+app.use('/api/creator', creatorStudioRouter);
+app.use('/api/projects', projectRouter);
+app.use('/api/memories', memoryRouter);
+app.use('/api/agent', agentRouter);
+app.use('/api/truthcheck', truthCheckRouter);
+app.use('/api/creator-dna', creatorDnaRouter);
+app.use('/api/workflows', workflowRouter);
+app.use('/api/collab', collabRouter);
+app.use('/api/miniapps', miniAppRouter);
+app.use('/api/share', shareRouter);
+app.use('/api/templates', templateRouter);
+app.use('/api/one-prompt', onePromptRouter);
+app.use('/api/research', researchRouter);
 app.use('/api/images', imageRouter);
 app.use('/api/voice', voiceRouter);
 app.use('/api/admin', adminRouter);

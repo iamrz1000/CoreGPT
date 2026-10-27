@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { api, ApiError, getAuthToken, setAuthToken } from './services/api.ts';
-import { Conversation, Message, UsageState, User } from './types/index.ts';
+import { Conversation, Message, UsageState, User, Project } from './types/index.ts';
 import { Sidebar } from './components/Sidebar.tsx';
 import { Header } from './components/Header.tsx';
 import { ChatMessage } from './components/ChatMessage.tsx';
@@ -8,6 +8,10 @@ import { ChatInput } from './components/ChatInput.tsx';
 import { ImageStudio } from './components/ImageStudio.tsx';
 import { VideoStudio } from './components/VideoStudio.tsx';
 import { MusicStudio } from './components/MusicStudio.tsx';
+import { CreatorStudio } from './components/CreatorStudio.tsx';
+import { ProjectHub } from './components/ProjectHub.tsx';
+import { AgentTaskPanel } from './components/AgentTaskPanel.tsx';
+import { MemoryManagerModal } from './components/MemoryManagerModal.tsx';
 import { CyberRunnerGame } from './components/game/CyberRunnerGame.tsx';
 import { VoiceConversationModal } from './components/VoiceConversationModal.tsx';
 import { AdminDashboard } from './components/AdminDashboard.tsx';
@@ -18,6 +22,13 @@ import { ThinkAiLogo } from './components/ThinkAiLogo.tsx';
 import { InstallAppModal } from './components/InstallAppModal.tsx';
 import { UnityAdModal } from './components/UnityAdModal.tsx';
 import { AdRewardPromptCard } from './components/AdRewardPromptCard.tsx';
+import { TruthCheckModal } from './components/TruthCheckModal.tsx';
+import { CreatorDNAModal } from './components/CreatorDNAModal.tsx';
+import { WorkflowRecorderModal } from './components/WorkflowRecorderModal.tsx';
+import { MiniAppsModal } from './components/MiniAppsModal.tsx';
+import { CommunityTemplatesModal } from './components/CommunityTemplatesModal.tsx';
+import { OnePromptUniverseModal } from './components/OnePromptUniverseModal.tsx';
+
 import { ThemeAccent } from './components/Header.tsx';
 import {
   Sparkles,
@@ -47,7 +58,10 @@ export default function App() {
 
   // App Layout & Mode
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'game' | 'admin'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin'>('chat');
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [showMemoryModal, setShowMemoryModal] = useState(false);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [useSearchGrounding, setUseSearchGrounding] = useState(false);
   const [useMapsGrounding, setUseMapsGrounding] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -85,6 +99,16 @@ export default function App() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
+  // Hynex Innovation Upgrade Modals
+  const [showTruthCheckModal, setShowTruthCheckModal] = useState(false);
+  const [truthCheckText, setTruthCheckText] = useState('');
+  const [truthCheckMsgId, setTruthCheckMsgId] = useState<string | undefined>(undefined);
+  const [showCreatorDNAModal, setShowCreatorDNAModal] = useState(false);
+  const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  const [showMiniAppsModal, setShowMiniAppsModal] = useState(false);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showOnePromptModal, setShowOnePromptModal] = useState(false);
+
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   // Listen for native PWA beforeinstallprompt on Android & Chromium
@@ -204,6 +228,15 @@ export default function App() {
     if (currentUser) {
       loadConversations(true);
       refreshUsage();
+      api.projects
+        .list()
+        .then((list) => {
+          setProjectsList(list);
+          if (list.length > 0 && !activeProject) {
+            setActiveProject(list[0]);
+          }
+        })
+        .catch(() => {});
     }
   }, [currentUser]);
 
@@ -643,6 +676,13 @@ export default function App() {
         onLogout={handleLogout}
         onOpenLogoModal={() => setShowLogoModal(true)}
         onOpenInstallModal={() => setShowInstallModal(true)}
+        onOpenMemories={() => setShowMemoryModal(true)}
+        onOpenCreatorDNA={() => setShowCreatorDNAModal(true)}
+        onOpenWorkflows={() => setShowWorkflowModal(true)}
+        onOpenMiniApps={() => setShowMiniAppsModal(true)}
+        onOpenTemplates={() => setShowTemplatesModal(true)}
+        onOpenOnePrompt={() => setShowOnePromptModal(true)}
+        onOpenTruthCheck={() => { setTruthCheckText(''); setShowTruthCheckModal(true); }}
       />
 
       {/* Main Content Pane */}
@@ -762,6 +802,11 @@ export default function App() {
                       isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'assistant'}
                       onRegenerate={idx === messages.length - 1 ? handleRegenerate : undefined}
                       onEditPrompt={msg.role === 'user' ? handleEditPrompt : undefined}
+                      onVerifyTruth={(text, msgId) => {
+                        setTruthCheckText(text);
+                        setTruthCheckMsgId(msgId);
+                        setShowTruthCheckModal(true);
+                      }}
                       userDisplayName={currentUser?.displayName || 'You'}
                       voiceName={voiceName}
                     />
@@ -831,6 +876,46 @@ export default function App() {
         {/* VEO VIDEO STUDIO TAB */}
         {activeTab === 'video' && (
           <VideoStudio />
+        )}
+
+        {/* HYNEX CREATOR STUDIO TAB */}
+        {activeTab === 'creator' && (
+          <CreatorStudio
+            activeProject={activeProject}
+            onUpdateProject={(p) => {
+              setActiveProject(p);
+              setProjectsList((prev) => prev.map((item) => (item.id === p.id ? p : item)));
+            }}
+            onOpenProjectHub={() => setActiveTab('projects')}
+          />
+        )}
+
+        {/* HYNEX PROJECT HUB TAB */}
+        {activeTab === 'projects' && (
+          <ProjectHub
+            activeProject={activeProject}
+            onSelectProject={(p) => setActiveProject(p)}
+            onOpenCreator={(p) => {
+              setActiveProject(p);
+              setActiveTab('creator');
+            }}
+            onOpenAgent={(p) => {
+              setActiveProject(p);
+              setActiveTab('agent');
+            }}
+            onOpenMemories={(p) => {
+              setActiveProject(p);
+              setShowMemoryModal(true);
+            }}
+          />
+        )}
+
+        {/* HYNEX AUTONOMOUS AGENT TAB */}
+        {activeTab === 'agent' && (
+          <AgentTaskPanel
+            activeProject={activeProject}
+            onNavigateToCreator={() => setActiveTab('creator')}
+          />
         )}
 
         {/* AI MUSIC STUDIO TAB */}
@@ -957,15 +1042,24 @@ export default function App() {
         onInstallSuccess={() => setShowInstallModal(false)}
       />
 
+      {/* Hynex Memory Manager Modal */}
+      <MemoryManagerModal
+        isOpen={showMemoryModal}
+        onClose={() => setShowMemoryModal(false)}
+        activeProject={activeProject}
+        projects={projectsList}
+      />
+
       {/* Authentication Modal */}
       <AuthModal
-        isOpen={showAuthModal || !currentUser}
+        isOpen={authChecked && (showAuthModal || !currentUser)}
         onSuccess={(user) => {
           setCurrentUser(user);
           setShowAuthModal(false);
           loadConversations();
           refreshUsage();
         }}
+        onClose={currentUser ? () => setShowAuthModal(false) : undefined}
       />
 
       {/* Unity Rewarded Ad Modal for Chat / General Credits */}
@@ -981,6 +1075,50 @@ export default function App() {
           setAdRewardToast('🎉 +2 Chat Messages added via Unity Ads! You can continue chatting now.');
           setTimeout(() => setAdRewardToast(null), 6000);
         }}
+      />
+
+      {/* Hynex TruthCheck Grounded Verification Modal */}
+      <TruthCheckModal
+        isOpen={showTruthCheckModal}
+        onClose={() => setShowTruthCheckModal(false)}
+        initialText={truthCheckText}
+        messageId={truthCheckMsgId}
+      />
+
+      {/* Hynex Creator DNA Modal */}
+      <CreatorDNAModal
+        isOpen={showCreatorDNAModal}
+        onClose={() => setShowCreatorDNAModal(false)}
+      />
+
+      {/* Hynex Workflow Recorder & Runner Modal */}
+      <WorkflowRecorderModal
+        isOpen={showWorkflowModal}
+        onClose={() => setShowWorkflowModal(false)}
+        projectId={activeProject?.id}
+      />
+
+      {/* Hynex Mini-Apps Catalog & Builder Modal */}
+      <MiniAppsModal
+        isOpen={showMiniAppsModal}
+        onClose={() => setShowMiniAppsModal(false)}
+      />
+
+      {/* Hynex Community Templates Modal */}
+      <CommunityTemplatesModal
+        isOpen={showTemplatesModal}
+        onClose={() => setShowTemplatesModal(false)}
+        onCloned={(tpl) => {
+          if (tpl.type === 'project') {
+            setActiveTab('projects');
+          }
+        }}
+      />
+
+      {/* Hynex One-Prompt Universe Modal */}
+      <OnePromptUniverseModal
+        isOpen={showOnePromptModal}
+        onClose={() => setShowOnePromptModal(false)}
       />
     </div>
   );

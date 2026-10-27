@@ -85,6 +85,27 @@ export function verifyToken(token: string): { userId: string; email: string; rol
   }
 }
 
+export const SESSION_COOKIE_NAME = 'nextgen_session';
+
+export function getSessionCookieOptions(maxAgeDays = 7) {
+  return {
+    httpOnly: true,
+    secure: true, // Required for HTTPS & Cloud Run iframe environments
+    sameSite: 'none' as const, // Required for cross-site iframe embedding
+    path: '/',
+    maxAge: maxAgeDays * 24 * 60 * 60 * 1000,
+  };
+}
+
+export function getClearCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none' as const,
+    path: '/',
+  };
+}
+
 export function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -92,7 +113,7 @@ export function hashToken(token: string): string {
 export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const token =
-      req.cookies?.nextgen_session ||
+      req.cookies?.[SESSION_COOKIE_NAME] ||
       (req.headers.authorization?.startsWith('Bearer ')
         ? req.headers.authorization.slice(7)
         : null);
@@ -103,18 +124,18 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
 
     const payload = verifyToken(token);
     if (!payload) {
-      res.clearCookie('nextgen_session');
+      res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
       return res.status(401).json({ error: 'Session expired or invalid. Please sign in again.' });
     }
 
     const user = db.getUserById(payload.userId);
     if (!user) {
-      res.clearCookie('nextgen_session');
+      res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
       return res.status(401).json({ error: 'User account not found.' });
     }
 
     if (user.status === 'suspended') {
-      res.clearCookie('nextgen_session');
+      res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
       return res.status(403).json({ error: 'Your account has been suspended by an administrator.' });
     }
 

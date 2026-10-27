@@ -46,13 +46,16 @@
         window.addEventListener('error', function (event) {
           var file = (event && event.filename) || '';
           var msg = (event && (event.message || '')) || '';
+          var errStr = (event && event.error && (event.error.message || event.error.stack || String(event.error))) || '';
+          var fullText = file + ' ' + msg + ' ' + errStr;
           if (
-            file.indexOf('chrome-extension://') !== -1 ||
-            file.indexOf('moz-extension://') !== -1 ||
-            file.indexOf('safari-extension://') !== -1 ||
-            file.indexOf('@vite/client') !== -1 ||
-            msg.indexOf('WebSocket') !== -1 ||
-            msg.indexOf('closed without opened') !== -1
+            fullText.indexOf('chrome-extension://') !== -1 ||
+            fullText.indexOf('moz-extension://') !== -1 ||
+            fullText.indexOf('safari-extension://') !== -1 ||
+            fullText.indexOf('@vite/client') !== -1 ||
+            fullText.indexOf('closed without opened') !== -1 ||
+            fullText.indexOf('WebSocket closed') !== -1 ||
+            (fullText.indexOf('[vite]') !== -1 && fullText.indexOf('WebSocket') !== -1)
           ) {
             event.stopImmediatePropagation();
             event.preventDefault();
@@ -68,8 +71,9 @@
             stack.indexOf('moz-extension://') !== -1 ||
             stack.indexOf('safari-extension://') !== -1 ||
             stack.indexOf('@vite/client') !== -1 ||
-            stack.indexOf('WebSocket') !== -1 ||
-            stack.indexOf('closed without opened') !== -1
+            stack.indexOf('closed without opened') !== -1 ||
+            stack.indexOf('WebSocket closed') !== -1 ||
+            (stack.indexOf('[vite]') !== -1 && stack.indexOf('WebSocket') !== -1)
           ) {
             event.stopImmediatePropagation();
             event.preventDefault();
@@ -80,9 +84,18 @@
         // Suppress console.error for Vite HMR closed without opened
         var _originalConsoleError = console.error;
         console.error = function () {
-          var text = Array.prototype.slice.call(arguments).join(' ');
+          var text = Array.prototype.slice.call(arguments).map(function (a) {
+            if (!a) return '';
+            if (a instanceof Error) return (a.message || '') + ' ' + (a.stack || '');
+            if (typeof a === 'object') {
+              try { return JSON.stringify(a); } catch (e) { return String(a); }
+            }
+            return String(a);
+          }).join(' ');
+
           if (
             text.indexOf('closed without opened') !== -1 ||
+            text.indexOf('WebSocket closed') !== -1 ||
             (text.indexOf('[vite]') !== -1 && text.indexOf('WebSocket') !== -1)
           ) {
             return;
