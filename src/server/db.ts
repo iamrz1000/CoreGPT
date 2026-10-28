@@ -86,6 +86,20 @@ export interface GeneratedImage {
   created_at: string;
 }
 
+export interface GeneratedVideo {
+  id: string;
+  user_id: string;
+  prompt: string;
+  aspect_ratio: string;
+  operation_name: string;
+  video_url?: string;
+  local_file_path?: string;
+  google_video_uri?: string;
+  fallback_video_url?: string;
+  status: 'processing' | 'completed' | 'failed';
+  created_at: string;
+}
+
 export interface AppSetting {
   key: string;
   value: string;
@@ -409,6 +423,7 @@ interface DatabaseData {
   messages: Message[];
   usage_records: UsageRecord[];
   generated_images: GeneratedImage[];
+  generated_videos: GeneratedVideo[];
   app_settings: Record<string, AppSetting>;
   password_reset_tokens: PasswordResetToken[];
   admin_audit_logs: AdminAuditLog[];
@@ -439,6 +454,7 @@ class DatabaseService {
     messages: [],
     usage_records: [],
     generated_images: [],
+    generated_videos: [],
     app_settings: {},
     password_reset_tokens: [],
     admin_audit_logs: [],
@@ -455,7 +471,7 @@ class DatabaseService {
     shared_pages: [],
     community_templates: [],
     truthcheck_reports: [],
-      research_reports: [],
+    research_reports: [],
   };
 
   private initialized = false;
@@ -481,6 +497,7 @@ class DatabaseService {
         this.data.messages = this.data.messages || [];
         this.data.usage_records = this.data.usage_records || [];
         this.data.generated_images = this.data.generated_images || [];
+        this.data.generated_videos = this.data.generated_videos || [];
         this.data.app_settings = this.data.app_settings || {};
         this.data.password_reset_tokens = this.data.password_reset_tokens || [];
         this.data.admin_audit_logs = this.data.admin_audit_logs || [];
@@ -1100,6 +1117,84 @@ class DatabaseService {
     return this.data.generated_images
       .filter((i) => i.user_id === userId)
       .slice(0, limit);
+  }
+
+  // --- Generated Videos ---
+  saveGeneratedVideo(
+    userId: string,
+    data: {
+      id?: string;
+      prompt: string;
+      aspectRatio: string;
+      operationName: string;
+      videoUrl?: string;
+      localFilePath?: string;
+      googleVideoUri?: string;
+      fallbackVideoUrl?: string;
+      status?: 'processing' | 'completed' | 'failed';
+    }
+  ): GeneratedVideo {
+    this.data.generated_videos = this.data.generated_videos || [];
+    const videoId = data.id || `vid-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
+    const video: GeneratedVideo = {
+      id: videoId,
+      user_id: userId,
+      prompt: data.prompt,
+      aspect_ratio: data.aspectRatio,
+      operation_name: data.operationName,
+      video_url: data.videoUrl || `/api/video/stream/${videoId}`,
+      local_file_path: data.localFilePath,
+      google_video_uri: data.googleVideoUri,
+      fallback_video_url: data.fallbackVideoUrl,
+      status: data.status || 'completed',
+      created_at: new Date().toISOString(),
+    };
+
+    const existingIndex = this.data.generated_videos.findIndex((v) => v.id === videoId);
+    if (existingIndex >= 0) {
+      this.data.generated_videos[existingIndex] = { ...this.data.generated_videos[existingIndex], ...video };
+      this.persist();
+      return this.data.generated_videos[existingIndex];
+    }
+
+    this.data.generated_videos.unshift(video);
+    this.persist();
+    return video;
+  }
+
+  getGeneratedVideo(id: string): GeneratedVideo | null {
+    this.data.generated_videos = this.data.generated_videos || [];
+    return this.data.generated_videos.find((v) => v.id === id) || null;
+  }
+
+  updateGeneratedVideo(
+    id: string,
+    updates: Partial<Omit<GeneratedVideo, 'id' | 'user_id' | 'created_at'>>
+  ): GeneratedVideo | null {
+    this.data.generated_videos = this.data.generated_videos || [];
+    const vid = this.data.generated_videos.find((v) => v.id === id);
+    if (!vid) return null;
+    Object.assign(vid, updates);
+    this.persist();
+    return vid;
+  }
+
+  listGeneratedVideos(userId: string, limit = 50): GeneratedVideo[] {
+    this.data.generated_videos = this.data.generated_videos || [];
+    return this.data.generated_videos
+      .filter((v) => v.user_id === userId)
+      .slice(0, limit);
+  }
+
+  deleteGeneratedVideo(userId: string, videoId: string): boolean {
+    this.data.generated_videos = this.data.generated_videos || [];
+    const index = this.data.generated_videos.findIndex(
+      (v) => v.id === videoId && v.user_id === userId
+    );
+    if (index === -1) return false;
+    this.data.generated_videos.splice(index, 1);
+    this.persist();
+    return true;
   }
 
   // --- App Settings ---

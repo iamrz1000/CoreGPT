@@ -1,7 +1,7 @@
 /**
  * Real-Time Information Service
  * Provides instant temporal chronometer, live calendar/time awareness,
- * and immediate identity resolution for CoreGPT without slowing down conversation answers.
+ * and immediate identity resolution for HYNEX AI without slowing down conversation answers.
  */
 
 export interface RealTimeContext {

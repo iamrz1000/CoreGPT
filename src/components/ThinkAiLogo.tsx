@@ -10,7 +10,7 @@ export interface LogoProps {
   clickable?: boolean;
 }
 
-const DEFAULT_HYNEX_LOGO = '/assets/aistudio/867039973_1145203551266684_2426743392755728897_n_0f64f4a3.jpg';
+const DEFAULT_HYNEX_LOGO = '/hynex-logo.jpg';
 
 export const HynexAiLogo: React.FC<LogoProps> = ({
   size = 'md',

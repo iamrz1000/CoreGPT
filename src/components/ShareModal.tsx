@@ -39,12 +39,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [sharedPage, setSharedPage] = useState<SharedPage | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handlePublish = async () => {
     if (!title.trim()) return;
     setLoading(true);
+    setShareError(null);
     try {
       const res = await api.share.publish({
         target_type: targetType,
@@ -57,7 +59,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       });
       setSharedPage(res.page);
     } catch (err: any) {
-      alert(err.message || 'Failed to create share link');
+      setShareError(err.message || 'Failed to create share link');
     } finally {
       setLoading(false);
     }

@@ -701,6 +701,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ inputs }),
       }),
+    generate: (prompt: string) =>
+      request<{ success: boolean; miniApp: MiniApp }>('/api/miniapps/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt }),
+      }),
   },
 
   share: {

@@ -18,17 +18,7 @@
       "status": "active",
       "id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "created_at": "2026-10-18T07:24:12.828Z",
-      "updated_at": "2026-10-27T12:40:43.791Z"
-    },
-    {
-      "id": "admin-umarhani2000",
-      "email": "umarhani2000@gmail.com",
-      "display_name": "Umar Hani (Admin)",
-      "password_hash": "$2b$10$5sgjfcBEc5u0zCumee1pV.SSSR53K/HHrtVXJmp.wjADIyOusQjlu",
-      "role": "admin",
-      "status": "active",
-      "created_at": "2026-10-23T17:52:44.983Z",
-      "updated_at": "2026-10-27T12:40:43.791Z"
+      "updated_at": "2026-10-28T09:41:15.086Z"
     },
     {
       "email": "creator_test_1793094108099@hynex.ai",
@@ -182,16 +172,6 @@
   ],
   "conversations": [
     {
-      "id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "user_id": "admin-umarhani2000",
-      "title": "hii",
-      "model": "gemini-3.1-flash-lite",
-      "system_prompt": "",
-      "is_archived": false,
-      "created_at": "2026-10-27T12:32:26.022Z",
-      "updated_at": "2026-10-27T12:34:13.245Z"
-    },
-    {
       "id": "682f1614-dab5-43c9-9725-41e1b1050bab",
       "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "title": "Hello",
@@ -334,70 +314,6 @@
       "content": "Hello! I am **CoreGPT**, an intelligent conversational partner inspired by ChatGPT.\n\n- 🌟 **Founder**: **Umar Hani**\n- 💻 **Developer**: **Ahmadraza**\n\nI am equipped with comprehensive capabilities:\n- 💡 **Deep Reasoning & Q&A**: Complex analytical, scientific, and knowledge synthesis.\n- 💻 **Software Engineering**: Full-stack programming, algorithmic design, debugging, and architecture.\n- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic Veo 3 video.\n- ⏱️ **Real-Time Information**: Live temporal and factual awareness across events and dates.\n- 🎙️ **Real-Time Voice**: Interactive voice dialogue powered by Google Gemini 3.8 Live API.\n- 🌍 **Multilingual Fluency**: Fluid conversation across English, Hindi, Urdu, Arabic, Spanish, French, German, Chinese, and Japanese.\n\nHow may I assist you today? Feel free to ask any question or describe a project!",
       "model": "gemini-3.1-flash-lite",
       "created_at": "2026-10-23T17:56:32.327Z"
-    },
-    {
-      "id": "5f49a2ba-9282-4af1-87c9-77bc43b7dee0",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "user",
-      "content": "hii",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:32:26.028Z"
-    },
-    {
-      "id": "387528ab-a232-418e-926b-02849fa7ced6",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "assistant",
-      "content": "Hello. I am HYNEX AI. How can I assist you today?",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:32:27.401Z"
-    },
-    {
-      "id": "c883c641-9507-43aa-bbb9-1dd44ed1ae48",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "user",
-      "content": "who is make you",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:32:39.044Z"
-    },
-    {
-      "id": "21681ddc-044d-4fd0-afd3-5d6b8e095a7b",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "assistant",
-      "content": "I was founded by Umar Hani and developed by Ahmadraza. How can I assist you further?",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:32:40.747Z"
-    },
-    {
-      "id": "4e08aa77-00e5-4710-b36e-f980d6796722",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "user",
-      "content": "make documentry on light",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:33:02.143Z"
-    },
-    {
-      "id": "373245b8-a2b1-4429-893b-cde4a0442e7d",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "assistant",
-      "content": "# Documentary Title: The Architecture of Photons: A Journey Through Light\n\n## Episode 1: The Electromagnetic Tapestry\nLight is not merely the illumination we perceive; it is the fundamental bridge between the subatomic world and the vast scales of the cosmos. As an electromagnetic wave, light occupies a sliver of the spectrum known as the **Visible Spectrum**—ranging from approximately 380 to 750 nanometers.\n\n*   **The Wave-Particle Duality:** Quantum mechanics dictates that light behaves simultaneously as a wave (propagating through space) and as a particle (the photon).\n*   **The Universal Speed Limit:** In a vacuum, light travels at exactly $299,792,458$ meters per second ($c$). This constant is the bedrock of Einstein’s Theory of Special Relativity, dictating that as one approaches the speed of light, time dilates and mass increases.\n\n## Episode 2: The Solar Forge\nThe light we experience daily begins at the heart of our star. \n*   **Nuclear Fusion:** In the core of the Sun, hydrogen nuclei fuse into helium, releasing massive amounts of energy in the form of gamma rays.\n*   **The Random Walk:** These photons do not travel directly to the surface. They bounce through the Sun’s radiative zone in a process called a \"random walk,\" taking upwards of 100,000 years to reach the photosphere.\n*   **The Journey Home:** Once they escape the Sun’s surface, they traverse the 93 million miles of vacuum in just 8 minutes and 20 seconds to reach Earth.\n\n## Episode 3: The Optics of Perception\nHuman vision is a biological marvel of photon detection.\n1.  **Refraction:** Light enters the cornea, which acts as a lens, bending the rays to focus them onto the retina.\n2.  **Photoreception:** Rods and cones convert photonic energy into electrochemical signals. \n    *   **Rods:** High sensitivity, low resolution (night vision).\n    *   **Cones:** Low sensitivity, high resolution, color processing (RGB).\n3.  **Neural Processing:** The optic nerve transmits these signals to the visual cortex, where the brain reconstructs the \"image\" of reality.\n\n## Episode 4: Light in the Modern Era (Technological Mastery)\nWe have moved from merely observing light to manipulating it:\n*   **Fiber Optics:** Using Total Internal Reflection to trap light within glass filaments, allowing data to travel at near-light speed across oceans.\n*   **Lasers (Light Amplification by Stimulated Emission of Radiation):** Creating coherent, monochromatic beams. This technology powers everything from precise surgical instruments to the high-speed data transmission of the modern internet.\n*   **Quantum Entanglement:** Current research into photonic quantum computing aims to use light particles to perform calculations exponentially faster than silicon-based transistors.\n\n## Episode 5: The End of Light\nIn the far future, the universe will undergo a transition. As stars exhaust their fuel, the cosmos will dim. \n*   **Heat Death:** Entropy will maximize, and the era of stars will end. \n*   **The Last Photons:** Only the decay of black holes and the faint glow of diffuse background radiation will remain, marking the transition from a universe of light to a universe of absolute, cold equilibrium.\n\n***\n\n**Director's Note:** Light is the primary medium through which we acquire information about the universe. Every star we see is a historical document, a message sent from the past, traveling across the void to reach our eyes in the present.",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:33:06.426Z"
-    },
-    {
-      "id": "1cdac94c-6ed4-40a7-b783-e3bb60338731",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "user",
-      "content": "make documentry video on light",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:34:05.459Z"
-    },
-    {
-      "id": "0d0f81e0-e4db-4872-959c-ef514b9cf50c",
-      "conversation_id": "79b19283-9232-4092-ac67-a8f12c88ac21",
-      "role": "assistant",
-      "content": "As an AI, I cannot render a high-definition video file directly; however, I can provide a **professional-grade production script and storyboard** that you can use with AI video generation tools (like Sora, Kling, Luma Dream Machine, or Runway Gen-3) and text-to-speech software to create a compelling documentary.\n\n---\n\n# Documentary Script: \"The Infinite Velocity\"\n\n**Duration:** 3:00 Minutes\n**Tone:** Cinematic, Scientific, Awe-inspiring\n\n### [0:00 - 0:30] Introduction: The Silent Messenger\n*   **Visual:** Macro shot of a single candle flame in a pitch-black room. Slowly zoom into the flame until it dissolves into a high-energy animation of oscillating sine waves.\n*   **Audio (Voiceover):** \"It is the fastest thing in the universe. It carries the history of galaxies across the void. It is the language of the cosmos. It is light.\"\n\n### [0:30 - 1:15] The Quantum Paradox\n*   **Visual:** CGI animation showing a \"Double-Slit Experiment.\" Particles are fired at a barrier; they pass through as waves, creating an interference pattern. Transition to a close-up of a photon striking a sensor.\n*   **Audio (Voiceover):** \"Is it a wave? Is it a particle? The quantum realm defies our intuition. Light exists in a state of superposition until observed—a ghost that only becomes real when we look at it.\"\n\n### [1:15 - 2:00] The Solar Forge\n*   **Visual:** Intense, turbulent surface of the Sun. Slow-motion coronal mass ejections. Transition to a photon escaping the photosphere and flying through the dark vacuum of space.\n*   **Audio (Voiceover):** \"Born in the crushing pressure of a stellar core, a single photon begins a ten-thousand-year journey to the surface. Once free, it crosses the vast silence of space in just eight minutes, arriving here to fuel the engine of life itself.\"\n\n### [2:00 - 2:40] Harnessing the Spectrum\n*   **Visual:** Fast-cut montage: A fiber optic cable glowing neon blue, a laser surgical procedure, a prism splitting white light into a rainbow, and a deep-space telescope image (James Webb style).\n*   **Audio (Voiceover):** \"We have learned to tame the light. We trap it in glass to carry our voices across oceans. We focus it to heal the human body. We use it as a probe to peer back to the very dawn of time.\"\n\n### [2:40 - 3:00] Outro: The Eternal Glow\n*   **Visual:** A cinematic pan across a star-studded sky. The camera pulls back until the stars become streaks of light, then fades to a soft, warm glow.\n*   **Audio (Voiceover):** \"Every star you see is a ghost of the past. As we look into the light, we are looking into time itself. And as long as there is light, the universe will continue to tell its story.\"\n\n---\n\n## Production Pipeline Recommendations\n\nTo turn this script into a video, I recommend the following workflow:\n\n1.  **Voiceover Generation:** Use **ElevenLabs**. Use a voice profile like \"Marcus\" or \"Brian\" for a professional, deep, documentary-style narration.\n2.  **Visual Generation:**\n    *   **Luma Dream Machine / Runway Gen-3:** Use the prompts derived from the \"Visual\" sections above. \n    *   *Example Prompt:* \"Cinematic macro shot of a candle flame flickering in a dark room, high detail, 4k, slow motion.\"\n3.  **Music:** Search for \"Cinematic Ambient Science Documentary\" on royalty-free sites like **Epidemic Sound** or **Artlist**. Look for tracks featuring orchestral swells and deep synth pads.\n4.  **Editing:** Use **DaVinci Resolve** (Free version is powerful enough). Layer the voiceover, add the generated clips, and use \"Cross-Dissolve\" transitions to maintain a smooth, flowing pace.\n\n**Would you like me to expand on any specific scientific section, or would you like me to write the technical prompts for an AI video generator based on these scenes?**",
-      "model": "gemini-3.1-flash-lite",
-      "created_at": "2026-10-27T12:34:13.245Z"
     }
   ],
   "usage_records": [
@@ -434,18 +350,6 @@
       "image_to_video_count": 0
     },
     {
-      "id": "6e6c7cce-6797-4a91-b579-c89c0926fb3b",
-      "user_id": "admin-umarhani2000",
-      "date": "2026-10-26",
-      "text_count": 0,
-      "image_count": 4,
-      "voice_seconds": 0,
-      "created_at": "2026-10-26T12:55:23.421Z",
-      "updated_at": "2026-10-26T13:03:31.351Z",
-      "text_to_video_count": 1,
-      "image_to_video_count": 2
-    },
-    {
       "id": "85734ba9-0f50-4c4a-bfb3-4ad0e41bf4a0",
       "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "date": "2026-10-26",
@@ -454,18 +358,6 @@
       "voice_seconds": 0,
       "created_at": "2026-10-26T13:04:28.847Z",
       "updated_at": "2026-10-26T13:04:28.860Z",
-      "text_to_video_count": 0,
-      "image_to_video_count": 0
-    },
-    {
-      "id": "94d3f49e-e3c7-432d-9703-61bd60ecb481",
-      "user_id": "admin-umarhani2000",
-      "date": "2026-10-27",
-      "text_count": 4,
-      "image_count": 0,
-      "voice_seconds": 0,
-      "created_at": "2026-10-27T11:56:39.341Z",
-      "updated_at": "2026-10-27T12:34:05.454Z",
       "text_to_video_count": 0,
       "image_to_video_count": 0
     },
@@ -489,33 +381,6 @@
       "image_url": "https://image.pollinations.ai/prompt/Hyper-realistic%20cinematic%20wide%20shot%20of%20a%20sleek%2C%20futuristic%20cyberpunk%20hovering%20vehicle%20suspended%20above%20a%20rain-slicked%20obsidian%20asphalt%20street%2C%20intricate%20micro-textures%20on%20carbon-fiber%20chassis%20with%20glowing%20neon%20circuitry%2C%20heavy%20atmospheric%20downpour%20with%20individual%20crystalline%20raindrops%20captured%20in%20mid-air%2C%20soft%20iridescent%20rim%20lighting%20reflecting%20off%20wet%20surfaces%2C%20volumetric%20god%20rays%20piercing%20through%20dense%20blue%20and%20magenta%20neon%20haze%2C%20deep%20shadows%20and%20radiant%20highlights%2C%20shot%20on%20Hasselblad%20100MP%2C%2085mm%20f%2F1.4%20lens%2C%20razor-sharp%20focus%20on%20the%20vehicle%E2%80%99s%20metallic%20engine%20components%2C%20bokeh-blurred%20urban%20cityscape%20in%20the%20background%2C%20Octane%20render%203D%20detail%2C%208K%20resolution%2C%20photorealistic%20masterpiece%2C%20dramatic%20moody%20lighting%2C%20hyper-detailed%20mechanical%20precision.%2C%20ultra-high%20resolution%2C%208k%20uhd%2C%20sharp%20focus%2C%20masterwork%20octane%20render%2C%20fine%20micro-textures?width=1920&height=1080&seed=9388085&model=flux&nologo=true&enhance=true",
       "model": "gemini-nano-banana-2.1",
       "created_at": "2026-10-26T13:04:40.265Z"
-    },
-    {
-      "id": "801a4726-1f05-4721-b041-621c8d25277c",
-      "user_id": "admin-umarhani2000",
-      "prompt": "MAKE IMAGE OF IPHONE 17 PRO, photorealistic, 8k resolution, cinematic lighting, sharp focus",
-      "aspect_ratio": "1:1",
-      "image_url": "https://image.pollinations.ai/prompt/MAKE%20IMAGE%20OF%20IPHONE%2017%20PRO%2C%20photorealistic%2C%208k%20resolution%2C%20cinematic%20lighting%2C%20sharp%20focus?width=1024&height=1024&seed=2471273&model=flux&nologo=true",
-      "model": "gemini-nano-banana-2.1",
-      "created_at": "2026-10-26T13:02:28.879Z"
-    },
-    {
-      "id": "a195e7ba-1b3d-4ad4-a5cc-2accf996301f",
-      "user_id": "admin-umarhani2000",
-      "prompt": "A hyper-realistic, 8K ultra-sharp close-up of a Lamborghini scale model, meticulously crafted with microscopic carbon fiber weave textures and flawless metallic automotive paint, captured with a Hasselblad 100MP medium format aesthetic using an 85mm f/1.4 lens. The scene is illuminated by professional studio lighting featuring soft rim lighting that contours the sharp aerodynamic body lines, subtle volumetric god rays, and precise ambient reflections on the polished surfaces. Cinematic depth of field isolates the intricate cockpit detail, rendered with Octane 3D precision, showcasing hyper-realistic light refraction through the glass, high-fidelity engineering realism, and a pristine, sophisticated studio atmosphere.",
-      "aspect_ratio": "1:1",
-      "image_url": "https://image.pollinations.ai/prompt/A%20hyper-realistic%2C%208K%20ultra-sharp%20close-up%20of%20a%20Lamborghini%20scale%20model%2C%20meticulously%20crafted%20with%20microscopic%20carbon%20fiber%20weave%20textures%20and%20flawless%20metallic%20automotive%20paint%2C%20captured%20with%20a%20Hasselblad%20100MP%20medium%20format%20aesthetic%20using%20an%2085mm%20f%2F1.4%20lens.%20The%20scene%20is%20illuminated%20by%20professional%20studio%20lighting%20featuring%20soft%20rim%20lighting%20that%20contours%20the%20sharp%20aerodynamic%20body%20lines%2C%20subtle%20volumetric%20god%20rays%2C%20and%20precise%20ambient%20reflections%20on%20the%20polished%20surfaces.%20Cinematic%20depth%20of%20field%20isolates%20the%20intricate%20cockpit%20detail%2C%20rendered%20with%20Octane%203D%20precision%2C%20showcasing%20hyper-realistic%20light%20refraction%20through%20the%20glass%2C%20high-fidelity%20engineering%20realism%2C%20and%20a%20pristine%2C%20sophisticated%20studio%20atmosphere.?width=1024&height=1024&seed=4846303&model=flux&nologo=true",
-      "model": "gemini-nano-banana-2.1",
-      "created_at": "2026-10-26T12:56:17.807Z"
-    },
-    {
-      "id": "9c149abb-40db-4a7b-90e4-e1b5421fb7fb",
-      "user_id": "admin-umarhani2000",
-      "prompt": "A hyper-realistic, 8K ultra-sharp close-up of a single, pristine gala apple resting on a textured slate surface, captured with a Hasselblad 100MP medium format camera and an 85mm f/1.4 lens. The image showcases exquisite micro-textures, revealing subtle skin imperfections, dew-kissed moisture droplets, and a crisp, natural wax sheen. Cinematic studio lighting utilizes soft rim lighting to accentuate the apple's organic curvature, complemented by delicate volumetric god rays filtering through ambient haze. The composition features a shallow cinematic depth of field with a creamy bokeh background, rendered with flawless Octane 3D precision, emphasizing every fiber of the stem and the vivid, lifelike gradient of the fruit’s deep crimson and golden hues.",
-      "aspect_ratio": "1:1",
-      "image_url": "https://image.pollinations.ai/prompt/A%20hyper-realistic%2C%208K%20ultra-sharp%20close-up%20of%20a%20single%2C%20pristine%20gala%20apple%20resting%20on%20a%20textured%20slate%20surface%2C%20captured%20with%20a%20Hasselblad%20100MP%20medium%20format%20camera%20and%20an%2085mm%20f%2F1.4%20lens.%20The%20image%20showcases%20exquisite%20micro-textures%2C%20revealing%20subtle%20skin%20imperfections%2C%20dew-kissed%20moisture%20droplets%2C%20and%20a%20crisp%2C%20natural%20wax%20sheen.%20Cinematic%20studio%20lighting%20utilizes%20soft%20rim%20lighting%20to%20accentuate%20the%20apple's%20organic%20curvature%2C%20complemented%20by%20delicate%20volumetric%20god%20rays%20filtering%20through%20ambient%20haze.%20The%20composition%20features%20a%20shallow%20cinematic%20depth%20of%20field%20with%20a%20creamy%20bokeh%20background%2C%20rendered%20with%20flawless%20Octane%203D%20precision%2C%20emphasizing%20every%20fiber%20of%20the%20stem%20and%20the%20vivid%2C%20lifelike%20gradient%20of%20the%20fruit%E2%80%99s%20deep%20crimson%20and%20golden%20hues.?width=1024&height=1024&seed=7912379&model=flux&nologo=true",
-      "model": "gemini-nano-banana-2.1",
-      "created_at": "2026-10-26T12:55:31.397Z"
     },
     {
       "id": "abc21c22-7811-49e4-8d0e-de75bd1e5772",
@@ -600,6 +465,51 @@
   },
   "password_reset_tokens": [],
   "admin_audit_logs": [
+    {
+      "id": "8337dbbb-c123-4244-a0d0-2f17f2302749",
+      "admin_id": "0ac6b0c0-9ac0-4779-a548-60f15b21e2f2",
+      "admin_email": "admin_1793180475559@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-28T09:41:15.571Z"
+    },
+    {
+      "id": "b2a72ff2-90a5-47ae-8fde-5b35744df059",
+      "admin_id": "70fd9827-d5cf-4b67-a81f-c3beaca112b3",
+      "admin_email": "admin_1793178815810@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-28T09:13:35.821Z"
+    },
+    {
+      "id": "5462dcad-6144-4b29-b37e-14128d030d65",
+      "admin_id": "06ff6787-2d2c-4eff-8891-4c433b0940a1",
+      "admin_email": "admin_1793178613030@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-28T09:10:13.042Z"
+    },
+    {
+      "id": "0432a4b5-0cb6-4542-b3b8-5bb5f25498bb",
+      "admin_id": "93f24f55-3d97-4207-879b-4ad8e3e76c72",
+      "admin_email": "admin_1793178585977@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-28T09:09:45.993Z"
+    },
+    {
+      "id": "6daac0c7-2d4b-4695-bb2f-f49bd9f9bb28",
+      "admin_id": "e60ede7d-e738-4cb3-b7e8-0f11b311612c",
+      "admin_email": "admin_1793178235540@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-28T09:03:55.552Z"
+    },
     {
       "id": "21159e4a-6adc-4315-bf38-3c0a2cdacbd3",
       "admin_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
@@ -1053,5 +963,18 @@
       "created_at": "2026-10-27T12:27:16.852Z"
     }
   ],
-  "truthcheck_reports": []
+  "truthcheck_reports": [],
+  "generated_videos": [
+    {
+      "id": "vid-demo-initial",
+      "user_id": "admin-umarhani2000",
+      "prompt": "Cinematic golden hour neural synthesis",
+      "aspect_ratio": "16:9",
+      "operation_name": "sim-demo",
+      "video_url": "/api/video/stream/vid-demo-initial",
+      "local_file_path": "/app/applet/public/videos/kenburns_test.mp4",
+      "status": "completed",
+      "created_at": "2026-10-28T09:24:39.109Z"
+    }
+  ]
 }

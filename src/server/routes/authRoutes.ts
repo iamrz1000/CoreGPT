@@ -380,7 +380,7 @@ authRouter.post('/forgot-password', async (req, res: Response) => {
     }
 
     const resetToken = db.createPasswordResetToken(user.id);
-    console.log(`[CoreGPT Auth] Password reset requested for ${user.email}. Token: ${resetToken}`);
+    console.log(`[HYNEX AI Auth] Password reset requested for ${user.email}. Token: ${resetToken}`);
 
     return res.json({
       message: 'If an account exists with this email, a password reset link has been prepared.',

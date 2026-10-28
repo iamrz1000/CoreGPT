@@ -21,6 +21,7 @@ interface AttachedFile {
   name: string;
   content: string;
   size: number;
+  type?: 'image' | 'document';
 }
 
 interface ChatInputProps {
@@ -38,6 +39,9 @@ interface ChatInputProps {
   onOpenVoiceMode?: () => void;
   isAdmin?: boolean;
   isJailbreakMode?: boolean;
+  externalAttachedFile?: AttachedFile | null;
+  onClearExternalAttachedFile?: () => void;
+  resetTrigger?: number;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -51,6 +55,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onOpenVoiceMode,
   isAdmin = false,
   isJailbreakMode = false,
+  externalAttachedFile,
+  onClearExternalAttachedFile,
+  resetTrigger,
 }) => {
   const [text, setText] = useState('');
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
@@ -61,6 +68,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+
+  // Sync external file attachment from Center Plus Button
+  useEffect(() => {
+    if (externalAttachedFile) {
+      setAttachedFile(externalAttachedFile);
+    }
+  }, [externalAttachedFile]);
+
+  // Sync reset trigger on New Chat
+  useEffect(() => {
+    if (resetTrigger) {
+      setText('');
+      setAttachedFile(null);
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.focus();
+      }
+    }
+  }, [resetTrigger]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -84,6 +110,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     onSendMessage(text.trim(), attachedFile || undefined);
     setText('');
     setAttachedFile(null);
+    if (onClearExternalAttachedFile) onClearExternalAttachedFile();
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -100,21 +127,39 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File size exceeds 2MB limit.');
+    if (file.size > 10 * 1024 * 1024) {
+      setVoiceError('File size exceeds 10MB limit.');
+      setTimeout(() => setVoiceError(null), 4000);
+      e.target.value = '';
       return;
     }
 
+    const isImage = file.type.startsWith('image/');
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setAttachedFile({
-        name: file.name,
-        content,
-        size: file.size,
-      });
-    };
-    reader.readAsText(file);
+
+    if (isImage) {
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setAttachedFile({
+          name: file.name,
+          content,
+          size: file.size,
+          type: 'image',
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setAttachedFile({
+          name: file.name,
+          content,
+          size: file.size,
+          type: 'document',
+        });
+      };
+      reader.readAsText(file);
+    }
     e.target.value = '';
   };
 
@@ -183,7 +228,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const hasContent = Boolean(text.trim() || attachedFile);
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 pb-16 md:pb-4 select-none">
+    <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 pb-20 md:pb-4">
       {voiceError && (
         <div className="mb-2 p-2 rounded-xl bg-zinc-100 dark:bg-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" />
@@ -193,17 +238,30 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Attached file chip */}
       {attachedFile && (
-        <div className="mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-[#2f2f2f] border border-zinc-200 dark:border-white/10 text-xs text-zinc-800 dark:text-zinc-200">
-          <FileText className="w-3.5 h-3.5" />
-          <span className="font-medium truncate max-w-[200px]">{attachedFile.name}</span>
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-[#2f2f2f] border border-zinc-200 dark:border-white/10 text-xs text-zinc-800 dark:text-zinc-200 shadow-xs animate-in fade-in">
+          {attachedFile.type === 'image' && attachedFile.content.startsWith('data:image/') ? (
+            <img
+              src={attachedFile.content}
+              alt="Preview"
+              className="w-5 h-5 rounded object-cover border border-zinc-300 dark:border-white/20"
+            />
+          ) : (
+            <FileText className="w-3.5 h-3.5 text-cyan-500" />
+          )}
+          <span className="font-medium truncate max-w-[180px] sm:max-w-[240px]">{attachedFile.name}</span>
           <span className="text-[10px] text-zinc-400 font-mono">
             ({Math.round(attachedFile.size / 1024)} KB)
           </span>
           <button
-            onClick={() => setAttachedFile(null)}
-            className="p-0.5 rounded hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-700 dark:hover:text-white"
+            type="button"
+            onClick={() => {
+              setAttachedFile(null);
+              if (onClearExternalAttachedFile) onClearExternalAttachedFile();
+            }}
+            className="p-1 rounded-full hover:bg-zinc-200 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
+            title="Remove attachment"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
@@ -303,22 +361,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         {/* Bottom controls inside the pill */}
         <div className="flex items-center justify-between px-3 pb-2.5 pt-0.5">
           {/* Left tools */}
-          <div className="flex items-center gap-1">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".txt,.md,.json,.js,.ts,.tsx,.py,.html,.css,.csv"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10 transition-colors"
-              title="Attach text or source file"
+          <div className="flex items-center gap-1.5">
+            <label
+              htmlFor="chat-mobile-file-upload"
+              className="p-2 sm:p-1.5 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center min-w-[38px] min-h-[38px] touch-manipulation select-none relative"
+              title="Attach document, code, or photo"
+              aria-label="Attach file or photo"
             >
-              <Plus className="w-4 h-4" />
-            </button>
+              <input
+                id="chat-mobile-file-upload"
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*,.pdf,.txt,.md,.json,.csv,.doc,.docx"
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                tabIndex={-1}
+              />
+              <Plus className="w-4 h-4 stroke-[2.4] pointer-events-none" />
+            </label>
 
             {/* Real-time search toggle */}
             {onToggleSearchGrounding && (

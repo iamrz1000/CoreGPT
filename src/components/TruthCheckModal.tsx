@@ -149,6 +149,28 @@ export const TruthCheckModal: React.FC<TruthCheckModalProps> = ({
                 )}
               </button>
             </div>
+            {!textToVerify && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Try:</span>
+                {[
+                  'James Webb Space Telescope detected atmospheric carbon dioxide on exoplanet WASP-39b.',
+                  'France won the FIFA World Cup in both 1998 and 2018.',
+                  'Quantum computing qubits leverage superposition and quantum entanglement.',
+                ].map((sample, sIdx) => (
+                  <button
+                    key={sIdx}
+                    onClick={() => {
+                      setTextToVerify(sample);
+                      handleVerify(sample);
+                    }}
+                    className="text-[11px] px-2.5 py-1 rounded-md bg-slate-800/80 hover:bg-slate-700/80 text-cyan-300 border border-slate-700 transition-colors truncate max-w-[240px]"
+                    title={sample}
+                  >
+                    {sample}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && (

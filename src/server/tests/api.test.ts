@@ -158,7 +158,116 @@ async function runTests() {
   assert(googleAdmin.role === 'admin', 'Configured admin email matches and preserves admin role');
   assert(validateEmail(googleAdmin.email), 'Google user email format is valid');
 
+  // Test 9: Video Persistence & Isolation
+  console.log('\n--- Test Suite 9: Persistent Video Storage & User Isolation ---');
+  const videoA = db.saveGeneratedVideo(userA.id, {
+    prompt: 'Neon cybernetic cityscape flying drone view',
+    aspectRatio: '16:9',
+    operationName: 'test-veo-op-1',
+    status: 'completed',
+  });
+  assert(videoA.id.startsWith('vid-'), 'Video generated and assigned valid ID');
+  const userAVideos = db.listGeneratedVideos(userA.id);
+  assert(userAVideos.some((v) => v.id === videoA.id), 'User A can retrieve own persisted video');
+  const userBVideos = db.listGeneratedVideos(userB.id);
+  assert(!userBVideos.some((v) => v.id === videoA.id), 'User B cannot see User A persisted video');
+  const updatedVideo = db.updateGeneratedVideo(videoA.id, { status: 'completed' });
+  assert(updatedVideo?.status === 'completed', 'Video status updated successfully');
+  const deletedVideo = db.deleteGeneratedVideo(userA.id, videoA.id);
+  assert(deletedVideo === true, 'Video deleted cleanly');
+
+  // Test 10: Project Twin & Decision Lifecycle
+  console.log('\n--- Test Suite 10: Project Twin & Autonomous Decision Lifecycle ---');
+  const projectA = db.createProject(userA.id, {
+    title: 'Solaris Sci-Fi Short Film',
+    description: 'An AI cinematic journey across deep space',
+    category: 'film',
+  });
+  assert(projectA.id.startsWith('proj_'), 'Project created with valid ID prefix');
+  const decision = db.addProjectDecision(userA.id, projectA.id, {
+    title: 'Lighting Palette Selection',
+    description: 'Switch to anamorphic teal and amber color grading',
+    category: 'Visual Style',
+    status: 'approved',
+  });
+  assert(decision !== null && decision.status === 'approved', 'Project decision recorded and approved');
+  const fetchedProj = db.getProject(userA.id, projectA.id);
+  assert(fetchedProj?.decisions?.length === 1, 'Project twin persists decisions');
+
+  // Test 11: Creator DNA Identity Matrix
+  console.log('\n--- Test Suite 11: Creator DNA Identity Matrix ---');
+  const dna = db.createCreatorDNA(userA.id, {
+    name: 'Cyberpunk Noir Style',
+    niche: 'Sci-Fi Filmmaking',
+    target_audience: 'Futurism enthusiasts',
+    language: 'English',
+    writing_style: 'Atmospheric, gritty, philosophical',
+    visual_style: 'High-contrast neon reflections, rain-slicked pavement',
+    brand_colors: ['#00FFCC', '#FF0055', '#121212'],
+    typography: 'Orbitron',
+    aspect_ratio: '16:9',
+    caption_preferences: 'Subtle lower thirds with cyan accents',
+    character_refs: [],
+    is_default: true,
+  });
+  assert(dna.id.startsWith('dna_'), 'Creator DNA profile created');
+  const dnas = db.getCreatorDNAs(userA.id);
+  assert(dnas.length > 0 && dnas[0].name === 'Cyberpunk Noir Style', 'Creator DNA retrieved successfully');
+
+  // Test 12: Knowledge Vault & Project Scoping
+  console.log('\n--- Test Suite 12: Knowledge Vault & Project Scoping ---');
+  const memGlobal = db.createMemory(userA.id, {
+    key: 'Director Camera Preference',
+    value: 'Always use 85mm anamorphic lenses with shallow depth of field',
+    category: 'preference',
+  });
+  const memProject = db.createMemory(userA.id, {
+    key: 'Protagonist Name',
+    value: 'Captain Elena Vance',
+    category: 'character',
+    project_id: projectA.id,
+  });
+  const scopedMemories = db.getMemories(userA.id, projectA.id);
+  assert(scopedMemories.some((m) => m.id === memProject.id), 'Project-scoped memory retrieved correctly');
+  assert(!scopedMemories.some((m) => m.id === memGlobal.id), 'Global memory excluded from project filter');
+
+  // Test 13: Workflow Definitions & Execution Engine
+  console.log('\n--- Test Suite 13: Workflow Automation Engine ---');
+  const workflow = db.createWorkflow(userA.id, {
+    name: 'Autonomous Film Teaser Pipeline',
+    description: 'Generates screenplay, keyframe art, and video scene',
+    inputs: [{ key: 'premise', label: 'Premise', type: 'text', default_value: 'AI singularity' }],
+    steps: [
+      { id: 's1', step_number: 1, title: 'Synthesize Script', tool: 'generate_text', config: {} },
+      { id: 's2', step_number: 2, title: 'Verify Lore', tool: 'truth_check', config: {} },
+    ],
+  });
+  assert(workflow.id.startsWith('wf_'), 'Workflow defined with valid structure');
+  const wfList = db.getWorkflows(userA.id);
+  assert(wfList.some((w) => w.id === workflow.id), 'Workflow listed in user library');
+
+  // Test 14: Mini-App Builder Architecture
+  console.log('\n--- Test Suite 14: Mini-App Builder Architecture ---');
+  const miniApp = db.createMiniApp(userA.id, {
+    name: 'SaaS Unit Economics Calculator',
+    description: 'Calculates CAC, LTV, and payback period',
+    inputs: [{ key: 'cac', label: 'Customer Acquisition Cost', type: 'text', placeholder: '100' }],
+    output_format: 'markdown',
+    instructions: 'Analyze unit economics and recommend levers for scale',
+    capabilities: ['analytics', 'roi_calculator'],
+    is_published: true,
+  });
+  assert(miniApp.id.startsWith('mini_'), 'Mini-App created and published');
+  const userApps = db.getMiniApps(userA.id);
+  assert(userApps.some((a) => a.id === miniApp.id), 'Mini-App retrievable by creator');
+
   // Clean up test data
+  db.deleteProject(userA.id, projectA.id);
+  db.deleteCreatorDNA(userA.id, dna.id);
+  db.deleteMemory(userA.id, memGlobal.id);
+  db.deleteMemory(userA.id, memProject.id);
+  db.deleteWorkflow(userA.id, workflow.id);
+  db.deleteMiniApp(userA.id, miniApp.id);
   db.deleteUser(userA.id);
   db.deleteUser(userB.id);
   db.deleteUser(adminUser.id);

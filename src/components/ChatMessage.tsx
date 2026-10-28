@@ -18,6 +18,7 @@ import {
   X,
   ThumbsUp,
   ThumbsDown,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface ChatMessageProps {
@@ -25,6 +26,7 @@ interface ChatMessageProps {
   isStreaming?: boolean;
   onRegenerate?: () => void;
   onEditPrompt?: (newPrompt: string) => void;
+  onVerifyTruth?: (text: string, msgId?: string) => void;
   userDisplayName?: string;
   voiceName?: string;
 }
@@ -34,6 +36,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isStreaming,
   onRegenerate,
   onEditPrompt,
+  onVerifyTruth,
   voiceName = 'Kore',
 }) => {
   const [copied, setCopied] = useState(false);
@@ -103,7 +106,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     if (!message.image_url) return;
     const a = document.createElement('a');
     a.href = message.image_url;
-    a.download = `coregpt-image-${Date.now()}.png`;
+    a.download = `hynex-image-${Date.now()}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -284,6 +287,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           >
             <ThumbsDown className="w-3.5 h-3.5" />
           </button>
+
+          {onVerifyTruth && !isUser && message.content && (
+            <button
+              onClick={() => onVerifyTruth(message.content, message.id)}
+              className="p-1.5 rounded-lg hover:text-cyan-500 dark:hover:text-cyan-400 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+              title="Verify with Hynex TruthCheck"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-500" />
+            </button>
+          )}
 
           {onRegenerate && (
             <button

@@ -253,6 +253,16 @@ creatorStudioRouter.post(
           job.status = 'completed';
           job.videoUrl = `/api/video/stream/${jobId}`;
 
+          db.saveGeneratedVideo(job.userId, {
+            id: jobId,
+            prompt: prompt || 'Scene video animation',
+            aspectRatio: cleanAr,
+            operationName: `creator-scene-${jobId}`,
+            localFilePath: outputFilePath,
+            videoUrl: job.videoUrl,
+            status: 'completed',
+          });
+
           // If project exists, auto-update the scene's video fields
           if (projectId) {
             const project = db.getProject(job.userId, projectId);

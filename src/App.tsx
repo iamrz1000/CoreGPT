@@ -12,7 +12,6 @@ import { CreatorStudio } from './components/CreatorStudio.tsx';
 import { ProjectHub } from './components/ProjectHub.tsx';
 import { AgentTaskPanel } from './components/AgentTaskPanel.tsx';
 import { MemoryManagerModal } from './components/MemoryManagerModal.tsx';
-import { CyberRunnerGame } from './components/game/CyberRunnerGame.tsx';
 import { VoiceConversationModal } from './components/VoiceConversationModal.tsx';
 import { AdminDashboard } from './components/AdminDashboard.tsx';
 import { SettingsModal } from './components/SettingsModal.tsx';
@@ -46,7 +45,6 @@ import {
   Plus,
   Headphones,
   Zap,
-  Gamepad2,
   Music,
 } from 'lucide-react';
 
@@ -58,7 +56,7 @@ export default function App() {
 
   // App Layout & Mode
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin'>('chat');
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [showMemoryModal, setShowMemoryModal] = useState(false);
   const [projectsList, setProjectsList] = useState<Project[]>([]);
@@ -306,7 +304,7 @@ export default function App() {
   // Send message and stream SSE response
   const handleSendMessage = async (
     text: string,
-    file?: { name: string; content: string; size: number }
+    file?: { name: string; content: string; size: number; type?: 'image' | 'document' }
   ) => {
     if (!text.trim() && !file) return;
 
@@ -322,11 +320,14 @@ export default function App() {
       promptWithDoc += `\n\n[Attached File: ${file.name}]\n\`\`\`\n${file.content}\n\`\`\``;
     }
 
+    const isImageFile = Boolean(file?.content?.startsWith('data:image/') || file?.type === 'image');
+
     const newUserMsg: Message = {
       id: tempUserMsgId,
       conversation_id: activeConversationId || 'pending',
       role: 'user',
-      content: promptWithDoc,
+      content: isImageFile ? (text || 'Uploaded image') : promptWithDoc,
+      image_url: isImageFile ? file?.content : undefined,
       model: selectedModel,
       created_at: new Date().toISOString(),
     };
@@ -439,7 +440,7 @@ export default function App() {
                 } else if (event.type === 'error') {
                   setStreamError(event.error);
                   if (!accumulated) {
-                    accumulated = `### CoreGPT\n\n${event.error || 'The assistant encountered an unexpected error.'}\n\n*Please retry your prompt or switch to another model from the header!*`;
+                    accumulated = `### HYNEX AI\n\n${event.error || 'The assistant encountered an unexpected error.'}\n\n*Please retry your prompt or switch to another model from the header!*`;
                     setMessages((prev) =>
                       prev.map((m) =>
                         m.id === tempAiMsgId ? { ...m, content: accumulated } : m
@@ -802,7 +803,7 @@ export default function App() {
                       isStreaming={isStreaming && idx === messages.length - 1 && msg.role === 'assistant'}
                       onRegenerate={idx === messages.length - 1 ? handleRegenerate : undefined}
                       onEditPrompt={msg.role === 'user' ? handleEditPrompt : undefined}
-                      onVerifyTruth={(text, msgId) => {
+                      onVerifyTruth={(text: string, msgId?: string) => {
                         setTruthCheckText(text);
                         setTruthCheckMsgId(msgId);
                         setShowTruthCheckModal(true);
@@ -923,17 +924,12 @@ export default function App() {
           <MusicStudio currentUser={currentUser} usage={usage} />
         )}
 
-        {/* 3D CYBERRUNNER GAME TAB */}
-        {activeTab === 'game' && (
-          <CyberRunnerGame />
-        )}
-
         {/* ADMIN DASHBOARD TAB */}
         {activeTab === 'admin' && currentUser?.role === 'admin' && (
           <AdminDashboard currentUser={currentUser} onClose={() => setActiveTab('chat')} />
         )}
 
-        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Images, Music, Game, Video */}
+        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Images, Center Plus New Chat, Video, Music */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-lg">
           {/* Chat Tab */}
           <button
@@ -946,33 +942,6 @@ export default function App() {
           >
             <MessageSquare className="w-4 h-4 mb-0.5" />
             <span>Chat</span>
-          </button>
-
-          {/* Music Studio */}
-          <button
-            onClick={() => setActiveTab('music')}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-              activeTab === 'music'
-                ? 'text-purple-600 dark:text-purple-400 font-semibold'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-            }`}
-          >
-            <Music className="w-4 h-4 mb-0.5" />
-            <span>Music</span>
-          </button>
-
-          {/* 3D Game Tab - Hero center */}
-          <button
-            onClick={() => setActiveTab('game')}
-            className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl font-semibold text-[10px] shadow-md -mt-3.5 ring-4 ring-white dark:ring-[#181818] transition-all active:scale-95 cursor-pointer ${
-              activeTab === 'game'
-                ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-black'
-                : 'bg-zinc-900 text-white dark:bg-white dark:text-black'
-            }`}
-            title="Play 3D CyberRun Game"
-          >
-            <Gamepad2 className="w-4 h-4 mb-0.5 text-emerald-400 dark:text-emerald-600" />
-            <span>3D Game</span>
           </button>
 
           {/* Image Studio */}
@@ -988,6 +957,20 @@ export default function App() {
             <span>Images</span>
           </button>
 
+          {/* Center Hero Plus Button - Instant New Chat */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('chat');
+              handleNewChat();
+            }}
+            className="flex items-center justify-center w-12 h-12 rounded-full font-bold shadow-xl -mt-5 ring-4 ring-white dark:ring-[#181818] bg-gradient-to-tr from-cyan-500 to-indigo-600 text-white hover:opacity-95 active:scale-90 transition-all cursor-pointer shadow-cyan-500/25"
+            title="Start New Chat"
+            aria-label="New Chat"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
+
           {/* Video Studio */}
           <button
             onClick={() => setActiveTab('video')}
@@ -999,6 +982,19 @@ export default function App() {
           >
             <Film className="w-4 h-4 mb-0.5" />
             <span>Video</span>
+          </button>
+
+          {/* Music Studio */}
+          <button
+            onClick={() => setActiveTab('music')}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+              activeTab === 'music'
+                ? 'text-purple-600 dark:text-purple-400 font-semibold'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            <Music className="w-4 h-4 mb-0.5" />
+            <span>Music</span>
           </button>
         </nav>
       </div>

@@ -16,6 +16,7 @@ import {
   Loader2,
   Check,
   RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 import { api } from '../services/api.ts';
 import { Project, ProjectDecision, ProjectVersion, ProjectActivity } from '../types/index.ts';
@@ -52,6 +53,7 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
   const [instructions, setInstructions] = useState(project.instructions || '');
   const [targetAudience, setTargetAudience] = useState(project.target_audience || '');
   const [savingInstructions, setSavingInstructions] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && project.id) {
@@ -80,6 +82,7 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
 
   const handleSaveInstructions = async () => {
     setSavingInstructions(true);
+    setErrorMessage(null);
     try {
       const updated = await api.projects.update(project.id, {
         instructions,
@@ -87,7 +90,7 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
       });
       onUpdateProject(updated);
     } catch (err: any) {
-      alert(err.message || 'Failed to update instructions');
+      setErrorMessage(err.message || 'Failed to update instructions');
     } finally {
       setSavingInstructions(false);
     }
@@ -96,6 +99,7 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
   const handleAddDecision = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDecisionTitle.trim()) return;
+    setErrorMessage(null);
     try {
       const res = await api.projectTwin.addDecision(project.id, {
         title: newDecisionTitle.trim(),
@@ -107,40 +111,43 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
       setNewDecisionTitle('');
       setNewDecisionDesc('');
     } catch (err: any) {
-      alert(err.message || 'Failed to add decision');
+      setErrorMessage(err.message || 'Failed to add decision');
     }
   };
 
   const handleToggleDecision = async (decision: ProjectDecision) => {
     const nextStatus = decision.status === 'approved' ? 'suggested' : 'approved';
+    setErrorMessage(null);
     try {
       const res = await api.projectTwin.updateDecision(project.id, decision.id, {
         status: nextStatus,
       });
       setDecisions(decisions.map((d) => (d.id === decision.id ? res.decision : d)));
     } catch (err: any) {
-      alert(err.message || 'Failed to update decision');
+      setErrorMessage(err.message || 'Failed to update decision');
     }
   };
 
   const handleCreateVersion = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     try {
       const res = await api.projectTwin.createVersion(project.id, newChangelog || 'Snapshot checkpoint');
       setVersions([res.version, ...versions]);
       setNewChangelog('');
     } catch (err: any) {
-      alert(err.message || 'Failed to save version');
+      setErrorMessage(err.message || 'Failed to save version');
     }
   };
 
   const handleRunConsistency = async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const res = await api.projectTwin.checkConsistency(project.id);
       setConsistencyReport(res.report);
     } catch (err: any) {
-      alert(err.message || 'Consistency check failed');
+      setErrorMessage(err.message || 'Consistency check failed');
     } finally {
       setLoading(false);
     }
@@ -238,6 +245,13 @@ export const ProjectTwinModal: React.FC<ProjectTwinModalProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-900/10">
+            {errorMessage && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             {activeTab === 'overview' && (
               <div className="space-y-6 max-w-3xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

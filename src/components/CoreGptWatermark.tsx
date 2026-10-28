@@ -7,8 +7,8 @@ interface CoreGptWatermarkProps {
 }
 
 /**
- * CoreGPT Discreet Watermark
- * Similar to Google Gemini's subtle corner watermark on generated images and cinematic videos.
+ * HYNEX AI Discreet Watermark
+ * Subtle corner watermark on generated images and cinematic videos.
  */
 export const CoreGptWatermark: React.FC<CoreGptWatermarkProps> = ({
   className = '',

@@ -72,12 +72,12 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
       }
     } else if (isAndroid) {
       // In Android Chrome when prompt already fired or ambient
-      alert('To install CoreGPT on Android:\n1. Tap the three dots (⋮) in the top-right corner of Chrome.\n2. Tap "Install app" or "Add to Home screen".');
+      setInstallStatus('idle');
     }
   };
 
-  const githubRepoUrl = 'https://github.com/iamrz1000/CoreGPT';
-  const githubReleasesUrl = 'https://github.com/iamrz1000/CoreGPT/releases';
+  const githubRepoUrl = 'https://github.com/iamrz1000/HYNEX-AI';
+  const githubReleasesUrl = 'https://github.com/iamrz1000/HYNEX-AI/releases';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto">
@@ -230,7 +230,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
                   <span>Android Package Kit (.apk) Build & Releases</span>
                 </div>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Your GitHub repository <span className="font-mono text-zinc-900 dark:text-zinc-200">iamrz1000/CoreGPT</span> is configured with GitHub Actions to build <span className="font-mono text-zinc-900 dark:text-zinc-200">app-debug.apk</span> automatically and publish it under GitHub Releases.
+                  Your GitHub repository <span className="font-mono text-zinc-900 dark:text-zinc-200">iamrz1000/HYNEX-AI</span> is configured with GitHub Actions to build <span className="font-mono text-zinc-900 dark:text-zinc-200">app-debug.apk</span> automatically and publish it under GitHub Releases.
                 </p>
 
                 <div className="space-y-2 pt-1 border-t border-zinc-200 dark:border-white/10 text-xs text-zinc-600 dark:text-zinc-300">
@@ -269,7 +269,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
                   className="w-full py-2 px-4 rounded-xl border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5 font-medium text-xs flex items-center justify-center gap-2 transition-colors"
                 >
                   <Layers className="w-3.5 h-3.5" />
-                  <span>Open GitHub Repository (iamrz1000/CoreGPT)</span>
+                  <span>Open GitHub Repository (iamrz1000/HYNEX-AI)</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>

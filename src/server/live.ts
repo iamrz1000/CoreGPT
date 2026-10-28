@@ -149,7 +149,7 @@ CRITICAL RULES:
                   });
                 }
                 parts.push({
-                  text: `You are CoreGPT Live looking at this camera feed right now. ${prompt}. Answer conversationally in spoken English (or user language). Be direct, concise, and helpful in 1 to 3 sentences. Founder: Umar Hani, Developer: Ahmadraza.`,
+                  text: `You are HYNEX AI Live looking at this camera feed right now. ${prompt}. Answer conversationally in spoken English (or user language). Be direct, concise, and helpful in 1 to 3 sentences. Founder: Umar Hani, Developer: Ahmadraza.`,
                 });
 
                 let res: any;

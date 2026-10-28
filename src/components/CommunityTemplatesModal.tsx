@@ -27,6 +27,7 @@ export const CommunityTemplatesModal: React.FC<CommunityTemplatesModalProps> = (
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [clonedSuccess, setClonedSuccess] = useState<string | null>(null);
+  const [cloneError, setCloneError] = useState<string | null>(null);
 
   const categories = [
     'All',
@@ -59,6 +60,7 @@ export const CommunityTemplatesModal: React.FC<CommunityTemplatesModalProps> = (
   const handleClone = async (tpl: CommunityTemplate) => {
     setCloningId(tpl.id);
     setClonedSuccess(null);
+    setCloneError(null);
     try {
       await api.templates.clone(tpl.id);
       setClonedSuccess(tpl.id);
@@ -66,7 +68,7 @@ export const CommunityTemplatesModal: React.FC<CommunityTemplatesModalProps> = (
       if (onCloned) onCloned(tpl);
       setTimeout(() => setClonedSuccess(null), 3000);
     } catch (err: any) {
-      alert(err.message || 'Failed to clone template');
+      setCloneError(err.message || 'Failed to clone template');
     } finally {
       setCloningId(null);
     }
@@ -133,6 +135,12 @@ export const CommunityTemplatesModal: React.FC<CommunityTemplatesModalProps> = (
 
         {/* Templates Grid */}
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-900/10">
+          {cloneError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-center gap-2">
+              <span className="font-bold">Error:</span> {cloneError}
+            </div>
+          )}
+
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-3">
               <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />

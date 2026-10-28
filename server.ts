@@ -104,7 +104,7 @@ app.use(cookieParser());
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'CoreGPT',
+    service: 'HYNEX AI',
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
     timestamp: new Date().toISOString(),
   });

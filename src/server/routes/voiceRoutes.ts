@@ -101,7 +101,7 @@ voiceRouter.post('/vision-query', async (req: AuthenticatedRequest, res: Respons
                 },
               },
               {
-                text: `You are CoreGPT Live with Real-Time Camera Vision perception, powered by Gemini 3.8. Founder: Umar Hani, Developer: Ahmadraza.
+                text: `You are HYNEX AI Live with Real-Time Camera Vision perception, powered by Gemini 3.8. Founder: Umar Hani, Developer: Ahmadraza.
 The user is holding their camera up right now and asking: "${prompt}".
 Look closely at what is captured in the camera frame. Answer directly in 1 to 3 clear, articulate, natural, spoken conversational sentences in ${language}. Never say you cannot see. Be direct, charismatic, and helpful.`,
               },
@@ -123,7 +123,7 @@ Look closely at what is captured in the camera frame. Answer directly in 1 to 3 
                 },
               },
               {
-                text: `You are CoreGPT Live with Real-Time Camera Vision perception, powered by Gemini 3.8. Founder: Umar Hani, Developer: Ahmadraza.
+                text: `You are HYNEX AI Live with Real-Time Camera Vision perception, powered by Gemini 3.8. Founder: Umar Hani, Developer: Ahmadraza.
 The user is holding their camera up right now and asking: "${prompt}".
 Look closely at what is captured in the camera frame. Answer directly in 1 to 3 clear, articulate, natural, spoken conversational sentences in ${language}. Never say you cannot see. Be direct, charismatic, and helpful.`,
               },

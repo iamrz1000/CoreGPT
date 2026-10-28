@@ -47,6 +47,7 @@ export const ProjectHub: React.FC<ProjectHubProps> = ({
   const [newCategory, setNewCategory] = useState<Project['category']>('film');
   const [twinProject, setTwinProject] = useState<Project | null>(null);
   const [showTwin, setShowTwin] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Templates
   const templates = [
@@ -118,10 +119,14 @@ export const ProjectHub: React.FC<ProjectHubProps> = ({
 
   const handleDelete = async (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Delete this project and all scoped scene assets?')) return;
+    if (confirmDeleteId !== projectId) {
+      setConfirmDeleteId(projectId);
+      return;
+    }
     try {
       await api.projects.delete(projectId);
       setProjects(projects.filter((p) => p.id !== projectId));
+      setConfirmDeleteId(null);
     } catch (err: any) {
       setError(err.message || 'Failed to delete project.');
     }
@@ -301,6 +306,17 @@ export const ProjectHub: React.FC<ProjectHubProps> = ({
                       title="Project Twin (Digital Context, Decisions, Versions, Consistency)"
                     >
                       <Compass className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(proj.id, e)}
+                      className={`p-2 rounded-lg border transition-colors ${
+                        confirmDeleteId === proj.id
+                          ? 'border-red-500 bg-red-600 text-white'
+                          : 'border-zinc-200 dark:border-white/10 hover:border-red-500/40 text-red-500 dark:text-red-400'
+                      }`}
+                      title={confirmDeleteId === proj.id ? 'Click again to permanently delete' : 'Delete Project'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

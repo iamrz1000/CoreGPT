@@ -669,7 +669,7 @@ export const VideoStudio: React.FC = () => {
                         ? 'Daily Limit Reached (Admin Required)'
                         : mode === 'image' && isImageQuotaExhausted
                         ? 'Daily Photo Limit Reached (Admin Required)'
-                        : 'Generate Video with CoreGPT Veo'}
+                        : 'Generate Video with HYNEX AI Veo'}
                     </span>
                   </>
                 )}

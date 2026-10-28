@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   PauseCircle,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { api } from '../services/api.ts';
 import { WorkflowDef, WorkflowExecution } from '../types/index.ts';
@@ -35,6 +36,7 @@ export const WorkflowRecorderModal: React.FC<WorkflowRecorderModalProps> = ({
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState<WorkflowDef['steps']>([]);
   const [inputs, setInputs] = useState<WorkflowDef['inputs']>([]);
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -133,9 +135,10 @@ export const WorkflowRecorderModal: React.FC<WorkflowRecorderModalProps> = ({
         setSelectedWorkflow(res.workflow);
       }
       setIsEditing(false);
+      setWorkflowError(null);
       await loadWorkflows();
     } catch (err: any) {
-      alert(err.message || 'Failed to save workflow');
+      setWorkflowError(err.message || 'Failed to save workflow');
     } finally {
       setLoading(false);
     }
@@ -144,6 +147,7 @@ export const WorkflowRecorderModal: React.FC<WorkflowRecorderModalProps> = ({
   const handleExecute = async (approvedStepIds: string[] = []) => {
     if (!selectedWorkflow) return;
     setExecuting(true);
+    setWorkflowError(null);
     try {
       const res = await api.workflows.execute(selectedWorkflow.id, {
         inputs: inputValues,
@@ -151,7 +155,7 @@ export const WorkflowRecorderModal: React.FC<WorkflowRecorderModalProps> = ({
       });
       setCurrentExecution(res.execution);
     } catch (err: any) {
-      alert(err.message || 'Execution failed');
+      setWorkflowError(err.message || 'Execution failed');
     } finally {
       setExecuting(false);
     }
@@ -272,6 +276,13 @@ export const WorkflowRecorderModal: React.FC<WorkflowRecorderModalProps> = ({
                     )}
                   </div>
                 </div>
+
+                {workflowError && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{workflowError}</span>
+                  </div>
+                )}
 
                 {/* Dynamic Inputs Form */}
                 {inputs && inputs.length > 0 && !isEditing && (

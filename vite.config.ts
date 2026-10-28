@@ -17,7 +17,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: [
           'favicon.svg',
-          'coregpt-logo.png',
+          'hynex-logo.jpg',
           'apple-touch-icon.png',
           'pwa-192x192.png',
           'pwa-512x512.png',
@@ -25,10 +25,10 @@ export default defineConfig(() => {
         ],
         manifest: {
           id: '/',
-          name: 'CoreGPT',
-          short_name: 'CoreGPT',
+          name: 'HYNEX AI',
+          short_name: 'HYNEX AI',
           description:
-            'CoreGPT is a high-performance conversational AI platform with multi-model intelligence, real-time knowledge synthesis, voice duplex, and creative media generation.',
+            'HYNEX AI is a high-performance conversational AI platform with multi-model intelligence, real-time knowledge synthesis, voice duplex, and creative media generation.',
           theme_color: '#181818',
           background_color: '#181818',
           display: 'standalone',

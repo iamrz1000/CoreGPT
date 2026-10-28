@@ -31,6 +31,8 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
   const [auditContent, setAuditContent] = useState('');
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditResult, setAuditResult] = useState<any>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -122,9 +124,10 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
         setSelectedProfile(res.profile);
       }
       setIsEditing(false);
+      setActionError(null);
       await loadProfiles();
     } catch (err: any) {
-      alert(err.message || 'Failed to save Creator DNA profile');
+      setActionError(err.message || 'Failed to save Creator DNA profile');
     } finally {
       setLoading(false);
     }
@@ -134,25 +137,30 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
     try {
       await api.creatorDna.update(p.id, { is_default: true });
       await loadProfiles();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to set default profile');
     }
   };
 
   const handleDelete = async (p: CreatorDNA) => {
-    if (!confirm(`Are you sure you want to delete "${p.name}"?`)) return;
+    if (confirmDeleteId !== p.id) {
+      setConfirmDeleteId(p.id);
+      return;
+    }
     try {
       await api.creatorDna.delete(p.id);
+      setConfirmDeleteId(null);
       setSelectedProfile(null);
       await loadProfiles();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to delete profile');
     }
   };
 
   const handleAuditStyle = async () => {
     if (!auditContent.trim() || !selectedProfile) return;
     setAuditLoading(true);
+    setActionError(null);
     try {
       const res = await api.creatorDna.checkStyle({
         profile_id: selectedProfile.id,
@@ -160,7 +168,7 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
       });
       setAuditResult(res.result);
     } catch (err: any) {
-      alert(err.message || 'Style check failed');
+      setActionError(err.message || 'Style check failed');
     } finally {
       setAuditLoading(false);
     }
@@ -289,9 +297,15 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
                         </button>
                         <button
                           onClick={() => handleDelete(selectedProfile)}
-                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                            confirmDeleteId === selectedProfile.id
+                              ? 'bg-red-600 hover:bg-red-500 text-white shadow-md'
+                              : 'text-red-400 hover:bg-red-500/10'
+                          }`}
+                          title={confirmDeleteId === selectedProfile.id ? 'Click again to permanently delete' : 'Delete Persona'}
                         >
                           <Trash2 className="w-4 h-4" />
+                          {confirmDeleteId === selectedProfile.id ? <span>Confirm Delete</span> : null}
                         </button>
                       </>
                     )}
@@ -307,6 +321,13 @@ export const CreatorDNAModal: React.FC<CreatorDNAModalProps> = ({ isOpen, onClos
                     )}
                   </div>
                 </div>
+
+                {actionError && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{actionError}</span>
+                  </div>
+                )}
 
                 {/* Form Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

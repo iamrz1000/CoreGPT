@@ -41,6 +41,8 @@ export const CollabModal: React.FC<CollabModalProps> = ({
   // Comment Form
   const [commentText, setCommentText] = useState('');
   const [commenting, setCommenting] = useState(false);
+  const [collabError, setCollabError] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && projectId) {
@@ -73,20 +75,26 @@ export const CollabModal: React.FC<CollabModalProps> = ({
       const res = await api.collab.invite(projectId, inviteEmail.trim(), inviteRole);
       setMembers([res.member, ...members]);
       setInviteEmail('');
+      setCollabError(null);
     } catch (err: any) {
-      alert(err.message || 'Failed to invite collaborator');
+      setCollabError(err.message || 'Failed to invite collaborator');
     } finally {
       setInviting(false);
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    if (!confirm('Remove this collaborator from the project?')) return;
+    if (confirmRemoveId !== memberId) {
+      setConfirmRemoveId(memberId);
+      return;
+    }
+    setCollabError(null);
     try {
       await api.collab.removeMember(memberId);
       setMembers(members.filter((m) => m.id !== memberId));
+      setConfirmRemoveId(null);
     } catch (err: any) {
-      alert(err.message || 'Failed to remove collaborator');
+      setCollabError(err.message || 'Failed to remove collaborator');
     }
   };
 
@@ -94,25 +102,27 @@ export const CollabModal: React.FC<CollabModalProps> = ({
     e.preventDefault();
     if (!commentText.trim()) return;
     setCommenting(true);
+    setCollabError(null);
     try {
       const res = await api.collab.addComment(projectId, commentText.trim());
       setComments([res.comment, ...comments]);
       setCommentText('');
     } catch (err: any) {
-      alert(err.message || 'Failed to post comment');
+      setCollabError(err.message || 'Failed to post comment');
     } finally {
       setCommenting(false);
     }
   };
 
   const handleToggleResolve = async (comment: ProjectComment) => {
+    setCollabError(null);
     try {
       await api.collab.resolveComment(projectId, comment.id, !comment.resolved);
       setComments(
         comments.map((c) => (c.id === comment.id ? { ...c, resolved: !c.resolved } : c))
       );
     } catch (err: any) {
-      alert(err.message || 'Failed to update comment');
+      setCollabError(err.message || 'Failed to update comment');
     }
   };
 

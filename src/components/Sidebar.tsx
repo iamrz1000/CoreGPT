@@ -16,7 +16,6 @@ import {
   Smartphone,
   Download,
   Music,
-  Gamepad2,
   Brain,
   FolderKanban,
   Cpu,
@@ -40,8 +39,8 @@ interface SidebarProps {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   currentUser: User | null;
-  activeTab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin';
-  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'game' | 'creator' | 'projects' | 'agent' | 'admin') => void;
+  activeTab: 'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin';
+  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin') => void;
   usage: UsageState | null;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -248,28 +247,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
+            <div className="p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
               <button
                 onClick={() => onTabChange('music')}
-                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
                   activeTab === 'music'
                     ? 'bg-purple-600 text-white shadow-2xs font-semibold'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/10'
                 }`}
               >
                 <Music className="w-3.5 h-3.5 text-purple-400" />
-                <span>Music Studio</span>
-              </button>
-              <button
-                onClick={() => onTabChange('game')}
-                className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
-                  activeTab === 'game'
-                    ? 'bg-emerald-600 text-white shadow-2xs font-semibold'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>3D Game</span>
+                <span>AI Music Studio</span>
               </button>
             </div>
 
@@ -527,7 +515,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={onOpenInstallModal}
               className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-zinc-200/70 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-900 dark:text-white text-xs font-medium transition-all group cursor-pointer border border-zinc-300/50 dark:border-white/5"
-              title="Install CoreGPT on Android or iOS"
+              title="Install HYNEX AI on Android or iOS"
             >
               <div className="flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />

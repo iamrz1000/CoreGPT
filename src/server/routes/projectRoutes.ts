@@ -253,7 +253,7 @@ projectRouter.get('/:id/versions', requireAuth, (req: AuthenticatedRequest, res:
 // GET /api/projects/:id/activity - List audit activity
 projectRouter.get('/:id/activity', requireAuth, (req: AuthenticatedRequest, res: Response) => {
   try {
-    const activity = db.getProjectActivity(req.params.id);
+    const activity = db.getProjectActivity(req.user!.id, req.params.id);
     res.json({ activity });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to retrieve activity.' });

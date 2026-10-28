@@ -1,0 +1,1110 @@
+# HYNEX AI — COMPLETE PRODUCT UPGRADE
+
+## ROLE AND MISSION
+
+Act as a senior full-stack engineer, AI systems architect, product designer, AI workflow engineer, security engineer, and QA specialist.
+
+Your mission is to inspect, improve, and evolve my EXISTING AI chatbot product called **Hynex AI** into a polished, reliable, full-stack AI productivity and creation platform.
+
+Hynex AI should help users move from an idea to a useful, finished result through AI conversations, research, coding assistance, image generation, video generation, document analysis, project management, and automated workflows.
+
+The product tagline is:
+
+**"Hynex AI — Think. Create. Complete."**
+
+This is an upgrade of an existing application, NOT a request to discard my existing project and generate an unrelated demo.
+
+The current application already includes these features:
+- AI chat conversations.
+- Image-to-video generation.
+- Text-to-video generation.
+- Text-to-image generation.
+
+First inspect the existing implementation to determine which features are genuinely functional, which APIs are connected, which data is persisted, and which components are incomplete.
+
+Preserve all working functionality and existing user data wherever possible.
+
+Do not replace working features with mockups, placeholder responses, fake progress indicators, or simulated AI results.
+
+---
+
+# PHASE 1 — AUDIT THE EXISTING APPLICATION
+
+Before modifying code, inspect the complete project.
+
+Examine:
+
+1. Frontend framework and component structure.
+2. Existing backend and API routes.
+3. AI model and provider integrations.
+4. Image-generation implementation.
+5. Video-generation implementation.
+6. Authentication and authorization.
+7. Database and persistent storage.
+8. Conversation history.
+9. File uploads and generated assets.
+10. Existing routing and navigation.
+11. Environment variables and API secrets.
+12. Error handling and loading states.
+13. Responsive design and accessibility.
+14. Existing deployment configuration.
+
+Create a concise implementation plan based on the actual repository.
+
+Identify:
+- Features that already work.
+- Features that need improvement.
+- Missing features.
+- Broken integrations.
+- Security risks.
+- Database migration requirements.
+- Dependencies that must be installed.
+
+Do not assume a technology stack before inspecting the repository.
+
+Keep the current framework and architecture unless a change is genuinely necessary.
+
+Do not delete or rewrite large parts of the application without a clear technical reason.
+
+After the audit, begin implementing the upgrade in small, verifiable phases. Do not stop after producing a plan.
+
+---
+
+# PHASE 2 — PRODUCT DESIGN AND USER EXPERIENCE
+
+Create a premium, modern, professional interface for Hynex AI.
+
+## Design principles
+
+- Clean, minimal, polished interface.
+- Professional typography.
+- Consistent spacing and component sizes.
+- Excellent readability.
+- Smooth, restrained animations.
+- Responsive layouts for desktop, tablet, and mobile.
+- Accessible controls and keyboard navigation.
+- Clear visual hierarchy.
+- Fast loading and minimal unnecessary re-rendering.
+
+Use the existing brand identity if one is already implemented.
+
+Do not imitate another company's exact branding, logo, or proprietary interface.
+
+## Main application navigation
+
+Organize the product into logical sections:
+
+- Home
+- AI Chat
+- AI Modes
+- Creator Studio
+- Research
+- Projects
+- Workflows
+- Knowledge Vault
+- App Builder
+- History
+- Settings
+
+Only expose features that are implemented or clearly identify unavailable features as coming soon.
+
+The sidebar should be collapsible on desktop and usable through a mobile navigation menu.
+
+## Main dashboard
+
+Build a personalized dashboard containing:
+
+- Welcome message.
+- Main AI prompt input.
+- Suggested actions.
+- Recent projects.
+- Recent conversations.
+- Recent generated images and videos.
+- Saved workflows.
+- Pending tasks.
+- Failed jobs requiring attention.
+- Usage and credit information, when supported by the backend.
+
+Add a prominent "Continue My Work" section for unfinished projects.
+
+Make the interface feel like one coherent platform instead of a collection of unrelated tools.
+
+---
+
+# PHASE 3 — HYNEX BRAIN: SPECIALIZED AI MODES
+
+Create a unified AI assistant with specialized task modes.
+
+Implement the following modes:
+
+## 1. General Assistant
+
+For everyday questions, brainstorming, explanations, writing, and problem-solving.
+
+## 2. Creator Mode
+
+For video scripts, content ideas, storyboards, image prompts, thumbnails, and video-production workflows.
+
+## 3. Study Mode
+
+For explaining concepts, generating notes, creating practice questions, and helping students understand difficult topics.
+
+The assistant should support learning rather than simply encouraging copying without understanding.
+
+## 4. Coding Mode
+
+For generating code, explaining code, identifying errors, proposing patches, and helping test applications.
+
+## 5. Business Mode
+
+For business planning, marketing ideas, customer communication, product descriptions, and operational planning.
+
+## 6. Research Mode
+
+For researching topics, finding sources, comparing evidence, and producing cited summaries.
+
+## Intelligent mode selection
+
+When automatic mode selection is enabled:
+
+1. Analyze the user's request.
+2. Select an appropriate mode.
+3. Identify any missing essential information.
+4. Create a task plan if necessary.
+5. Use the relevant available tools.
+6. Return a clear answer or useful artifact.
+
+Users must also be able to select a mode manually.
+
+Do not pretend that each mode uses a different model unless separate models are actually configured.
+
+Build the modes using reusable prompts, tool permissions, model configuration, and shared application services.
+
+---
+
+# PHASE 4 — HYNEX PROJECT TWIN
+
+Implement persistent, user-controlled project context.
+
+Each project should have its own workspace and structured context.
+
+A project may contain:
+
+- Project name.
+- Description and goal.
+- Instructions.
+- Conversation history.
+- Uploaded files.
+- Generated assets.
+- Approved reference images.
+- Decisions and preferences.
+- Completed tasks.
+- Pending tasks.
+- Known issues.
+- Workflow history.
+- Relevant configuration.
+
+## Project continuity
+
+When a user returns to an existing project, retrieve its authorized saved context.
+
+Allow the user to ask:
+
+"Continue my project from where I stopped."
+
+The assistant should inspect the project's saved state, identify unfinished work, and suggest or continue the next appropriate step.
+
+Do not claim to remember information that has not actually been saved or retrieved.
+
+## Memory controls
+
+Users must be able to:
+
+- View saved project information.
+- Edit incorrect information.
+- Delete individual project memories.
+- Clear project context.
+- Decide which information should be saved.
+
+Do not automatically store passwords, API keys, payment details, or other unnecessary sensitive information.
+
+Enforce strict ownership checks so one user cannot access another user's projects.
+
+---
+
+# PHASE 5 — HYNEX GOAL MODE AND AI AGENT
+
+Build a controlled AI task-execution system.
+
+Users should be able to submit requests such as:
+
+"Create a research-backed video script, organize the scenes, generate the available visual assets, and save everything in my documentary project."
+
+The system should:
+
+1. Interpret the goal.
+2. Divide it into manageable tasks.
+3. Identify required tools and dependencies.
+4. Create an execution plan.
+5. Show the plan to the user.
+6. Execute supported tasks.
+7. Report actual progress.
+8. Save intermediate results.
+9. Retry recoverable failures.
+10. Resume interrupted tasks.
+11. Present the completed artifacts and remaining limitations.
+
+## Task management
+
+Every task should have a meaningful status, such as:
+
+- Pending.
+- Ready.
+- Running.
+- Waiting for user input.
+- Completed.
+- Failed.
+- Cancelled.
+
+Track task dependencies and prevent tasks from running before their prerequisites are complete.
+
+Use background jobs or an appropriate job queue for long-running image and video generation where the existing architecture supports it.
+
+Persist task state so a page refresh does not erase important progress.
+
+## Approval gates
+
+Require explicit user confirmation before consequential actions, such as:
+
+- Publishing public content.
+- Sending messages externally.
+- Deleting important project data.
+- Spending paid credits beyond the user's confirmed limits.
+- Deploying an application.
+- Making destructive code changes.
+
+Never claim an external action was completed unless the relevant integration confirms success.
+
+If a requested capability is unavailable, explain the limitation and offer a supported alternative.
+
+---
+
+# PHASE 6 — HYNEX CREATOR OS
+
+Upgrade the existing image and video features into an integrated content-production workspace.
+
+This is one of the highest-priority modules.
+
+## Creator workflow
+
+Allow users to create a project and provide:
+
+- Topic.
+- Content type.
+- Target audience.
+- Language.
+- Desired duration.
+- Aspect ratio.
+- Visual style.
+- Narration preferences.
+- Reference images.
+- Output requirements.
+
+Support workflows such as:
+
+Topic → Research → Script → Storyboard → Scene Prompts → Image Generation → Video Generation → Narration → Subtitles → Assembly → Export.
+
+Only execute steps that are supported by actual configured services.
+
+## Storyboard editor
+
+Create a scene-based editor.
+
+Each scene should support:
+
+- Scene number.
+- Scene description.
+- Narration or dialogue.
+- Duration.
+- Visual prompt.
+- Reference images.
+- Generated image.
+- Generated video.
+- Generation status.
+- Error information.
+
+Allow users to:
+
+- Add scenes.
+- Edit scenes.
+- Delete scenes with confirmation.
+- Reorder scenes.
+- Regenerate one scene.
+- Retry failed generation.
+- Preview available assets.
+- Save changes automatically.
+- Continue the project later.
+
+## Preserve existing generation features
+
+Maintain and improve the existing:
+- Text-to-image feature.
+- Text-to-video feature.
+- Image-to-video feature.
+
+Reuse existing working integrations instead of rebuilding them unnecessarily.
+
+## Generation lifecycle
+
+For each generation request:
+
+1. Validate the input.
+2. Verify provider availability.
+3. Submit the request.
+4. Track provider job status where supported.
+5. Display actual progress information when available.
+6. Retrieve the generated result.
+7. Save the asset and metadata.
+8. Handle timeouts, cancellations, and errors.
+9. Show an actionable error message when unsuccessful.
+
+Do not invent generation percentages or show successful completion before a result exists.
+
+## Export
+
+Where supported, allow users to download generated assets and export the assembled project.
+
+If a reliable video-assembly pipeline does not exist, implement it using an appropriate server-side solution or clearly mark the specific export capability as unavailable until configured.
+
+Do not display a working-looking Export button that does nothing.
+
+---
+
+# PHASE 7 — HYNEX BRAND DNA AND VISUAL MEMORY
+
+Create reusable brand and visual reference profiles.
+
+A profile can contain:
+
+- Brand name.
+- Brand description.
+- Logo.
+- Color palette.
+- Typography preferences.
+- Visual style.
+- Content tone.
+- Audience.
+- Approved character references.
+- Reference images.
+- Image-generation instructions.
+- Thumbnail guidelines.
+
+Users should be able to create multiple profiles.
+
+For example, a user may maintain separate profiles for:
+- A documentary channel.
+- A finance channel.
+- A small business.
+- A personal project.
+
+Allow users to select a profile when generating content.
+
+Apply saved instructions to relevant prompts without overwriting the user's current request.
+
+For character consistency, pass reference images and supported conditioning information to compatible generation providers.
+
+Do not guarantee identical characters if the selected model cannot reliably provide that consistency.
+
+Let users replace, edit, and remove their references.
+
+---
+
+# PHASE 8 — HYNEX TRUTH MODE
+
+Build a research and evidence-verification workflow.
+
+When web search or research integrations are available:
+
+1. Identify the research question.
+2. Search relevant sources.
+3. Prefer primary sources and credible publications where appropriate.
+4. Retrieve source content through supported methods.
+5. Identify important factual claims.
+6. Compare evidence across sources.
+7. Note conflicting information.
+8. Distinguish verified information from uncertainty.
+9. Generate a readable, cited answer.
+
+## Research interface
+
+Display:
+- Main answer.
+- Key findings.
+- Supporting evidence.
+- Source title.
+- Source URL.
+- Publication date when available.
+- Relevant quotations within permitted limits.
+- Uncertainties and conflicting evidence.
+
+Every citation must correspond to a source that was actually retrieved and supports the associated claim.
+
+Never fabricate URLs, citations, publication dates, or quotations.
+
+If live web search is unavailable, explain that limitation and do not pretend that current research was performed.
+
+Provide a way for users to open sources and review the evidence themselves.
+
+---
+
+# PHASE 9 — HYNEX ARENA AND AI PROVIDER ROUTING
+
+Build an extensible model-provider architecture.
+
+Support multiple providers only when their APIs are configured and their usage is permitted.
+
+Create a shared provider interface for operations such as:
+
+- Text generation.
+- Streaming text generation.
+- Structured outputs.
+- Image generation.
+- Video generation.
+- Embeddings, if required.
+- Audio input and output, if supported.
+
+Each provider adapter must handle its own authentication, request format, response format, rate limits, and errors.
+
+## AI Arena
+
+Allow users to submit a prompt to multiple configured text models.
+
+Display their responses side by side.
+
+Allow users to compare:
+
+- Relevance to the prompt.
+- Completeness.
+- Factual support where verifiable.
+- Code-test results where applicable.
+- Response time.
+- Estimated usage cost when reliable data is available.
+
+Let users select a preferred response.
+
+Where practical, allow a configured evaluator to explain meaningful differences between responses.
+
+Do not use an LLM's self-reported confidence as proof of correctness.
+
+Do not invent performance scores or claim a model won an evaluation without performing the evaluation.
+
+## Provider configuration
+
+Create a provider registry containing:
+
+- Provider identifier.
+- Display name.
+- Supported capabilities.
+- Available models.
+- Configuration status.
+- Relevant limits.
+- Error-handling rules.
+
+Never assume that every provider supports every feature.
+
+If a provider is not configured, show a clear configuration requirement rather than silently returning fabricated output.
+
+---
+
+# PHASE 10 — HYNEX APP BUILDER
+
+Create an AI-assisted mini-app and website creation workspace.
+
+Users should be able to describe simple applications in natural language.
+
+Examples:
+- Expense tracker.
+- Personal dashboard.
+- Product landing page.
+- Calculator.
+- Study planner.
+- Contact form.
+- Simple business website.
+
+## Workflow
+
+1. Gather essential requirements.
+2. Produce a concise implementation plan.
+3. Generate project files in an isolated workspace.
+4. Display the file structure.
+5. Run supported build or validation checks.
+6. Display a preview where supported.
+7. Show errors and suggested fixes.
+8. Allow the user to request revisions.
+9. Provide supported export options.
+
+## Safe implementation
+
+Do not execute arbitrary generated code inside the main application process.
+
+Use an appropriately isolated execution environment if code execution is implemented.
+
+Apply resource limits, timeouts, filesystem restrictions, and network restrictions where appropriate.
+
+Do not expose server secrets to generated applications.
+
+Require approval before deployment or destructive operations.
+
+Clearly distinguish between:
+- Code generated.
+- Code built successfully.
+- Code tested.
+- Application previewed.
+- Application deployed.
+
+These are separate states and must not be misrepresented.
+
+---
+
+# PHASE 11 — HYNEX AUTO-FIX
+
+Improve the coding assistant with a safe code-repair workflow.
+
+When a user reports an error or a build fails:
+
+1. Collect the actual error output.
+2. Inspect relevant files.
+3. Identify a likely root cause.
+4. Propose a minimal patch.
+5. Show which files will change.
+6. Apply the patch in the appropriate workspace.
+7. Run available checks or tests.
+8. Report whether the issue was resolved.
+
+Keep backups or use version control before substantial modifications.
+
+Do not silently overwrite unrelated code.
+
+If a fix fails, preserve the error information and explain the next diagnostic step.
+
+Never claim that code passed tests unless those tests actually ran successfully.
+
+---
+
+# PHASE 12 — HYNEX LIVE VOICE
+
+Add voice interaction where supported.
+
+Potential capabilities include:
+
+- Speech-to-text.
+- Text-to-speech.
+- Voice-based prompts.
+- Spoken responses.
+- Voice interruption or cancellation where supported.
+- Language selection.
+- Microphone status.
+- Playback controls.
+
+Request microphone permission only when necessary and explain why it is needed.
+
+Provide text interaction as an alternative.
+
+Handle permission denial, unsupported browsers, network failures, and speech-service errors.
+
+Do not record or store voice data unnecessarily.
+
+If audio is stored, explain its purpose and apply appropriate access controls and retention policies.
+
+Do not claim to support real-time voice conversations unless the required live-audio integration is implemented and tested.
+
+---
+
+# PHASE 13 — HYNEX WORKFLOW RECORDER
+
+Allow users to save reusable multi-step workflows.
+
+Examples:
+
+- Research → Outline → Script.
+- Script → Scene Prompts → Images.
+- Blog → Summary → Social Posts.
+- Requirements → Code → Tests.
+- Document Upload → Extraction → Summary.
+
+Each workflow should include:
+
+- Name.
+- Description.
+- Input fields.
+- Ordered steps.
+- Step dependencies.
+- Required integrations.
+- Configuration.
+- Execution history.
+- Last execution status.
+
+Allow users to:
+- Create a workflow.
+- Edit a workflow.
+- Duplicate it.
+- Run it.
+- Cancel an active run.
+- Retry failed steps.
+- Resume interrupted workflows.
+- Delete a workflow with confirmation.
+
+Save workflow execution state in persistent storage.
+
+Validate inputs before execution.
+
+Use explicit permissions and approval gates for external or consequential actions.
+
+Do not build a system that executes arbitrary workflow instructions without validation.
+
+---
+
+# PHASE 14 — HYNEX WORKFLOW MARKETPLACE
+
+Build a reusable template library.
+
+Include:
+- Search.
+- Categories.
+- Template descriptions.
+- Required integrations.
+- Setup instructions.
+- Ratings, if supported by real user feedback.
+- Save to My Workflows.
+- Duplicate and customize.
+- Public or private visibility.
+- Creator attribution.
+
+Start with curated templates.
+
+Allow community submissions only when authentication, validation, moderation, and appropriate security checks are implemented.
+
+Do not fabricate ratings, reviews, downloads, or usage statistics.
+
+Templates must not gain access to private user information or external accounts without explicit authorization.
+
+---
+
+# PHASE 15 — HYNEX KNOWLEDGE VAULT
+
+Build a document and knowledge-management workspace.
+
+Support suitable file types based on the existing architecture and available libraries.
+
+Potential capabilities:
+- Upload documents.
+- Extract supported text.
+- Generate summaries.
+- Ask questions about documents.
+- Search across authorized documents.
+- Display source passages.
+- Cite relevant file sections.
+- Organize documents into projects.
+- Remove uploaded files.
+
+For large document collections, use an appropriate retrieval architecture rather than loading every file into every prompt.
+
+If embeddings or a vector database are needed, configure them properly.
+
+When answering a question about a document, distinguish:
+- Information found in the uploaded files.
+- Information obtained from external sources.
+- General model knowledge.
+
+Citations must refer to actual retrieved content and correct document locations when available.
+
+Validate file types and sizes.
+
+Apply access controls to all uploaded files and extracted content.
+
+Do not allow instructions embedded in uploaded documents to override system security rules or grant unauthorized access to tools.
+
+---
+
+# PHASE 16 — HYNEX QUALITY CHECKER
+
+Build a quality-control system that evaluates actual outputs.
+
+## For video projects
+
+Check available information for:
+- Missing scenes.
+- Missing generated assets.
+- Incorrect aspect ratio.
+- Missing subtitles.
+- Invalid asset references.
+- Unavailable audio.
+- Export failures.
+- Repeated scenes where detectable.
+
+## For code projects
+
+Check:
+- Build errors.
+- Syntax errors.
+- Failed tests.
+- Missing dependencies.
+- Relevant security warnings.
+
+## For research
+
+Check:
+- Missing citations.
+- Sources that do not support the claims.
+- Conflicting evidence.
+- Unverified claims.
+- Missing dates where relevant.
+
+## Quality reporting
+
+Show:
+- Checks performed.
+- Passed checks.
+- Failed checks.
+- Warnings.
+- Suggested improvements.
+
+Only display a numeric score if a defined, meaningful scoring method is implemented.
+
+Do not imply that automated checks guarantee perfect quality, correctness, or safety.
+
+---
+
+# PHASE 17 — HYNEX PERSONAL DASHBOARD
+
+Build a dashboard that helps users manage their work.
+
+Include:
+- Recent projects.
+- Recent conversations.
+- Recent generations.
+- Active tasks.
+- Pending approvals.
+- Failed jobs.
+- Saved workflows.
+- Knowledge Vault.
+- Provider configuration.
+- Usage information.
+- Account settings.
+
+Add search and filtering where useful.
+
+Allow users to resume, rename, archive, or delete their own projects.
+
+Use pagination or efficient loading for large histories.
+
+Avoid exposing unnecessary internal identifiers or technical errors in the normal interface.
+
+Provide a useful empty state when a user has no projects or generated assets.
+
+---
+
+# PHASE 18 — DATABASE AND DATA ARCHITECTURE
+
+Inspect the existing data layer before choosing or migrating a database.
+
+Reuse the current database if it is appropriate.
+
+If persistent storage is missing, propose and implement a suitable database integration compatible with the current environment.
+
+Possible entities include:
+
+- Users.
+- User preferences.
+- Conversations.
+- Messages.
+- Projects.
+- Project memories.
+- Tasks.
+- Task events.
+- Workflows.
+- Workflow executions.
+- Generated assets.
+- Uploaded documents.
+- Brand profiles.
+- Model-provider configurations.
+- Usage records.
+- Share permissions.
+
+Define appropriate relationships, indexes, and data constraints.
+
+Use migrations or an equivalent controlled schema-update strategy.
+
+Avoid storing large generated media files directly in ordinary relational database records when object storage is more appropriate.
+
+Store file metadata and secure references as needed.
+
+Ensure that:
+- User data persists after refresh.
+- Each user can access only authorized records.
+- Failed operations do not corrupt existing data.
+- Deletes and updates follow defined rules.
+- Database errors are handled safely.
+
+Do not replace a real database with browser local storage for core multi-user functionality.
+
+Browser storage may be used for appropriate preferences or temporary interface state.
+
+---
+
+# PHASE 19 — AUTHENTICATION AND SECURITY
+
+Implement or improve authentication using the existing secure authentication system.
+
+If no suitable system exists, choose a supported solution appropriate to the application.
+
+Requirements:
+
+- Protected application routes.
+- Server-side authorization checks.
+- User-owned projects and files.
+- Secure session handling.
+- Input validation.
+- Output encoding where appropriate.
+- Rate limiting.
+- Request-size limits.
+- Upload validation.
+- Secure error handling.
+- Protection against unauthorized cross-user access.
+
+## API key protection
+
+Never hardcode API keys in frontend source code.
+
+Never send provider secrets to the browser.
+
+Use the server-side secrets manager or secure environment variables.
+
+All protected third-party API requests should pass through authorized server-side code where appropriate.
+
+Do not log secrets or sensitive user content unnecessarily.
+
+Never use one user's private credentials to execute another user's requests.
+
+## Usage and cost controls
+
+Implement server-side limits where appropriate.
+
+Track usage from actual provider responses and billing information where available.
+
+If exact costs are unavailable, label any cost figures as estimates.
+
+Do not invent balances or deduct fictional credits.
+
+If the application supports credits, make the rules transparent and calculate them consistently.
+
+Prevent users from bypassing server-side limits simply by modifying frontend requests.
+
+---
+
+# PHASE 20 — PERFORMANCE AND RELIABILITY
+
+Improve:
+- Initial load time.
+- Rendering performance.
+- Request cancellation.
+- Loading states.
+- Error recovery.
+- Retry behavior.
+- Long-running generation handling.
+- Asset loading.
+- Database query efficiency.
+- Mobile responsiveness.
+
+Use streaming responses for text generation where supported.
+
+Avoid unnecessary API requests and repeated expensive operations.
+
+Use caching only where appropriate and ensure private data cannot leak between users.
+
+For retryable operations, use safe retry rules and idempotency where appropriate.
+
+Avoid duplicate paid generation requests caused by repeated clicks or network retries.
+
+Make failures understandable and recoverable.
+
+---
+
+# PHASE 21 — TESTING REQUIREMENTS
+
+Create or update tests that match the existing project.
+
+At minimum, verify:
+
+## Core chat
+- A normal message receives a real model response.
+- Streaming works where supported.
+- Conversation history persists.
+- Errors are displayed correctly.
+
+## Existing image and video features
+- Valid inputs are accepted.
+- Invalid inputs are rejected.
+- Provider errors are handled.
+- Successful outputs are saved.
+- Generated files can be accessed only by authorized users.
+
+## Projects
+- A project can be created.
+- Project information persists.
+- Project context can be retrieved.
+- Users cannot access another user's private project.
+
+## Workflows
+- Steps execute in the correct order.
+- Failed steps display useful errors.
+- Retry and resume work where implemented.
+
+## Documents
+- Supported files can be uploaded.
+- Extraction failures are handled.
+- Answers reference actual retrieved document content.
+
+## Security
+- Unauthorized requests are rejected.
+- API secrets do not appear in client bundles.
+- Private records cannot be accessed by changing record IDs.
+- Upload validation is enforced.
+
+## User interface
+- Main navigation works.
+- Mobile layouts remain usable.
+- Buttons have meaningful actions.
+- Empty, loading, error, and success states are present.
+
+Run available tests and build checks after each significant implementation phase.
+
+Fix regressions before moving to the next phase.
+
+Do not claim a test passed unless it actually ran.
+
+---
+
+# PHASE 22 — IMPLEMENTATION PRIORITIES
+
+Implement the upgrade in this order.
+
+## Priority 1: Preserve and stabilize
+
+- Audit the current application.
+- Protect existing features.
+- Fix major bugs.
+- Improve API error handling.
+- Verify authentication and secrets.
+
+## Priority 2: Build the core project system
+
+- Projects.
+- Project Twin.
+- Persistent context.
+- Personal Dashboard.
+- Continue My Work.
+
+## Priority 3: Connect AI capabilities
+
+- Hynex Brain.
+- Provider registry.
+- Existing image and video generation.
+- Workflow Recorder.
+- Goal Mode and task execution.
+
+## Priority 4: Upgrade the creator experience
+
+- Creator OS.
+- Storyboard editor.
+- Brand DNA.
+- Visual Memory.
+- Quality Checker.
+
+## Priority 5: Research and documents
+
+- Truth Mode.
+- Knowledge Vault.
+- Source citations.
+- Document retrieval.
+
+## Priority 6: Advanced capabilities
+
+- AI Arena.
+- App Builder.
+- Auto-Fix.
+- Live Voice.
+- Workflow Marketplace.
+
+You may adjust the order when the actual codebase or dependencies require it, but explain any significant change.
+
+Build shared foundations before implementing multiple features independently.
+
+Do not attempt to create every module in one enormous, untested code change.
+
+---
+
+# PHASE 23 — REQUIRED DEVELOPMENT PROCESS
+
+Follow this process throughout the upgrade:
+
+1. Inspect the existing code.
+2. Identify the highest-priority implementation step.
+3. Make a focused set of changes.
+4. Install only necessary dependencies.
+5. Update related types, components, services, and database schemas.
+6. Run available build checks and tests.
+7. Fix errors introduced by the changes.
+8. Verify that existing features still work.
+9. Summarize what changed.
+10. Continue to the next priority.
+
+Maintain a clear distinction between:
+- Implemented and tested.
+- Implemented but not fully tested.
+- Partially implemented.
+- Waiting for API configuration.
+- Blocked by missing infrastructure.
+
+If a required API key, provider account, external service, database, or permission is unavailable, implement the supported foundation and clearly identify the remaining setup requirement.
+
+Do not fabricate successful integrations.
+
+Do not remove an existing feature merely because it requires additional configuration.
+
+Do not expose secrets or weaken security to make a demo appear functional.
+
+---
+
+# FINAL ACCEPTANCE CRITERIA
+
+The upgrade is successful only when:
+
+1. Existing Hynex AI features remain functional.
+2. The application builds successfully.
+3. The core chat experience works.
+4. Existing image and video integrations are preserved.
+5. New project data persists correctly.
+6. Project ownership is enforced on the server.
+7. AI provider integrations report real success and failure states.
+8. Implemented workflows can be tracked and resumed as designed.
+9. Generated outputs can be reviewed and retrieved.
+10. Unsupported capabilities are clearly identified.
+11. API secrets remain server-side.
+12. The interface works on desktop and mobile.
+13. Critical regression and security tests pass.
+14. The application contains no newly introduced dead buttons or fake success states.
+
+## FINAL INSTRUCTION
+
+Start by auditing my existing Hynex AI repository.
+
+Then implement the highest-priority improvements directly in the existing codebase.
+
+Do not respond with only a plan, design description, or list of recommendations.
+
+Make real code changes, verify them, and continue iteratively.
+
+If the full scope cannot be completed in one session, complete the highest-priority working phase first and provide an accurate implementation report with the remaining tasks.
+
+The ultimate goal is to make Hynex AI a reliable, secure, cohesive platform that helps users transform ideas into finished work.

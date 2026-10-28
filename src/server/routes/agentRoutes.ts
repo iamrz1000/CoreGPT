@@ -146,6 +146,15 @@ Provide the final polished output directly without conversational filler.`;
       if (assetType === 'video') {
         const videoId = `agent_vid_${Date.now()}`;
         const filePath = await generateTextToVideoScene(input.prompt, aspectRatio as any, videoId);
+        db.saveGeneratedVideo(userId, {
+          id: videoId,
+          prompt: input.prompt,
+          aspectRatio,
+          operationName: `agent-video-${videoId}`,
+          localFilePath: filePath,
+          videoUrl: `/api/video/stream/${videoId}`,
+          status: 'completed',
+        });
         return {
           assetType: 'video',
           videoUrl: `/api/video/stream/${videoId}`,
