@@ -25,6 +25,7 @@ import {
   GitFork,
   Boxes,
   LayoutTemplate,
+  FileText,
 } from 'lucide-react';
 import { Conversation, User, UsageState } from '../types/index.ts';
 import { CoreGptLogo } from './ThinkAiLogo.tsx';
@@ -39,8 +40,8 @@ interface SidebarProps {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   currentUser: User | null;
-  activeTab: 'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin';
-  onTabChange: (tab: 'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin') => void;
+  activeTab: 'chat' | 'documents' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin';
+  onTabChange: (tab: 'chat' | 'documents' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin') => void;
   usage: UsageState | null;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -169,7 +170,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">⌘K</span>
           </button>
 
-          {/* Segmented Workspace Control (Chat / Images / Veo 3 / Music / 3D Game) */}
+          {/* Document & Productivity Studio Hero Button */}
+          <div className="p-0.5 bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-purple-500/10 rounded-lg border border-cyan-500/30 text-xs">
+            <button
+              onClick={() => onTabChange('documents')}
+              className={`w-full flex items-center justify-between py-2 px-2.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                activeTab === 'documents'
+                  ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-sm'
+                  : 'text-cyan-700 dark:text-cyan-300 hover:text-cyan-900 dark:hover:text-white hover:bg-cyan-500/10'
+              }`}
+              title="Hynex Document & Productivity Studio (Assignments, PPTX, DOCX, XLSX, PDFs)"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span className="font-bold">Document Studio</span>
+              </div>
+              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-400 font-bold border border-cyan-500/30">
+                AI DOCS
+              </span>
+            </button>
+          </div>
+
+          {/* Segmented Workspace Control (Chat / Images / Veo 3 / Music) */}
           <div className="space-y-1">
             <div className="grid grid-cols-3 gap-1 p-0.5 bg-zinc-200/60 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/5 text-xs">
               <button

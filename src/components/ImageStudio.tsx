@@ -375,7 +375,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
                   Google Gemini Nano Banana Series
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 {models.map((m) => (
                   <button
                     type="button"
@@ -399,6 +399,18 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({ usage, onRefreshUsage,
                   </button>
                 ))}
               </div>
+
+              {selectedModel === 'gemini-nano-banana-2.1' && (
+                <div className="mt-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>Google Gemini Nano Banana 2.1 is active with 4K ultra-fine textures & studio lighting synthesis.</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 font-semibold">
+                    Flagship Active
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Aspect Ratio Selector */}

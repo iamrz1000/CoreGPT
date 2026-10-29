@@ -31,6 +31,7 @@ import { shareRouter } from './src/server/routes/shareRoutes.ts';
 import { templateRouter } from './src/server/routes/templateRoutes.ts';
 import { onePromptRouter } from './src/server/routes/onePromptRoutes.ts';
 import { researchRouter } from './src/server/routes/researchRoutes.ts';
+import { documentRouter } from './src/server/routes/documentRoutes.ts';
 import { setupLiveWebSocket } from './src/server/live.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -133,6 +134,7 @@ app.use('/api/images', imageRouter);
 app.use('/api/voice', voiceRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/usage', usageRouter);
+app.use('/api/documents', documentRouter);
 app.use('/api', chatRouter); // mounts /api/conversations and /api/chat/stream
 
 // Global API error handler

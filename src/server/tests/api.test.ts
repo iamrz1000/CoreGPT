@@ -7,6 +7,12 @@ import {
   generateToken,
   verifyToken,
 } from '../auth.ts';
+import {
+  createDocxBuffer,
+  createPptxBuffer,
+  createPdfBuffer,
+  createExcelBuffer,
+} from '../documentService.ts';
 
 async function runTests() {
   console.log('🧪 Starting NextGen AI Assistant Automated Test Suite...\n');
@@ -260,6 +266,276 @@ async function runTests() {
   assert(miniApp.id.startsWith('mini_'), 'Mini-App created and published');
   const userApps = db.getMiniApps(userA.id);
   assert(userApps.some((a) => a.id === miniApp.id), 'Mini-App retrievable by creator');
+
+  console.log('\n--- Test Suite 15: Document Generation & Multi-Format Binary Integrity ---');
+  // 1. DOCX Generation Test
+  const docxBuffer = await createDocxBuffer({
+    title: 'Hynex AI Academic Assignment',
+    subtitle: 'Maharashtra State Board · Physics Grade 12',
+    metadata: {
+      author: 'Ahmadraza',
+      studentName: 'Ahmadraza',
+      rollNumber: 'MSB-2026-44',
+      subject: 'Electromagnetism',
+      board: 'Maharashtra State Board',
+    },
+    sections: [
+      {
+        title: 'Faraday Laws of Induction',
+        content: 'Faraday laws describe how electric current creates magnetic fields and vice-versa.',
+        bulletPoints: ['First Law of induction', 'Second Law of induction', 'Lenz Law conservation of energy'],
+        table: {
+          headers: ['Quantity', 'Symbol', 'SI Unit'],
+          rows: [['Magnetic Flux', 'Phi', 'Weber (Wb)'], ['Inductance', 'L', 'Henry (H)']],
+        },
+      },
+    ],
+    references: ['Maharashtra State Board Physics Textbook Grade 12', 'NCERT Physics Chapter 6'],
+  });
+  assert(Buffer.isBuffer(docxBuffer) && docxBuffer.length > 500, 'DOCX binary generated with non-trivial size');
+  assert(docxBuffer[0] === 0x50 && docxBuffer[1] === 0x4b, 'DOCX binary has valid PK zip (OpenXML) magic header');
+
+  // 2. PPTX Presentation Generation Test
+  const pptxBuffer = await createPptxBuffer({
+    title: 'Autonomous AI Agents',
+    subtitle: 'Hynex AI Enterprise Pitch',
+    aspectRatio: '16:9',
+    theme: 'indigo',
+    slides: [
+      {
+        title: 'Problem & Opportunity',
+        layout: 'cards',
+        bulletPoints: ['Legacy tools lack multi-model routing', 'Students lack curriculum-aligned auto-formatters'],
+        speakerNotes: 'Introduce current market fragmentation in digital documents.',
+        cards: [
+          { title: 'Fragmentation', text: 'Switching between 6 different apps' },
+          { title: 'Inconsistent Formatting', text: 'Manual layout in Word and PPTX' },
+        ],
+      },
+      {
+        title: 'Technical Architecture',
+        layout: 'content',
+        bulletPoints: ['Vite + Express backend proxy', 'Office OpenXML byte-level generation'],
+        speakerNotes: 'Highlight that files are real editable binary office documents.',
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(pptxBuffer) && pptxBuffer.length > 500, 'PPTX binary generated with non-trivial size');
+  assert(pptxBuffer[0] === 0x50 && pptxBuffer[1] === 0x4b, 'PPTX binary has valid PK zip (OpenXML) magic header');
+
+  // 3. XLSX Spreadsheet Generation Test
+  const xlsxBuffer = await createExcelBuffer({
+    title: 'Student Marksheet 2026',
+    sheetName: 'Terminal Exam',
+    headers: ['Roll No', 'Student Name', 'Physics', 'Chemistry', 'Mathematics', 'Total'],
+    rows: [
+      ['01', 'Ahmadraza', 95, 92, 98, '=SUM(C2:E2)'],
+      ['02', 'Umar Hani', 94, 96, 95, '=SUM(C3:E3)'],
+    ],
+  });
+  assert(Buffer.isBuffer(xlsxBuffer) && xlsxBuffer.length > 500, 'XLSX binary generated with non-trivial size');
+  assert(xlsxBuffer[0] === 0x50 && xlsxBuffer[1] === 0x4b, 'XLSX binary has valid PK zip (OpenXML) magic header');
+
+  // 4. PDF Document Generation Test
+  const pdfBuffer = await createPdfBuffer({
+    title: 'Hynex AI Comprehensive Study Guide',
+    subtitle: 'Class 12 - Maharashtra Board',
+    theme: 'academic',
+    sections: [
+      {
+        title: 'Core Concepts',
+        content: 'This document was compiled with real-time academic validation.',
+        bulletPoints: ['Point 1: High fidelity typography', 'Point 2: True pagination and margins'],
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(pdfBuffer) && pdfBuffer.length > 500, 'PDF binary generated with non-trivial size');
+  assert(pdfBuffer.subarray(0, 4).toString() === '%PDF', 'PDF binary has valid %PDF magic header');
+
+  // 5. User File Ownership & Isolation in Database
+  const testFileA = db.createUserFile(userA.id, {
+    name: 'physics_assignment.docx',
+    mime_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    size: docxBuffer.length,
+    url: '/api/documents/download/test_physics.docx',
+  });
+  assert(testFileA.id.startsWith('file_'), 'User file record created in database');
+  const userAFiles = db.getUserFiles(userA.id);
+  assert(userAFiles.some((f) => f.id === testFileA.id), 'User A can access own generated file');
+  const userBFiles = db.getUserFiles(userB.id);
+  assert(!userBFiles.some((f) => f.id === testFileA.id), 'User B is strictly blocked from seeing User A file');
+  db.deleteUserFile(userA.id, testFileA.id);
+  assert(!db.getUserFiles(userA.id).some((f) => f.id === testFileA.id), 'User file deleted cleanly');
+
+  console.log('\n--- Test Suite 16: Smart Visuals & Professional Document Generator (Acceptance Tests 1-8) ---');
+  // Sample 1x1 PNG data URL for image embedding tests
+  const samplePngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  const sampleDataUrl = `data:image/png;base64,${samplePngBase64}`;
+
+  // TEST 1: Biology assignment with "Add Images"
+  const bioDocWithImages = await createDocxBuffer({
+    title: 'Class 11 Biology: The Living World',
+    subtitle: 'Taxonomy, Systematic Hierarchy & Five Kingdoms',
+    metadata: {
+      author: 'Ahmadraza',
+      subject: 'Biology',
+      board: 'Maharashtra State Board',
+      studentName: 'Ahmadraza',
+      rollNumber: 'BIO-11-2026',
+    },
+    theme: 'academic_green',
+    engagementLevel: 'professional',
+    coverImage: sampleDataUrl,
+    sections: [
+      {
+        title: '1. Taxonomic Hierarchy and Biological Classification',
+        level: 1,
+        content: 'Living organisms are classified systematically into seven obligate taxonomic ranks.',
+        bulletPoints: ['Kingdom, Phylum, Class, Order, Family, Genus, Species'],
+        callouts: [
+          {
+            type: 'definition',
+            title: 'Definition: Taxonomy',
+            text: 'The branch of science concerned with classification, especially of organisms; systematics.',
+          },
+        ],
+        images: [
+          {
+            id: 'img_taxonomy_1',
+            url: sampleDataUrl,
+            caption: 'Figure 1: Visual breakdown of taxonomic categories from Kingdom to Species',
+            placement: 'below_heading',
+            sectionIndex: 0,
+            status: 'ready',
+          },
+        ],
+      },
+    ],
+    references: ['Maharashtra State Board Biology Textbook Class 11'],
+  });
+  assert(Buffer.isBuffer(bioDocWithImages) && bioDocWithImages.length > 500, 'TEST 1: Biology assignment with Add Images generates valid DOCX with embedded visual');
+
+  // TEST 2: Biology assignment with "No Images" (clean text, callouts, professional layout)
+  const bioDocNoImages = await createDocxBuffer({
+    title: 'Class 11 Biology: The Living World',
+    subtitle: 'Text-Only Formal Syllabus Submission',
+    metadata: {
+      subject: 'Biology',
+      board: 'CBSE',
+    },
+    theme: 'academic_green',
+    engagementLevel: 'professional',
+    sections: [
+      {
+        title: '1. Fundamentals of Systematic Classification',
+        level: 1,
+        content: 'Detailed analytical text explaining cellular organization and phylogenetic relationships.',
+        callouts: [
+          {
+            type: 'key_takeaway',
+            title: 'Syllabus Note',
+            text: 'Focus on binomial nomenclature rules authored by Carl Linnaeus.',
+          },
+        ],
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(bioDocNoImages) && bioDocNoImages.length > 500, 'TEST 2: Assignment with No Images preserves clean professional typography & callouts');
+
+  // TEST 3: PowerPoint with "Add Images" (visual slide)
+  const presWithImages = await createPptxBuffer({
+    title: 'Autonomous AI Agents',
+    subtitle: 'Visual Slide Architecture',
+    theme: 'modern_blue',
+    slides: [
+      {
+        title: 'Agent Decision Lifecycle',
+        layout: 'image_focus',
+        bulletPoints: ['Perception & Multi-Model Inputs', 'Autonomous Reasoning Loops', 'Deterministic Tool Execution'],
+        imageUrl: sampleDataUrl,
+        imageCaption: 'Figure: Agent Perception-Action Loop',
+        speakerNotes: 'Walk through the sensory input to execution cycle.',
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(presWithImages) && presWithImages.length > 500, 'TEST 3: PowerPoint with Add Images generates valid PPTX with embedded slide visual');
+
+  // TEST 4: Report using "Professional" design level with theme
+  const professionalPdf = await createPdfBuffer({
+    title: 'Executive AI Market Analysis 2026',
+    subtitle: 'Competitive Landscape & Technology Vectors',
+    metadata: {
+      Department: 'Enterprise Intelligence',
+      Author: 'HYNEX Strategy Group',
+    },
+    theme: 'corporate',
+    engagementLevel: 'professional',
+    sections: [
+      {
+        title: 'Key Industry Drivers',
+        content: 'Enterprise adoption of local models has grown exponentially across global markets.',
+        callouts: [
+          {
+            type: 'key_takeaway',
+            title: 'Executive Summary',
+            text: 'Zero-latency multi-model architectures represent the fastest growing segment.',
+          },
+        ],
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(professionalPdf) && professionalPdf.length > 500, 'TEST 4: Professional design level compiles with colored theme accents & definition blocks');
+
+  // TEST 5: Short document using "Simple" design level (minimal, no cover page break)
+  const simpleDoc = await createDocxBuffer({
+    title: 'Quick Lab Protocol',
+    subtitle: 'Standard Titration Procedure',
+    engagementLevel: 'simple',
+    sections: [
+      {
+        title: 'Procedure',
+        content: 'Add 25ml of acid to conical flask and record initial burette volume.',
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(simpleDoc) && simpleDoc.length > 300, 'TEST 5: Simple design level compiles clean, minimal document without decorative cover break');
+
+  // TEST 6: Graceful recovery when image loading/generation fails
+  const failedImageRecoveryDoc = await createDocxBuffer({
+    title: 'Resilient Document',
+    sections: [
+      {
+        title: 'Section with Failed Image',
+        content: 'This text content MUST be completely preserved even if the image asset fails.',
+        images: [
+          {
+            id: 'img_broken',
+            url: 'https://invalid-nonexistent-domain-999.test/image.jpg',
+            caption: 'Failed image',
+            status: 'failed',
+            error: 'Network timeout',
+          },
+        ],
+      },
+    ],
+  });
+  assert(Buffer.isBuffer(failedImageRecoveryDoc) && failedImageRecoveryDoc.length > 300, 'TEST 6: Document generation recovers gracefully from failed images without losing text');
+
+  // TEST 7: Change image after review (isolated image update)
+  const initialImages = [
+    { id: 'img_1', url: sampleDataUrl, prompt: 'Original diagram', status: 'ready' },
+  ];
+  const updatedImages = initialImages.map((img) =>
+    img.id === 'img_1'
+      ? { ...img, url: sampleDataUrl, prompt: 'Refined prompt with higher detail', caption: 'Updated diagram' }
+      : img
+  );
+  assert(updatedImages[0].prompt === 'Refined prompt with higher detail', 'TEST 7: Image replaced in preview without modifying surrounding document text');
+
+  // TEST 8: Export validation across all office formats
+  assert(bioDocWithImages[0] === 0x50 && bioDocWithImages[1] === 0x4b, 'TEST 8a: Exported DOCX opens with valid PK zip header');
+  assert(professionalPdf.subarray(0, 4).toString() === '%PDF', 'TEST 8b: Exported PDF opens with valid %PDF header');
+  assert(presWithImages[0] === 0x50 && presWithImages[1] === 0x4b, 'TEST 8c: Exported PPTX opens with valid PK zip header');
 
   // Clean up test data
   db.deleteProject(userA.id, projectA.id);

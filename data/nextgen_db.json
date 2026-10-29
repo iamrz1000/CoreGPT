@@ -18,7 +18,7 @@
       "status": "active",
       "id": "944202a5-45d6-4762-8ded-cc1c120c584d",
       "created_at": "2026-10-18T07:24:12.828Z",
-      "updated_at": "2026-10-28T09:41:15.086Z"
+      "updated_at": "2026-10-29T11:19:46.490Z"
     },
     {
       "email": "creator_test_1793094108099@hynex.ai",
@@ -85,6 +85,37 @@
       "id": "db91514c-2d17-49db-941f-7d59f6b3238d",
       "created_at": "2026-10-27T09:42:34.070Z",
       "updated_at": "2026-10-27T09:42:34.070Z"
+    },
+    {
+      "email": "user_1793268856742@test.com",
+      "display_name": "Test Runner",
+      "password_hash": "$2b$10$8H4wjKwjKW1N8ILMNYDbK.wDEe3HnGle0w4t8XcjP9gyB4iGhEmea",
+      "role": "user",
+      "status": "active",
+      "id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "created_at": "2026-10-29T10:14:16.742Z",
+      "updated_at": "2026-10-29T10:14:16.759Z",
+      "daily_quota_override": 2
+    },
+    {
+      "email": "other_1793268856747@test.com",
+      "display_name": "Other User",
+      "password_hash": "$2b$10$8H4wjKwjKW1N8ILMNYDbK.wDEe3HnGle0w4t8XcjP9gyB4iGhEmea",
+      "role": "user",
+      "status": "active",
+      "id": "0802fa84-ac7c-4f4f-bf5b-776eb97f1193",
+      "created_at": "2026-10-29T10:14:16.747Z",
+      "updated_at": "2026-10-29T10:14:16.747Z"
+    },
+    {
+      "email": "admin_1793268856776@test.com",
+      "display_name": "System Administrator",
+      "password_hash": "$2b$10$8H4wjKwjKW1N8ILMNYDbK.wDEe3HnGle0w4t8XcjP9gyB4iGhEmea",
+      "role": "admin",
+      "status": "active",
+      "id": "d3f05c9b-3447-4ec9-805a-b33549b4b18e",
+      "created_at": "2026-10-29T10:14:16.776Z",
+      "updated_at": "2026-10-29T10:14:16.776Z"
     }
   ],
   "sessions": [
@@ -171,6 +202,16 @@
     }
   ],
   "conversations": [
+    {
+      "id": "62e22008-6fa7-4f32-86c7-fd93d40f99da",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "title": "User A Secret Conversation",
+      "model": "gemini-3.1-flash-lite",
+      "system_prompt": "",
+      "is_archived": false,
+      "created_at": "2026-10-29T10:14:16.751Z",
+      "updated_at": "2026-10-29T10:14:16.755Z"
+    },
     {
       "id": "682f1614-dab5-43c9-9725-41e1b1050bab",
       "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
@@ -314,6 +355,13 @@
       "content": "Hello! I am **CoreGPT**, an intelligent conversational partner inspired by ChatGPT.\n\n- 🌟 **Founder**: **Umar Hani**\n- 💻 **Developer**: **Ahmadraza**\n\nI am equipped with comprehensive capabilities:\n- 💡 **Deep Reasoning & Q&A**: Complex analytical, scientific, and knowledge synthesis.\n- 💻 **Software Engineering**: Full-stack programming, algorithmic design, debugging, and architecture.\n- 🎨 **Visual & Media Creation**: High-fidelity art generation and cinematic Veo 3 video.\n- ⏱️ **Real-Time Information**: Live temporal and factual awareness across events and dates.\n- 🎙️ **Real-Time Voice**: Interactive voice dialogue powered by Google Gemini 3.8 Live API.\n- 🌍 **Multilingual Fluency**: Fluid conversation across English, Hindi, Urdu, Arabic, Spanish, French, German, Chinese, and Japanese.\n\nHow may I assist you today? Feel free to ask any question or describe a project!",
       "model": "gemini-3.1-flash-lite",
       "created_at": "2026-10-23T17:56:32.327Z"
+    },
+    {
+      "id": "1995498b-8cd9-4282-aa59-ce42e4e5c34e",
+      "conversation_id": "62e22008-6fa7-4f32-86c7-fd93d40f99da",
+      "role": "user",
+      "content": "Confidential message from User A",
+      "created_at": "2026-10-29T10:14:16.755Z"
     }
   ],
   "usage_records": [
@@ -370,6 +418,40 @@
       "voice_seconds": 0,
       "created_at": "2026-10-27T12:41:01.147Z",
       "updated_at": "2026-10-27T12:41:01.147Z"
+    },
+    {
+      "id": "ea4be22f-7d7b-4478-8593-6d1f0bf8be66",
+      "user_id": "944202a5-45d6-4762-8ded-cc1c120c584d",
+      "date": "2026-10-29",
+      "text_count": 0,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-29T09:49:45.348Z",
+      "updated_at": "2026-10-29T09:49:45.348Z"
+    },
+    {
+      "id": "229bf87f-3100-4920-9df1-dba4fedb968e",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "date": "2026-10-29",
+      "text_count": 2,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-29T10:14:16.763Z",
+      "updated_at": "2026-10-29T10:14:16.770Z",
+      "text_to_video_count": 0,
+      "image_to_video_count": 0
+    },
+    {
+      "id": "ef948907-34e9-4d12-95e4-ef258cc87b7e",
+      "user_id": "d3f05c9b-3447-4ec9-805a-b33549b4b18e",
+      "date": "2026-10-29",
+      "text_count": 1,
+      "image_count": 0,
+      "voice_seconds": 0,
+      "created_at": "2026-10-29T10:14:16.779Z",
+      "updated_at": "2026-10-29T10:14:16.783Z",
+      "text_to_video_count": 0,
+      "image_to_video_count": 0
     }
   ],
   "generated_images": [
@@ -465,6 +547,78 @@
   },
   "password_reset_tokens": [],
   "admin_audit_logs": [
+    {
+      "id": "8452e985-5850-400c-9b2e-961cfaefaee1",
+      "admin_id": "7136fd6b-20da-4383-ba60-3d749de21014",
+      "admin_email": "admin_1793272788363@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T11:19:48.376Z"
+    },
+    {
+      "id": "768448bb-d673-4d1b-a77c-7e894a625638",
+      "admin_id": "34e35983-6c76-48b9-9f77-91b7df201676",
+      "admin_email": "admin_1793272305390@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T11:11:45.402Z"
+    },
+    {
+      "id": "5d978c65-bb13-4e8d-affa-a09fa1557efb",
+      "admin_id": "c2715114-3bc8-4eef-8cd0-267e3edf079c",
+      "admin_email": "admin_1793270454681@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T10:40:54.699Z"
+    },
+    {
+      "id": "d7261318-55b8-4c46-9a09-35c8359969e8",
+      "admin_id": "7a8ee6d5-4fdd-4afc-8dd1-0ac3eb8f8cf2",
+      "admin_email": "admin_1793269049150@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T10:17:29.161Z"
+    },
+    {
+      "id": "2ae0c3e5-9a00-4627-9a40-740e93bdfc9b",
+      "admin_id": "ae7919d2-8329-4290-8464-9925f3cae5a4",
+      "admin_email": "admin_1793268918217@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T10:15:18.230Z"
+    },
+    {
+      "id": "e4035adf-aaed-4a95-86d6-882e623be8af",
+      "admin_id": "d3f05c9b-3447-4ec9-805a-b33549b4b18e",
+      "admin_email": "admin_1793268856776@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T10:14:16.786Z"
+    },
+    {
+      "id": "64cc1710-f9da-415f-b6c4-3d4fa4a79e32",
+      "admin_id": "94cd3e1f-a5a6-4d62-936a-51a53dbe8d01",
+      "admin_email": "admin_1793268794762@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T10:13:14.774Z"
+    },
+    {
+      "id": "7cab7abc-ed2b-44c3-b76f-d724b7c410d1",
+      "admin_id": "f13f866f-0fd1-4d76-8983-0b3d2de788a8",
+      "admin_email": "admin_1793267681492@test.com",
+      "action": "TEST_SECURITY_ACTION",
+      "details": "Automated test security event verification",
+      "ip_address": "127.0.0.1",
+      "created_at": "2026-10-29T09:54:41.506Z"
+    },
     {
       "id": "8337dbbb-c123-4244-a0d0-2f17f2302749",
       "admin_id": "0ac6b0c0-9ac0-4779-a548-60f15b21e2f2",
@@ -711,6 +865,40 @@
   ],
   "projects": [
     {
+      "id": "proj_1793268856802_52c845f3",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "title": "Solaris Sci-Fi Short Film",
+      "description": "An AI cinematic journey across deep space",
+      "category": "film",
+      "status": "draft",
+      "character_refs": [],
+      "scenes": [],
+      "script": "",
+      "created_at": "2026-10-29T10:14:16.802Z",
+      "updated_at": "2026-10-29T10:14:16.802Z",
+      "decisions": [
+        {
+          "id": "dec_1793268856807_ebc0a9",
+          "title": "Lighting Palette Selection",
+          "description": "Switch to anamorphic teal and amber color grading",
+          "category": "Visual Style",
+          "status": "approved",
+          "approved_at": "2026-10-29T10:14:16.807Z",
+          "created_at": "2026-10-29T10:14:16.807Z"
+        }
+      ],
+      "activity": [
+        {
+          "id": "act_1793268856807_22ebac",
+          "project_id": "proj_1793268856802_52c845f3",
+          "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+          "action": "added_decision",
+          "details": "Added decision: \"Lighting Palette Selection\"",
+          "created_at": "2026-10-29T10:14:16.807Z"
+        }
+      ]
+    },
+    {
       "id": "proj_1793094135927_4b63d72b",
       "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
       "title": "Quantum Horizon",
@@ -725,6 +913,28 @@
     }
   ],
   "memories": [
+    {
+      "id": "mem_1793268856828_184d75fb",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "project_id": "proj_1793268856802_52c845f3",
+      "category": "character",
+      "key": "Protagonist Name",
+      "value": "Captain Elena Vance",
+      "source": "user",
+      "created_at": "2026-10-29T10:14:16.828Z",
+      "updated_at": "2026-10-29T10:14:16.828Z"
+    },
+    {
+      "id": "mem_1793268856819_24805a2a",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "project_id": null,
+      "category": "preference",
+      "key": "Director Camera Preference",
+      "value": "Always use 85mm anamorphic lenses with shallow depth of field",
+      "source": "user",
+      "created_at": "2026-10-29T10:14:16.819Z",
+      "updated_at": "2026-10-29T10:14:16.819Z"
+    },
     {
       "id": "mem_1793094135944_d35ca213",
       "user_id": "25f85a34-a5e4-47b8-a710-bde217571b02",
@@ -786,8 +996,41 @@
       "updated_at": "2026-10-27T09:42:20.546Z"
     }
   ],
-  "user_files": [],
+  "user_files": [
+    {
+      "id": "file_1793272241745_ac2d8982",
+      "user_id": "default_user",
+      "project_id": null,
+      "name": "natural_desaster_deck.pptx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "size": 137414,
+      "url": "/api/documents/download/pres_1793272241745_natural_desaster_deck.pptx",
+      "created_at": "2026-10-29T11:10:41.745Z"
+    }
+  ],
   "creator_dnas": [
+    {
+      "id": "dna_1793268856815_b30c76",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "name": "Cyberpunk Noir Style",
+      "niche": "Sci-Fi Filmmaking",
+      "target_audience": "Futurism enthusiasts",
+      "language": "English",
+      "writing_style": "Atmospheric, gritty, philosophical",
+      "visual_style": "High-contrast neon reflections, rain-slicked pavement",
+      "brand_colors": [
+        "#00FFCC",
+        "#FF0055",
+        "#121212"
+      ],
+      "typography": "Orbitron",
+      "aspect_ratio": "16:9",
+      "caption_preferences": "Subtle lower thirds with cyan accents",
+      "character_refs": [],
+      "is_default": true,
+      "created_at": "2026-10-29T10:14:16.815Z",
+      "updated_at": "2026-10-29T10:14:16.815Z"
+    },
     {
       "id": "dna_1793104083846_558f89",
       "user_id": "guest_user",
@@ -810,11 +1053,70 @@
       "updated_at": "2026-10-27T12:28:03.845Z"
     }
   ],
-  "workflows": [],
+  "workflows": [
+    {
+      "id": "wf_1793268856832_dfa0da",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "project_id": null,
+      "name": "Autonomous Film Teaser Pipeline",
+      "description": "Generates screenplay, keyframe art, and video scene",
+      "inputs": [
+        {
+          "key": "premise",
+          "label": "Premise",
+          "type": "text",
+          "default_value": "AI singularity"
+        }
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "step_number": 1,
+          "title": "Synthesize Script",
+          "tool": "generate_text",
+          "config": {}
+        },
+        {
+          "id": "s2",
+          "step_number": 2,
+          "title": "Verify Lore",
+          "tool": "truth_check",
+          "config": {}
+        }
+      ],
+      "created_at": "2026-10-29T10:14:16.832Z",
+      "updated_at": "2026-10-29T10:14:16.832Z"
+    }
+  ],
   "workflow_executions": [],
   "collab_members": [],
   "project_comments": [],
-  "mini_apps": [],
+  "mini_apps": [
+    {
+      "id": "mini_1793268856836_82622c",
+      "user_id": "c46ab4e1-e670-4c4b-b8b2-47b3d4ca16a1",
+      "name": "SaaS Unit Economics Calculator",
+      "description": "Calculates CAC, LTV, and payback period",
+      "inputs": [
+        {
+          "key": "cac",
+          "label": "Customer Acquisition Cost",
+          "type": "text",
+          "placeholder": "100"
+        }
+      ],
+      "output_format": "markdown",
+      "instructions": "Analyze unit economics and recommend levers for scale",
+      "capabilities": [
+        "analytics",
+        "roi_calculator"
+      ],
+      "is_published": true,
+      "run_count": 0,
+      "created_at": "2026-10-29T10:14:16.836Z",
+      "updated_at": "2026-10-29T10:14:16.836Z"
+    }
+  ],
   "shared_pages": [],
   "community_templates": [
     {

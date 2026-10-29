@@ -786,4 +786,144 @@ export const api = {
         method: 'POST',
       }),
   },
+
+  documents: {
+    universalCreate: (data: {
+      prompt: string;
+      formatPreference?: string;
+      language?: string;
+      includeImages?: boolean;
+      imageOptions?: any;
+      engagementLevel?: string;
+      theme?: string;
+    }) =>
+      request<{
+        success: boolean;
+        file: any;
+        docType: string;
+        preview: any;
+        downloadUrl: string;
+        message: string;
+      }>('/api/documents/universal-create', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    generateAssignment: (data: {
+      topic: string;
+      subject?: string;
+      gradeClass?: string;
+      board?: string;
+      language?: string;
+      detailLevel?: 'short' | 'medium' | 'detailed';
+      pageTarget?: number;
+      teacherInstructions?: string;
+      studentName?: string;
+      rollNumber?: string;
+      exportFormat?: 'docx' | 'pdf' | 'both';
+      includeImages?: boolean;
+      imageOptions?: any;
+      engagementLevel?: string;
+      theme?: string;
+      approvedImages?: any[];
+    }) =>
+      request<{
+        success: boolean;
+        assignment: any;
+        files: { docx: any; pdf: any };
+        primaryDownloadUrl: string;
+        message: string;
+      }>('/api/documents/generate-assignment', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    generatePresentation: (data: {
+      topic: string;
+      slideCount?: number;
+      audience?: string;
+      theme?: string;
+      aspectRatio?: '16:9' | '4:3';
+      language?: string;
+      author?: string;
+      includeImages?: boolean;
+      imageStyle?: string;
+    }) =>
+      request<{
+        success: boolean;
+        presentation: any;
+        file: any;
+        downloadUrl: string;
+        message: string;
+      }>('/api/documents/generate-presentation', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    generateSpreadsheet: (data: {
+      topic: string;
+      category?: string;
+      rowCount?: number;
+    }) =>
+      request<{
+        success: boolean;
+        spreadsheet: any;
+        file: any;
+        downloadUrl: string;
+        message: string;
+      }>('/api/documents/generate-spreadsheet', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    generateSingleImage: (data: { prompt: string; style?: string; aspectRatio?: string }) =>
+      request<{
+        success: boolean;
+        image: { id: string; url: string; prompt: string; caption?: string; status: string };
+      }>('/api/documents/generate-single-image', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    suggestImages: (data: { topic: string; sections?: any[]; imageOptions?: any }) =>
+      request<{
+        success: boolean;
+        suggestions: Array<{ id: string; prompt: string; caption: string; sectionIndex: number; placement: string; status: string }>;
+      }>('/api/documents/suggest-images', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    compileFinal: (data: {
+      title: string;
+      subtitle?: string;
+      format?: 'docx' | 'pdf' | 'pptx' | 'xlsx';
+      metadata?: any;
+      sections?: any[];
+      references?: string[];
+      theme?: string;
+      engagementLevel?: string;
+      coverImage?: string;
+      slides?: any[];
+      sheets?: any[];
+    }) =>
+      request<{
+        success: boolean;
+        file: any;
+        downloadUrl: string;
+        message: string;
+      }>('/api/documents/compile-final', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    aiImprove: (data: { text: string; action: string; context?: string }) =>
+      request<{
+        success: boolean;
+        originalText: string;
+        improvedText: string;
+        action: string;
+      }>('/api/documents/ai-improve', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getMyFiles: () => request<{ files: any[] }>('/api/documents/my-files'),
+    deleteFile: (fileId: string) =>
+      request<{ success: boolean }>(`/api/documents/${fileId}`, {
+        method: 'DELETE',
+      }),
+  },
 };

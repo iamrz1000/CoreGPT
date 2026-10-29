@@ -4,7 +4,7 @@ import { Conversation, Message, UsageState, User, Project } from './types/index.
 import { Sidebar } from './components/Sidebar.tsx';
 import { Header } from './components/Header.tsx';
 import { ChatMessage } from './components/ChatMessage.tsx';
-import { ChatInput } from './components/ChatInput.tsx';
+import { ChatInput, AttachedFile } from './components/ChatInput.tsx';
 import { ImageStudio } from './components/ImageStudio.tsx';
 import { VideoStudio } from './components/VideoStudio.tsx';
 import { MusicStudio } from './components/MusicStudio.tsx';
@@ -26,6 +26,7 @@ import { CreatorDNAModal } from './components/CreatorDNAModal.tsx';
 import { WorkflowRecorderModal } from './components/WorkflowRecorderModal.tsx';
 import { MiniAppsModal } from './components/MiniAppsModal.tsx';
 import { CommunityTemplatesModal } from './components/CommunityTemplatesModal.tsx';
+import { DocumentStudio } from './components/DocumentStudio.tsx';
 import { OnePromptUniverseModal } from './components/OnePromptUniverseModal.tsx';
 
 import { ThemeAccent } from './components/Header.tsx';
@@ -46,6 +47,9 @@ import {
   Headphones,
   Zap,
   Music,
+  Camera,
+  FileUp,
+  FileText,
 } from 'lucide-react';
 
 export default function App() {
@@ -56,7 +60,7 @@ export default function App() {
 
   // App Layout & Mode
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'chat' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'documents' | 'images' | 'video' | 'music' | 'creator' | 'projects' | 'agent' | 'admin'>('chat');
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [showMemoryModal, setShowMemoryModal] = useState(false);
   const [projectsList, setProjectsList] = useState<Project[]>([]);
@@ -136,6 +140,14 @@ export default function App() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const isStreamingRef = useRef(false);
+
+  // Center Plus Button & Attachment State (One Unified Plus Button)
+  const [showCenterMenu, setShowCenterMenu] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [chatResetTrigger, setChatResetTrigger] = useState(0);
+  const [centerToast, setCenterToast] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const docInputRef = useRef<HTMLInputElement | null>(null);
 
   // Apply theme to document element and persist in localStorage
   useEffect(() => {
@@ -274,6 +286,73 @@ export default function App() {
     setMessages([]);
     setStreamError(null);
     setActiveTab('chat');
+    setAttachedFile(null);
+    setChatResetTrigger((prev) => prev + 1);
+  };
+
+  // Center Plus Button Actions
+  const triggerNewChat = () => {
+    handleNewChat();
+    setShowCenterMenu(false);
+    setCenterToast('✨ New Chat started!');
+    setTimeout(() => setCenterToast(null), 3000);
+  };
+
+  const handleCenterImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setStreamError('Image size exceeds 10MB limit.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setAttachedFile({
+        name: file.name,
+        content,
+        size: file.size,
+        type: 'image',
+      });
+      setActiveTab('chat');
+      setShowCenterMenu(false);
+      setCenterToast('📷 Photo attached! Ready in chat.');
+      setTimeout(() => setCenterToast(null), 3500);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCenterDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setStreamError('Document size exceeds 10MB limit.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setAttachedFile({
+        name: file.name,
+        content,
+        size: file.size,
+        type: 'document',
+      });
+      setActiveTab('chat');
+      setShowCenterMenu(false);
+      setCenterToast('📄 Document attached! Ready in chat.');
+      setTimeout(() => setCenterToast(null), 3500);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleCenterPlusClick = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) e.stopPropagation();
+    setShowCenterMenu((prev) => !prev);
   };
 
   // Rename Conversation
@@ -865,8 +944,16 @@ export default function App() {
               onOpenVoiceMode={() => setShowVoiceModal(true)}
               isAdmin={isAdmin}
               isJailbreakMode={isAdmin && isExperimentalMode}
+              externalAttachedFile={attachedFile}
+              onClearExternalAttachedFile={() => setAttachedFile(null)}
+              resetTrigger={chatResetTrigger}
             />
           </div>
+        )}
+
+        {/* HYNEX DOCUMENT & PRODUCTIVITY STUDIO */}
+        {activeTab === 'documents' && (
+          <DocumentStudio currentUser={currentUser} usage={usage} onRefreshUsage={refreshUsage} />
         )}
 
         {/* IMAGE STUDIO TAB */}
@@ -929,8 +1016,137 @@ export default function App() {
           <AdminDashboard currentUser={currentUser} onClose={() => setActiveTab('chat')} />
         )}
 
-        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Images, Center Plus New Chat, Video, Music */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-lg">
+        {/* Hidden inputs for Center Plus Button photo and document selection */}
+        <input
+          type="file"
+          ref={imageInputRef}
+          onChange={handleCenterImageUpload}
+          accept="image/*"
+          className="hidden"
+        />
+        <input
+          type="file"
+          ref={docInputRef}
+          onChange={handleCenterDocUpload}
+          accept=".pdf,.txt,.md,.json,.csv,.doc,.docx"
+          className="hidden"
+        />
+
+        {/* Center Plus Floating Action Menu */}
+        {showCenterMenu && (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity"
+              onClick={() => setShowCenterMenu(false)}
+            />
+            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[290px] p-2 rounded-2xl bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-2xl space-y-1 animate-in fade-in zoom-in-95 duration-200 select-none">
+              <div className="px-3 py-1.5 flex items-center justify-between border-b border-zinc-100 dark:border-white/5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Create &amp; Attach
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowCenterMenu(false)}
+                  className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-0.5 rounded-md cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={triggerNewChat}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">New Chat</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Start fresh conversational session</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  imageInputRef.current?.click();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">Attach Photo / Camera</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Analyze images with visual intelligence</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  docInputRef.current?.click();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <FileUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">Attach Document / File</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Upload code, PDF, or text</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCenterMenu(false);
+                  setActiveTab('documents');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <FileText className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">Document Studio</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Assignments, PPTX, DOCX &amp; Excel sheets</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCenterMenu(false);
+                  setShowVoiceModal(true);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Mic className="w-4 h-4 text-purple-500 animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">Voice Conversation</p>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Live duplex speech with camera</p>
+                </div>
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Center Toast Feedback */}
+        {centerToast && (
+          <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="px-4 py-2 rounded-full bg-zinc-900/90 dark:bg-white/95 text-white dark:text-zinc-900 text-xs font-semibold shadow-xl backdrop-blur-md border border-white/20 flex items-center gap-2">
+              <span>{centerToast}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Bottom Navigation Dock (md:hidden) — Quick access to Chat, Images, Center Plus Action, Video, Music */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#181818]/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-lg">
           {/* Chat Tab */}
           <button
             onClick={() => setActiveTab('chat')}
@@ -957,19 +1173,24 @@ export default function App() {
             <span>Images</span>
           </button>
 
-          {/* Center Hero Plus Button - Instant New Chat */}
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('chat');
-              handleNewChat();
-            }}
-            className="flex items-center justify-center w-12 h-12 rounded-full font-bold shadow-xl -mt-5 ring-4 ring-white dark:ring-[#181818] bg-gradient-to-tr from-cyan-500 to-indigo-600 text-white hover:opacity-95 active:scale-90 transition-all cursor-pointer shadow-cyan-500/25"
-            title="Start New Chat"
-            aria-label="New Chat"
-          >
-            <Plus className="w-6 h-6 stroke-[2.5]" />
-          </button>
+          {/* Center Hero Plus Button - Instant Create & Attach Menu */}
+          <div className="relative -top-5 flex flex-col items-center justify-center">
+            <button
+              type="button"
+              onClick={handleCenterPlusClick}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleCenterPlusClick(e);
+              }}
+              className={`flex items-center justify-center w-12 h-12 rounded-full font-bold shadow-xl ring-4 ring-white dark:ring-[#181818] bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 text-white hover:opacity-95 active:scale-90 transition-all cursor-pointer shadow-indigo-500/30 touch-manipulation z-50 ${
+                showCenterMenu ? 'rotate-45' : ''
+              }`}
+              title="Create & Attach"
+              aria-label="Create or Attach Menu"
+            >
+              <Plus className="w-6 h-6 stroke-[2.6] transition-transform duration-200" />
+            </button>
+          </div>
 
           {/* Video Studio */}
           <button

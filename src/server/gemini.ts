@@ -1,4 +1,5 @@
 import { GoogleGenAI, GenerateVideosOperation, HarmCategory, HarmBlockThreshold } from '@google/genai';
+import sharp from 'sharp';
 
 let geminiClient: GoogleGenAI | null = null;
 let lastApiKey: string | undefined = undefined;
@@ -514,15 +515,17 @@ export async function enhanceImagePrompt(prompt: string, style?: string): Promis
       try {
         const response = await ai.models.generateContent({
           model,
-          contents: `You are an elite prompt architect specializing in Nano Banana 2.1 high-end photography.
-Transform this user input into a single, breathtaking, hyperrealistic prompt for state-of-the-art AI image generation:
+          contents: `You are an elite prompt architect specializing in Nano Banana 2.1 high-end photography and publication visuals.
+Transform this user concept into a single, breathtaking, high-impact prompt for state-of-the-art AI image generation:
 Original: "${trimmed}"
 ${styleInstruction}
 
 Guidelines:
-- Emphasize rich micro-textures, photorealistic studio lighting (soft rim lighting, volumetric god rays, ambient reflection), 8K ultra-sharp focus, Hasselblad 100MP camera aesthetics, 85mm f/1.4 lens, cinematic depth of field, Octane render 3D detail.
-- Ensure the main subject strictly matches the user's intent with photorealistic clarity.
-- Return ONLY the enhanced prompt paragraph. No quotes, no headings, no explanation.`,
+- Keep the enhanced prompt concise and high-signal, strictly between 20 and 45 words.
+- Emphasize rich micro-textures, photorealistic studio lighting, 8K ultra-sharp focus, Hasselblad 100MP camera aesthetics, 85mm f/1.4 lens, cinematic depth of field, Octane render 3D detail.
+- Ensure the main subject strictly matches the user's intent with razor-sharp clarity.
+- Do NOT generate long stories, conversational filler, or unreadable floating typography.
+- Return ONLY the enhanced prompt. No quotes, no headings, no explanation.`,
           config: {
             temperature: 0.7,
           },
@@ -569,6 +572,108 @@ export interface GenerateImageResult {
   upscale?: boolean;
 }
 
+/**
+ * Searches Wikimedia Commons for authentic, high-resolution academic and real-world photography/diagrams
+ */
+export async function searchWikimediaImage(query: string, targetWidth = 1024): Promise<string | null> {
+  try {
+    const cleaned = query
+      .replace(/[,.]/g, ' ')
+      .replace(/\b(photorealistic|hyperrealistic|cinematic|octane render|8k uhd|hasselblad|diagram|illustration|vector)\b/gi, '')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 5)
+      .join(' ');
+    if (!cleaned) return null;
+
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
+      cleaned
+    )}&gsrnamespace=6&gsrlimit=4&prop=imageinfo&iiprop=url|mime|size&iiurlwidth=${targetWidth}&format=json&origin=*`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'HynexAI/2.0 (Academic & Studio; contact@hynex.ai)' },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const pages = Object.values(data.query?.pages || {}) as any[];
+    for (const page of pages) {
+      const info = page.imageinfo?.[0];
+      if (info && info.thumburl) {
+        return info.thumburl;
+      }
+    }
+  } catch {
+    // Non-blocking fallback
+  }
+  return null;
+}
+
+/**
+ * Generates an ultra-crisp, publication-grade vector artwork / diagram using Gemini 3.1 Flash Lite
+ * and rasterizes to PNG buffer with sharp at target resolution (1K/2K/4K)
+ */
+export async function generateStudioVectorRaster(
+  prompt: string,
+  width = 1024,
+  height = 1024,
+  styleHint = 'modern visual'
+): Promise<string> {
+  const ai = getGeminiClient();
+  const isDiagram =
+    prompt.toLowerCase().includes('diagram') ||
+    prompt.toLowerCase().includes('anatomy') ||
+    prompt.toLowerCase().includes('structure') ||
+    prompt.toLowerCase().includes('cycle') ||
+    prompt.toLowerCase().includes('chart') ||
+    prompt.toLowerCase().includes('process');
+
+  const designerDirective = isDiagram
+    ? `You are an elite academic diagram designer. Create a publication-grade academic SVG diagram illustrating: "${prompt}".
+Requirements:
+- viewBox="0 0 ${width} ${height}", width="${width}", height="${height}"
+- Clean white or subtle light background (#FFFFFF or #F8FAFC)
+- Modern academic color palette (deep navy #1E3A8A, emerald #059669, indigo #4F46E5, slate #475569)
+- Beautiful rounded cards for components, high-contrast legible sans-serif labels, clean directional arrows
+- Detailed, accurate scientific/conceptual depiction with zero clutter
+- Return ONLY the raw <svg>...</svg> XML string without backticks or markdown.`
+    : `You are an elite vector artist and digital illustrator. Create a breathtaking, high-impact SVG visual representing: "${prompt}".
+Style emphasis: "${styleHint}".
+Requirements:
+- viewBox="0 0 ${width} ${height}", width="${width}", height="${height}"
+- Rich layered gradients, glowing lighting elements, dramatic color harmony, smooth curves
+- Master composition with atmospheric depth, high visual fidelity, modern digital aesthetics
+- Return ONLY the raw <svg>...</svg> XML string without backticks or markdown.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.1-flash-lite',
+    contents: designerDirective,
+    config: {
+      temperature: 0.6,
+    },
+  });
+
+  let svg = response.text?.trim() || '';
+  if (svg.includes('```xml')) svg = svg.split('```xml')[1].split('```')[0].trim();
+  if (svg.includes('```svg')) svg = svg.split('```svg')[1].split('```')[0].trim();
+  if (svg.includes('```')) svg = svg.split('```')[1].split('```')[0].trim();
+
+  const startIdx = svg.indexOf('<svg');
+  const endIdx = svg.lastIndexOf('</svg>');
+  if (startIdx >= 0 && endIdx >= 0) {
+    svg = svg.substring(startIdx, endIdx + 6);
+  } else {
+    throw new Error('Invalid SVG returned from generative model');
+  }
+
+  const pngBuf = await sharp(Buffer.from(svg)).png().toBuffer();
+  return `data:image/png;base64,${pngBuf.toString('base64')}`;
+}
+
 async function generateHighResSynthesisImage(
   prompt: string,
   aspectRatio = '1:1',
@@ -607,18 +712,56 @@ async function generateHighResSynthesisImage(
   const [width, height] = dimensionMap[aspectRatio] || (is4K ? [2048, 2048] : is2K ? [1536, 1536] : [1024, 1024]);
   const seed = Math.floor(Math.random() * 9999999);
 
-  // Enhance prompt fidelity with fine detail micro-textures for upscaled generations
-  const enrichedPrompt = (is4K || is2K)
-    ? `${prompt}, ultra-high resolution, 8k uhd, sharp focus, masterwork octane render, fine micro-textures`
-    : prompt;
-  const cleanPrompt = enrichedPrompt.slice(0, 950);
-  
-  // Use state-of-the-art FLUX / SANA neural engine for photorealistic Nano Banana output
+  // Keep prompt concise and high-signal (< 160 chars) to prevent server timeout or 402 rejection
+  const concisePrompt = prompt
+    .slice(0, 150)
+    .replace(/[^\w\s,.-]/g, '')
+    .trim();
+  const enrichedPrompt = `${concisePrompt}, 8k uhd, octane render, sharp focus, masterwork`;
   const chosenModel = modelStyle.includes('anime') ? 'flux-anime' : 'flux';
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=${width}&height=${height}&seed=${seed}&model=${chosenModel}&nologo=true&enhance=true`;
+  const candidateUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enrichedPrompt)}?width=${width}&height=${height}&seed=${seed}&model=${chosenModel}&nologo=true`;
 
-  // Return direct high-speed client stream URL: eliminates server memory buffering and timeout aborts
-  return url;
+  // Quick check if pollinations is available without hitting 402/rate-limits
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const checkRes = await fetch(candidateUrl, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) HynexAI/2.0' },
+    });
+    clearTimeout(timeout);
+
+    if (checkRes.ok) {
+      const contentType = checkRes.headers.get('content-type') || '';
+      if (contentType.includes('image/')) {
+        const ab = await checkRes.arrayBuffer();
+        const b64 = Buffer.from(ab).toString('base64');
+        return `data:${contentType};base64,${b64}`;
+      }
+    }
+  } catch {
+    // Non-blocking fallback to high-fidelity SVG rasterization or Wikimedia
+  }
+
+  // If neural mirror returned 402/rate-limit or timed out:
+  // Check if subject is real-world/nature/science/history for Wikimedia high-res assets
+  const isRealWorld =
+    /\b(heart|cell|planet|solar|galaxy|dna|atom|animal|plant|mountain|ocean|history|war|einstein|newton|circuit)\b/i.test(prompt);
+  if (isRealWorld) {
+    const wikiUrl = await searchWikimediaImage(prompt, width);
+    if (wikiUrl) {
+      return wikiUrl;
+    }
+  }
+
+  // Guaranteed pristine high-definition visual synthesized via Gemini 3.1 Flash Lite + sharp
+  try {
+    return await generateStudioVectorRaster(prompt, width, height, modelStyle);
+  } catch (err) {
+    console.warn('[Hynex Visual Engine] Vector fallback error:', err);
+    return candidateUrl;
+  }
 }
 
 export async function generateGeminiImage(
@@ -742,25 +885,38 @@ export async function generateGeminiImage(
       upscale: Boolean(options?.upscale),
     };
   } catch (fallbackErr) {
-    console.error('High-res fallback synthesis failed, returning direct fallback URL:', fallbackErr);
-    const dimensions: Record<string, [number, number]> = {
-      '1:1': targetResolution === '4K' ? [2048, 2048] : targetResolution === '2K' ? [1536, 1536] : [1024, 1024],
-      '16:9': targetResolution === '4K' ? [2560, 1440] : targetResolution === '2K' ? [1920, 1080] : [1280, 720],
-      '9:16': targetResolution === '4K' ? [1440, 2560] : targetResolution === '2K' ? [1080, 1920] : [720, 1280],
-      '4:3': targetResolution === '4K' ? [2048, 1536] : targetResolution === '2K' ? [1600, 1200] : [1024, 768],
-      '3:4': targetResolution === '4K' ? [1536, 2048] : targetResolution === '2K' ? [1200, 1600] : [768, 1024],
-    };
-    const [w, h] = dimensions[ar] || [1024, 1024];
-    const directUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt.slice(0, 800))}?width=${w}&height=${h}&seed=${Math.floor(Math.random() * 9999999)}&model=flux&nologo=true&enhance=true`;
-    return {
-      imageUrl: directUrl,
-      finalPrompt,
-      originalPrompt,
-      model: preferredModel,
-      wasEnhanced,
-      imageSize: targetResolution,
-      upscale: Boolean(options?.upscale),
-    };
+    console.warn('High-res fallback synthesis error, creating guaranteed studio raster:', fallbackErr);
+    try {
+      const dimensions: Record<string, [number, number]> = {
+        '1:1': targetResolution === '4K' ? [2048, 2048] : targetResolution === '2K' ? [1536, 1536] : [1024, 1024],
+        '16:9': targetResolution === '4K' ? [2560, 1440] : targetResolution === '2K' ? [1920, 1080] : [1280, 720],
+        '9:16': targetResolution === '4K' ? [1440, 2560] : targetResolution === '2K' ? [1080, 1920] : [720, 1280],
+        '4:3': targetResolution === '4K' ? [2048, 1536] : targetResolution === '2K' ? [1600, 1200] : [1024, 768],
+        '3:4': targetResolution === '4K' ? [1536, 2048] : targetResolution === '2K' ? [1200, 1600] : [768, 1024],
+      };
+      const [w, h] = dimensions[ar] || [1024, 1024];
+      const rasterUrl = await generateStudioVectorRaster(finalPrompt, w, h);
+      return {
+        imageUrl: rasterUrl,
+        finalPrompt,
+        originalPrompt,
+        model: preferredModel,
+        wasEnhanced,
+        imageSize: targetResolution,
+        upscale: Boolean(options?.upscale),
+      };
+    } catch {
+      const fallbackPlaceholder = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="100%" height="100%" fill="%230F172A"/><text x="50%" y="50%" fill="%23F8FAFC" font-family="sans-serif" font-size="28" font-weight="bold" text-anchor="middle">${encodeURIComponent(finalPrompt.slice(0, 40))}</text></svg>`;
+      return {
+        imageUrl: fallbackPlaceholder,
+        finalPrompt,
+        originalPrompt,
+        model: preferredModel,
+        wasEnhanced,
+        imageSize: targetResolution,
+        upscale: Boolean(options?.upscale),
+      };
+    }
   }
 }
 

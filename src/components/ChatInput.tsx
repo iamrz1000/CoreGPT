@@ -9,7 +9,6 @@ import {
   X,
   FileText,
   AlertCircle,
-  Plus,
   Headphones,
   Zap,
   ShieldCheck,
@@ -17,7 +16,7 @@ import {
   Unlock,
 } from 'lucide-react';
 
-interface AttachedFile {
+export interface AttachedFile {
   name: string;
   content: string;
   size: number;
@@ -355,31 +354,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           }
           rows={1}
           disabled={disabled}
-          className="w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-sm text-[#0d0d0d] dark:text-[#ececec] placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none min-h-[44px] max-h-[200px]"
+          className="w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-base sm:text-sm text-[#0d0d0d] dark:text-[#ececec] placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-none min-h-[44px] max-h-[200px]"
         />
 
         {/* Bottom controls inside the pill */}
         <div className="flex items-center justify-between px-3 pb-2.5 pt-0.5">
           {/* Left tools */}
           <div className="flex items-center gap-1.5">
-            <label
-              htmlFor="chat-mobile-file-upload"
-              className="p-2 sm:p-1.5 rounded-full text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-white/10 active:scale-95 transition-all cursor-pointer flex items-center justify-center min-w-[38px] min-h-[38px] touch-manipulation select-none relative"
-              title="Attach document, code, or photo"
-              aria-label="Attach file or photo"
-            >
-              <input
-                id="chat-mobile-file-upload"
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept="image/*,.pdf,.txt,.md,.json,.csv,.doc,.docx"
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
-                tabIndex={-1}
-              />
-              <Plus className="w-4 h-4 stroke-[2.4] pointer-events-none" />
-            </label>
-
             {/* Real-time search toggle */}
             {onToggleSearchGrounding && (
               <button
